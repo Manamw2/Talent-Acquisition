@@ -1,0 +1,150 @@
+# Ignore build artifacts
+[Bb]in/
+[Oo]bj/
+
+# Ignore user-specific files
+*.user
+*.suo
+*.userprefs
+*.lock.json
+
+# Ignore IDE-specific files
+.vs/
+.idea/
+*.swp
+*.swo
+
+# Ignore NuGet packages directory
+packages/
+
+# Ignore local NuGet cache
+.nuget/
+nuget.exe
+
+# Ignore build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+
+# Ignore .NET Core specific files
+appsettings.Development.json
+appsettings.json
+appsettings.*.json
+
+# Ignore MSTest test results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# Ignore ReSharper files
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+# Ignore Visual Studio cache/options directory
+.vs/
+
+# Ignore Rider cache/options directory
+.idea/
+
+# Ignore CodeRush cache/options directory
+.cr/
+
+# Ignore Python cache
+__pycache__/
+
+# Ignore Node.js modules
+node_modules/
+
+# Ignore Azure Functions local settings
+local.settings.json
+
+# Ignore Azure Stream Analytics local run output
+ASALocalRun/
+
+# Ignore MSBuild output files
+*.msbuild
+*.msb
+
+# Ignore Visual Studio temporary files
+*.tmp
+*.temp
+
+# Ignore Visual Studio profiler files
+*.psess
+*.vsp
+*.vspx
+*.sap
+
+# Ignore Visual Studio performance logs
+*.diaglog
+*.diaglog-*.json
+
+# Ignore Visual Studio code coverage results
+*.coverage
+*.coveragexml
+
+# Ignore Visual Studio test results
+*.trx
+*.Test.xml
+
+# Ignore Visual Studio publish profiles
+*.pubxml
+*.publishsettings
+
+# Ignore Visual Studio user-specific files
+*.user
+*.userosscache
+*.sln.docstates
+
+# Ignore Visual Studio backup files
+*.backup.*
+*.backup
+
+# Ignore Visual Studio code analysis files
+*.ruleset
+
+# Ignore Visual Studio database tools
+*.dbmdl
+*.dbproj.schemaview
+*.jfm
+
+# Ignore Visual Studio SQL Server files
+*.sql
+*.sqlproj
+*.sqlite
+
+# Ignore Visual Studio LightSwitch generated files
+*.lsmodel
+*.lsproj
+
+# Ignore Visual Studio deployment files
+*.deployproj
+*.deploy
+
+# Ignore Visual Studio application publish profiles
+*.pubxml
+*.publishsettings
+
+# Ignore Visual Studio web deploy files
+*.WebDeploy.zip
+
+# Ignore Visual Studio web cache files
+*.webcache
+
+# Ignore Visual Studio web publish logs
+*.publish.log
+
+# Ignore Visual Studio web publish temp files
+*.pubxml.tmp
+
+# Ignore Visual Studio web publish user files
+*.pubxml.user

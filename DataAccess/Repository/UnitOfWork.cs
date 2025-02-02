@@ -9,7 +9,7 @@ using DataAccess.Repository.IRepository;
 
 namespace DataAccess.Repository
 {
-    internal class UnitOfWork : IUnitOfWork
+    public class UnitOfWork : IUnitOfWork
     {
         private readonly ApplicationDbContext _context;
         public UnitOfWork(ApplicationDbContext context)

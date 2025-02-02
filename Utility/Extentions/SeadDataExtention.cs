@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DataAccess.Repository.IRepository
+namespace Utility.Extentions
 {
-    public interface IUnitOfWork
+    internal class SeadDataExtention
     {
-        Task SaveAsync();
     }
 }

@@ -3,14 +3,52 @@ using DataAccess.Data;
 using Microsoft.AspNetCore.Identity;
 using Models;
 using TalentAcquisitionModule.Extentions;
+using Microsoft.AspNetCore.Identity.UI.Services;
+using TalentAcquisitionModule.Services;
+using DataAccess.Repository.IRepository;
+using DataAccess.Repository;
+using System.Net.Mail;
+using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddIdentity<AppUser, IdentityRole>(options => options.User.RequireUniqueEmail = true)
-    .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddDefaultTokenProviders();
+builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
+{
+    options.SignIn.RequireConfirmedAccount = true;
+    options.User.RequireUniqueEmail = true;
+})
+.AddEntityFrameworkStores<ApplicationDbContext>()
+.AddDefaultTokenProviders();
+
+
+builder.Services.AddRazorPages();
+
+// Register SmtpClient as a transient service
+builder.Services.AddTransient(_ => new SmtpClient("smtp.gmail.com", 587)
+{
+    EnableSsl = true,
+    UseDefaultCredentials = false,
+    Credentials = new NetworkCredential(
+        userName: "mahmoud.amr.nabil23@gmail.com",
+        password: "ilkx xyer zybb muti"
+    )
+});
+
+// Register SmtpEmailSender as a transient service
+builder.Services.AddTransient<IEmailSender>(provider =>
+{
+    var smtpClient = provider.GetRequiredService<SmtpClient>();
+    return new EmailSender(
+        smtpClient: smtpClient,
+        emailAddress: "mahmoud.amr.nabil23@gmail.com",
+        signature: "<br /><div style='font-family: ' Arial',sans-serif;font-size: 10.0pt;'><p>Thank you and best regards,</p><p><strong>SoftTrend Marketplace</strong></p><p>    <strong>T</strong> +20 (2) 21 26 7000 | <strong>F</strong> +20 (2) 21 26 7026 <br />    <strong>SoftTrend Headquarter</strong> | 37 H/1 Shokry Abdel Halim Street, Takseem Elaselky, Maadi, Cairo, Egypt</p><div>    <img src='https://soft-trend.com/EmailSignature/22-11-2020/images/Logo.png' /><a style='margin-right:5px;' target='_blank' href='https://www.facebook.com/SoftTrend-440957282629179/?ref=ts'><img src='https://soft-trend.com/EmailSignature/22-11-2020/images/FacebookIcon.png' /></a></td><a style='margin-right:5px;' target='_blank' href='https://www.instagram.com/soft_trend/'><img src='https://soft-trend.com/EmailSignature/22-11-2020/images/InstagramIcon.png' /></a></td><a style='margin-right:5px;' target='_blank' href='https://www.linkedin.com/company/softtrend/'><img src='https://soft-trend.com/EmailSignature/22-11-2020/images/LinkedinIcon.png' /></a></td><a style='margin-right:5px;' target='_blank' href='https://twitter.com/Soft_Trend'><img src='https://soft-trend.com/EmailSignature/22-11-2020/images/TwitterIcon.png' /></a></td><a style='margin-right:5px;' target='_blank' href='https://marketplace.soft-trend.com/'><img src='https://soft-trend.com/EmailSignature/22-11-2020/images/MarketplaceIcon.png' /></a></td><a style='margin-right:5px;' target='_blank' href='https://marketplacedemo.soft-trend.com/'><img src='https://soft-trend.com/EmailSignature/22-11-2020/images/MarketplaceDemoIcon.png' /></a></td></div></div>"
+    );
+});
+
+
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -25,14 +63,17 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 
 }
-app.Seed();
+//app.Seed();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapRazorPages();
 
 app.MapControllerRoute(
     name: "default",

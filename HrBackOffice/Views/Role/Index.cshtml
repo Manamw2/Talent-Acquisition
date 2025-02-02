@@ -1,0 +1,59 @@
+﻿@model IEnumerable<IdentityRole>
+@{
+    ViewData["Title"] = "Roles";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary">All Roles</h2>
+    </div>
+
+    <hr />
+
+    <!-- Role Form Partial View -->
+    <div class="mb-4">
+        <partial name="RoleFormPartialView" model="new RoleFormViewModel()" />
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped table-hover">
+                <thead class="table-dark text-center">
+                    <tr>
+                        <th>@Html.DisplayNameFor(r => r.Name)</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody class="align-middle">
+                    @foreach (var role in Model)
+                    {
+                        <tr>
+                            <td class="fw-bold">@role.Name</td>
+                            <td class="text-center">
+                                <a class="btn btn-outline-warning btn-sm px-3" asp-action="Edit" asp-route-id="@role.Id">
+                                    <i class="bi bi-pencil-square"></i> Edit
+                                </a>
+                                <a class="btn btn-outline-danger btn-sm px-3 ms-2" asp-action="Delete" asp-route-id="@role.Id">
+                                    <i class="bi bi-trash"></i> Delete
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning text-center p-4">
+            <h4>No Roles Found 😞</h4>
+            <p>Try adding a new role above.</p>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

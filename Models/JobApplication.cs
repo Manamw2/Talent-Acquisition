@@ -10,15 +10,28 @@ namespace Models
 {
     public class JobApplication
     {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)] // Auto-increment
+        public int ApplicationId { get; set; }
+
         [Required]
-        public string AppUserId { get; set; } = string.Empty;  // Default value for non-null
+        public int ApplicantId { get; set; }
+
+        [ForeignKey("ApplicantId")]
+        public Applicant Applicant { get; set; }
+
         [Required]
         public int JobId { get; set; }
 
-        [ForeignKey(nameof(AppUserId))]  // Defines the foreign key relationship
-        public AppUser AppUser { get; set; } = new AppUser();  // Ensures default object initialization
+        [ForeignKey("JobId")]
+        public Job Job { get; set; }
 
-        [ForeignKey(nameof(JobId))]  // Defines the foreign key relationship
-        public Job Job { get; set; } = new Job();  // Ensures default object initialization
+        [Required]
+        public DateTime AppliedDate { get; set; } = DateTime.UtcNow;
+
+        [Required]
+        [StringLength(20)]
+        public string Status { get; set; } = "Pending"; // Default value
+
     }
 }

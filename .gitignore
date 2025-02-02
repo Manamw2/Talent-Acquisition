@@ -148,3 +148,7 @@ ASALocalRun/
 
 # Ignore Visual Studio web publish user files
 *.pubxml.user
+# Ignore Visual Studio Migrations
+ 
+**/Migrations/
+ 

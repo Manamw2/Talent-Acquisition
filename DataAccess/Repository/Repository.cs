@@ -62,6 +62,11 @@ namespace DataAccess.Repository
 
             return await query.FirstOrDefaultAsync();
         }
+        public void Update(T entity)
+        {
+            dbSet.Attach(entity);
+            _context.Entry(entity).State = EntityState.Modified;
+        }
 
         public void Remove(T entity)
         {

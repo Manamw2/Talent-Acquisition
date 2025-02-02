@@ -1,0 +1,59 @@
+﻿@model IEnumerable<UserViewModel>
+@{
+    ViewData["Title"] = "HR Users";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary">All Users</h2>
+        <a asp-action="Create" class="btn btn-success shadow">
+            <i class="bi bi-person-plus-fill"></i> Add HR User
+        </a>
+    </div>
+
+    <hr />
+
+    @if (Model.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped table-hover">
+                <thead class="table-dark text-center">
+                    <tr>
+                        <th>@Html.DisplayNameFor(u => u.UserName)</th>
+                        <th>@Html.DisplayNameFor(u => u.Email)</th>
+                        <th>Roles</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody class="align-middle">
+                    @foreach (var user in Model)
+                    {
+                        <tr>
+                            <td>@user.UserName</td>
+                            <td>@user.Email</td>
+                            <td>
+                                <span class="badge bg-info text-dark">@string.Join(", ", user.Roles.ToList())</span>
+                            </td>
+                            <td class="text-center">
+                                <a class="btn btn-outline-primary btn-sm px-3" asp-action="Edit" asp-route-id="@user.Id">
+                                    <i class="bi bi-pencil-square"></i> Edit
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning text-center p-4">
+            <h4>No Records Found 😞</h4>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

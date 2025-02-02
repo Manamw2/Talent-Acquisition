@@ -220,36 +220,130 @@ namespace DataAccess.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("Models.Job", b =>
+            modelBuilder.Entity("Models.Applicant", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("ApplicantId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ApplicantId"));
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("ApplicantId");
+
+                    b.ToTable("Applicant");
+                });
+
+            modelBuilder.Entity("Models.Batch", b =>
+                {
+                    b.Property<int>("BatchId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BatchId"));
+
+                    b.Property<string>("BatchName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("BatchId");
+
+                    b.ToTable("Batch");
+                });
+
+            modelBuilder.Entity("Models.Department", b =>
+                {
+                    b.Property<int>("DepartmentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DepartmentId"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("DepartmentId");
+
+                    b.ToTable("Department");
+                });
+
+            modelBuilder.Entity("Models.Job", b =>
+                {
+                    b.Property<int>("JobId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("JobId"));
+
+                    b.Property<int>("BatchId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DepartmentId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
-                    b.Property<string>("position")
+                    b.Property<int>("JobType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
-                    b.HasKey("Id");
+                    b.HasKey("JobId");
+
+                    b.HasIndex("BatchId")
+                        .IsUnique();
+
+                    b.HasIndex("DepartmentId");
 
                     b.ToTable("Jobs");
                 });
 
             modelBuilder.Entity("Models.JobApplication", b =>
                 {
-                    b.Property<string>("AppUserId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("ApplicantId")
+                        .HasColumnType("int");
 
                     b.Property<int>("JobId")
                         .HasColumnType("int");
 
-                    b.HasKey("AppUserId", "JobId");
+                    b.Property<int>("ApplicationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ApplicationId"));
+
+                    b.Property<DateTime>("AppliedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("ApplicantId", "JobId");
 
                     b.HasIndex("JobId");
 
@@ -307,23 +401,63 @@ namespace DataAccess.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Models.Job", b =>
+                {
+                    b.HasOne("Models.Batch", "Batch")
+                        .WithOne("Job")
+                        .HasForeignKey("Models.Job", "BatchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Models.Department", "Department")
+                        .WithMany("Jobs")
+                        .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Batch");
+
+                    b.Navigation("Department");
+                });
+
             modelBuilder.Entity("Models.JobApplication", b =>
                 {
-                    b.HasOne("Models.AppUser", "AppUser")
-                        .WithMany()
-                        .HasForeignKey("AppUserId")
+                    b.HasOne("Models.Applicant", "Applicant")
+                        .WithMany("Applications")
+                        .HasForeignKey("ApplicantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Models.Job", "Job")
-                        .WithMany()
+                        .WithMany("Applications")
                         .HasForeignKey("JobId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("AppUser");
+                    b.Navigation("Applicant");
 
                     b.Navigation("Job");
+                });
+
+            modelBuilder.Entity("Models.Applicant", b =>
+                {
+                    b.Navigation("Applications");
+                });
+
+            modelBuilder.Entity("Models.Batch", b =>
+                {
+                    b.Navigation("Job")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Models.Department", b =>
+                {
+                    b.Navigation("Jobs");
+                });
+
+            modelBuilder.Entity("Models.Job", b =>
+                {
+                    b.Navigation("Applications");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,0 +1,37 @@
+﻿@model IEnumerable<Batch>
+
+@{
+    ViewData["Title"] = "Batches";
+}
+
+<h2>Batches</h2>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Create New Batch</a>
+</p>
+
+<table class="table table-striped table-bordered">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var batch in Model)
+        {
+            <tr>
+                <td>@batch.BatchName</td>
+                <td>@batch.StartDate.ToShortDateString()</td>
+                <td>@batch.EndDate.ToShortDateString()</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@batch.BatchId" class="btn btn-sm btn-warning">Edit</a>
+                    <a asp-action="Details" asp-route-id="@batch.BatchId" class="btn btn-sm btn-info">Details</a>
+                    <a asp-action="Delete" asp-route-id="@batch.BatchId" class="btn btn-sm btn-danger">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

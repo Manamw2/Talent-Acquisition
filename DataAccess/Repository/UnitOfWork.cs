@@ -27,11 +27,5 @@ namespace DataAccess.Repository
         {
             await _context.SaveChangesAsync();
         }
-
-        public void Dispose()
-        {
-            _context.Dispose();
-        }
     }
-
 }

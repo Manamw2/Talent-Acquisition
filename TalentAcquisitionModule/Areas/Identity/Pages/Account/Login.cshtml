@@ -1,0 +1,93 @@
+﻿@page
+@model LoginModel
+
+@{
+    ViewData["Title"] = "Log in";
+}
+
+<div class="container d-flex justify-content-center align-items-center " style="min-height: 80vh;">
+    <div class="row justify-content-center w-100">
+        <div class="col-md-10">
+            <!-- Card Container -->
+            <div class="card shadow-lg border-0 rounded-3 p-4 mx-auto" style="max-width: 600px;">
+                <!-- Account Section -->
+                <div class="mb-3">
+                    <h5 class="fw-bold">Already have an account?</h5>
+                    <p class="text-muted">Enter your email and password (Credentials are case sensitive).</p>
+                    <p class="text-muted small">
+                        <span class="text-danger">*</span> indicates a required field.
+                    </p>
+                    <!-- Login Form -->
+                    <form method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label fw-semibold">
+                                Email Address: <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-danger text-white"><i class="bi bi-envelope"></i></span>
+                                <input asp-for="Input.Email" class="form-control form-control-lg" id="email" placeholder="Enter your email" required>
+                            </div>
+                            <span asp-validation-for="Input.Email" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label fw-semibold">
+                                Password: <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-danger text-white"><i class="bi bi-lock"></i></span>
+                                <input asp-for="Input.Password" type="password" class="form-control form-control-lg" id="password" placeholder="Enter your password" required>
+                                <button class="btn btn-outline-danger" type="button" id="togglePassword">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            <span asp-validation-for="Input.Password" class="text-danger"></span>
+                        </div>
+
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-danger btn-lg w-100">Sign In</button>
+                        </div>
+
+                        <div class="text-center mt-2">
+                            <a href="#" class="text-danger text-decoration-none">Forgot your password?</a>
+                            <span class="mx-2">·</span>
+                            <a href="#" class="text-danger text-decoration-none">Resend email confirmation</a>
+                        </div>
+                    </form>
+                </div>
+                <!-- Registration Section -->
+                <div class="text-center mt-3">
+                    <h5 class="fw-bold">Not a registered user yet?</h5>
+                    <a asp-page="./Register" class="text-danger fw-semibold text-decoration-none">Create an account</a>
+                    <span class="text-muted">to apply for our career opportunities.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    body {
+        font-family: 'Roboto', sans-serif;
+        background-color: #E0E0E0; /* Dark background */
+    }
+
+</style>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.getElementById("togglePassword").addEventListener("click", function () {
+            let passwordInput = document.getElementById("password");
+            let icon = this.querySelector("i");
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";
+                icon.classList.replace("bi-eye", "bi-eye-slash");
+            } else {
+                passwordInput.type = "password";
+                icon.classList.replace("bi-eye-slash", "bi-eye");
+            }
+        });
+    </script>
+}

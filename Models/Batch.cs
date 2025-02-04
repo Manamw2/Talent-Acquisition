@@ -19,9 +19,9 @@ namespace Models
         public string BatchName { get; set; }
 
         public DateTime StartDate { get; set; } = DateTime.Now; // Add StartDate
-        public DateTime EndDate { get; set; }   // Add EndDate
+        public DateTime EndDate { get; set; } = DateTime.Now; // Add EndDate
 
         // One Batch can have only one Job
-        public Job Job { get; set; } 
+        public Job? Job { get; set; } 
     }
 }

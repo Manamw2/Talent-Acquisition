@@ -3,57 +3,120 @@
     ViewData["Title"] = "HR Users";
 }
 
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="text-primary">All Users</h2>
-        <a asp-action="Create" class="btn btn-success shadow">
-            <i class="bi bi-person-plus-fill"></i> Add HR User
-        </a>
-    </div>
+<div class="container-fluid px-4">
+    <h1 class="mt-4 mb-4">HR User Management</h1>
 
-    <hr />
+    <div class="row">
+        <div class="col-xl-12">
+           
 
-    @if (Model.Any())
-    {
-        <div class="table-responsive">
-            <table class="table table-bordered table-striped table-hover">
-                <thead class="table-dark text-center">
-                    <tr>
-                        <th>@Html.DisplayNameFor(u => u.UserName)</th>
-                        <th>@Html.DisplayNameFor(u => u.Email)</th>
-                        <th>Roles</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
+            <!-- HR Users Table -->
+            <div class="card">
+               
 
-                <tbody class="align-middle">
-                    @foreach (var user in Model)
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="fas fa-users me-2"></i>
+                        <span class="font-weight-bold">HR Users Listing</span>
+                    </div>
+                    <a asp-action="Create" class="btn btn-primary">
+                        <i class="fas fa-user-plus"></i> Add HR User
+                    </a>
+                </div>
+                
+                <div class="card-body">
+                    @if (Model.Any())
                     {
-                        <tr>
-                            <td>@user.UserName</td>
-                            <td>@user.Email</td>
-                            <td>
-                                <span class="badge bg-info text-dark">@string.Join(", ", user.Roles.ToList())</span>
-                            </td>
-                            <td class="text-center">
-                                <a class="btn btn-outline-primary btn-sm px-3" asp-action="Edit" asp-route-id="@user.Id">
-                                    <i class="bi bi-pencil-square"></i> Edit
-                                </a>
-                            </td>
-                        </tr>
+                        <div class="table-responsive">
+                            <table class="table table-hover border">
+                                <thead class="table-light text-center">
+                                    <tr>
+                                        <th><i class="fas fa-user me-1"></i> User Name</th>
+                                        <th><i class="fas fa-envelope me-1"></i> Email</th>
+                                        <th><i class="fas fa-id-badge me-1"></i> Roles</th>
+                                        <th class="text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var user in Model)
+                                    {
+                                        <tr>
+                                            <td class="align-middle">
+                                                <span class="badge bg-primary">@user.UserName</span>
+                                            </td>
+                                            <td class="align-middle">@user.Email</td>
+                                            <td class="align-middle">
+                                                @if (user.Roles.Any())
+                                                {
+                                                    @foreach (var role in user.Roles)
+                                                    {
+                                                        <span class="badge bg-secondary">@role</span>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-warning">No Roles Assigned</span>
+                                                }
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="btn-group" role="group">
+                                                    <a class="btn btn-sm btn-primary" asp-action="Edit" asp-route-id="@user.Id">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <button type="button" class="btn btn-sm btn-danger"
+                                                            onclick="confirmDeleteUser('@user.Id', '@user.UserName')">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
                     }
-                </tbody>
-            </table>
+                    else
+                    {
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            No HR users have been added yet. Use the form above to create a new HR user.
+                        </div>
+                    }
+                </div>
+            </div>
         </div>
-    }
-    else
-    {
-        <div class="alert alert-warning text-center p-4">
-            <h4>No Records Found 😞</h4>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the user "<span id="userNameToDelete"></span>"?</p>
+                <p class="text-danger">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteUserForm" method="post" asp-action="Delete">
+                    <input type="hidden" id="userIdToDelete" name="id" />
+                    <button type="submit" class="btn btn-danger">Delete User</button>
+                </form>
+            </div>
         </div>
-    }
+    </div>
 </div>
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function confirmDeleteUser(id, name) {
+            document.getElementById("userIdToDelete").value = id;
+            document.getElementById("userNameToDelete").innerText = name;
+            new bootstrap.Modal(document.getElementById("deleteUserModal")).show();
+        }
+    </script>
 }

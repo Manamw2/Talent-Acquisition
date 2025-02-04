@@ -1,59 +1,99 @@
 ﻿@model IEnumerable<IdentityRole>
-@{
-    ViewData["Title"] = "Roles";
-}
 
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="text-primary">All Roles</h2>
-    </div>
+<div class="container-fluid px-4">
+    <h1 class="mt-4 mb-4">Role Management</h1>
 
-    <hr />
+    <div class="row">
+        <div class="col-xl-12">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="fas fa-user-shield me-2"></i>
+                        <span class="font-weight-bold">Create New Role</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <partial name="RoleFormPartialView" model="new RoleFormViewModel()" />
+                </div>
+            </div>
 
-    <!-- Role Form Partial View -->
-    <div class="mb-4">
-        <partial name="RoleFormPartialView" model="new RoleFormViewModel()" />
-    </div>
-
-    @if (Model.Any())
-    {
-        <div class="table-responsive">
-            <table class="table table-bordered table-striped table-hover">
-                <thead class="table-dark text-center">
-                    <tr>
-                        <th>@Html.DisplayNameFor(r => r.Name)</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-
-                <tbody class="align-middle">
-                    @foreach (var role in Model)
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-users-cog me-2"></i>
+                    <span class="font-weight-bold">Role Listings</span>
+                </div>
+                <div class="card-body">
+                    @if (Model.Any())
                     {
-                        <tr>
-                            <td class="fw-bold">@role.Name</td>
-                            <td class="text-center">
-                                <a class="btn btn-outline-warning btn-sm px-3" asp-action="Edit" asp-route-id="@role.Id">
-                                    <i class="bi bi-pencil-square"></i> Edit
-                                </a>
-                                <a class="btn btn-outline-danger btn-sm px-3 ms-2" asp-action="Delete" asp-route-id="@role.Id">
-                                    <i class="bi bi-trash"></i> Delete
-                                </a>
-                            </td>
-                        </tr>
+                        <div class="table-responsive">
+                            <table class="table table-hover border">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th><i class="fas fa-tag me-1"></i>Role Name</th>
+                                        <th><i class="fas fa-users me-1"></i>Users Count</th>
+                                        <th class="text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var role in Model)
+                                    {
+                                        <tr>
+                                            <td class="align-middle">
+                                                <span class="badge bg-primary">@role.Name</span>
+                                            </td>
+                                            <td class="align-middle">
+                                                @* Add users count if available in your model *@
+                                                <span class="badge bg-secondary">0 Users</span>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="btn-group" role="group">
+                                                    <a class="btn btn-sm btn-primary" asp-action="Edit" asp-route-id="@role.Id">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <button type="button" class="btn btn-sm btn-danger"
+                                                            onclick="confirmDeleteRole('@role.Id', '@role.Name')">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
                     }
-                </tbody>
-            </table>
+                    else
+                    {
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            No roles have been created yet. Use the form above to create your first role.
+                        </div>
+                    }
+                </div>
+            </div>
         </div>
-    }
-    else
-    {
-        <div class="alert alert-warning text-center p-4">
-            <h4>No Roles Found 😞</h4>
-            <p>Try adding a new role above.</p>
-        </div>
-    }
+    </div>
 </div>
 
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-}
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteRoleModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the role "<span id="roleNameToDelete"></span>"?</p>
+                <p class="text-danger">This action cannot be undone and may affect users assigned to this role.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteRoleForm" method="post" asp-action="Delete">
+                    <input type="hidden" id="roleIdToDelete" name="id" />
+                    <button type="submit" class="btn btn-danger">Delete Role</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

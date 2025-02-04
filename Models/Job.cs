@@ -26,7 +26,7 @@ namespace Models
         public string Title { get; set; }
 
         [Required]
-        [StringLength(500)]
+        [Column(TypeName = "NVARCHAR(MAX)")]
         public string Description { get; set; }
 
         [Required]
@@ -45,7 +45,7 @@ namespace Models
         public Department Department { get; set; }
 
         // One job can have many applicants (Applications)
-        public ICollection<JobApplication> Applications { get; set; } = new List<JobApplication>();
+        public ICollection<JobApplication> JobApplications { get; set; } = new List<JobApplication>();
     }
 
 }

@@ -19,7 +19,7 @@ namespace DataAccess.Data
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<JobApplication>()
-                .HasKey(ja => new { ja.ApplicantId, ja.JobId });
+                .HasKey(ja => new { ja.UserId, ja.JobId });
 
         }
     }

@@ -11,6 +11,7 @@ namespace DataAccess.Repository.IRepository
     {
         IRepository<Job> JobRepository { get; }
         IRepository<Batch> BatchRepository { get; }
+        IRepository<Department> DepRepository { get; }
         Task SaveAsync();
     }
 }

@@ -1,37 +1,43 @@
 ﻿@model UserRoleViewModel
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Edit HR User";
 }
 
-<h1>Edit @Model.UserName</h1>
-<hr/>
+<div class="container-fluid px-4">
+    <h1 class="mt-4 mb-4">Edit @Model.UserName</h1>
 
-<div class="container">
-    <form method="post" asp-action="Edit">
-        <input asp-for="UserId" class="form-control" hidden/>
+    <div class="row">
+        <div class="col-xl-6">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-user-edit me-2"></i>
+                    <span class="font-weight-bold">Edit User Details</span>
+                </div>
+                <div class="card-body">
+                    <form method="post" asp-action="Edit">
+                        <input asp-for="UserId" class="form-control" hidden />
 
-        <div>
-            <label asp-for="UserName" class="col-form-label"></label>
-            <input asp-for="UserName" class="form-control" disabled />
-        </div>
+                        <div class="mb-3">
+                            <label asp-for="UserName" class="form-label"></label>
+                            <input asp-for="UserName" class="form-control" disabled />
+                        </div>
 
-        <h3>Manage User-Roles </h3>
-        <hr/>
-        @for(int i = 0; i < Model.Roles.Count; i++)
-        {
-            <div>
-                <input asp-for="@Model.Roles[i].Name" hidden />
-                <input  asp-for="@Model.Roles[i].IsSelected" class="form-check-label"/>
-                <label asp-for="@Model.Roles[i]"  class="form-check-label"> @Model.Roles[i].Name</label>
+                        <h5>Assign Roles</h5>
+                        <hr />
+                        @for (int i = 0; i < Model.Roles.Count; i++)
+                        {
+                            <div class="form-check">
+                                <input asp-for="@Model.Roles[i].IsSelected" class="form-check-input" />
+                                <label class="form-check-label">@Model.Roles[i].Name</label>
+                            </div>
+                        }
+                        <br />
 
-                <span asp-validation-for="Roles"></span>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                        <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+                    </form>
+                </div>
             </div>
-        }
-        <br />
-
-        <input  type="submit" value="Save" class="btn btn-primary"/>
-        <a asp-action="Index" class="btn btn-secondary"> Back To List</a>
-    </form>
-
+        </div>
+    </div>
 </div>
-

@@ -1,0 +1,109 @@
+﻿@model JobViewModel
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4 mb-4">Job Details</h1>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <ul class="nav nav-tabs card-header-tabs" id="jobTabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="details-tab" data-bs-toggle="tab" href="#details" role="tab">
+                        <i class="fas fa-info-circle me-1"></i> Details
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="applications-tab" data-bs-toggle="tab" href="#applications" role="tab">
+                        <i class="fas fa-users me-1"></i> Applications
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <div class="card-body">
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="details" role="tabpanel">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <h6 class="fw-bold">Title</h6>
+                            <p>@Model.Title</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6 class="fw-bold">Job Type</h6>
+                            <p>@Model.JobType</p>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <h6 class="fw-bold">Description</h6>
+                        <div class="border rounded p-3 bg-light">
+                            @Html.Raw(Model.Description)
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <h6 class="fw-bold">Batch</h6>
+                            <p>@Model.Batches.FirstOrDefault(b => b.Value == Model.BatchId.ToString())?.Text</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6 class="fw-bold">Department</h6>
+                            <p>@Model.Departments.FirstOrDefault(d => d.Value == Model.DepartmentId.ToString())?.Text</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="applications" role="tabpanel">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-search"></i>
+                                </span>
+                                <input type="text" id="searchBox" class="form-control" placeholder="Search applicants...">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover border">
+                            <thead class="table-light">
+                                <tr>
+                                    <th><i class="fas fa-user me-1"></i>Applicant Name</th>
+                                    <th><i class="fas fa-envelope me-1"></i>Email</th>
+                                    <th><i class="fas fa-calendar me-1"></i>Applied Date</th>
+                                    <th><i class="fas fa-info-circle me-1"></i>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="applicationsTable">
+                                @foreach (var app in Model.JobApplications)
+                                {
+                                    <tr>
+                                        <td>@app.ApplicantName</td>
+                                        <td>@app.ApplicantEmail</td>
+                                        <td>@app.AppliedDate.ToShortDateString()</td>
+                                        <td>
+                                            <span class="badge bg-@(app.Status.ToLower() == "pending" ? "warning" :
+                                                                   app.Status.ToLower() == "approved" ? "success" :
+                                                                   app.Status.ToLower() == "rejected" ? "danger" : "primary")">
+                                                @app.Status
+                                            </span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.getElementById("searchBox").addEventListener("keyup", function () {
+        let searchValue = this.value.toLowerCase();
+        let rows = document.querySelectorAll("#applicationsTable tr");
+
+        rows.forEach(row => {
+            let name = row.cells[0].innerText.toLowerCase();
+            let email = row.cells[1].innerText.toLowerCase();
+            row.style.display = name.includes(searchValue) || email.includes(searchValue) ? "" : "none";
+        });
+    });
+</script>

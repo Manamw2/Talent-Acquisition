@@ -8,8 +8,14 @@ namespace HrBackOffice.Helper
     {
         public MappingProfile()
         {
+            
             CreateMap<Job, JobViewModel>()
-                .ForMember(dest => dest.BatchName, opt => opt.MapFrom(src => src.Batch.BatchName));
+                .ForMember(dest => dest.BatchId, opt => opt.MapFrom(src => src.BatchId))
+                .ForMember(dest => dest.DepartmentId, opt => opt.MapFrom(src => src.DepartmentId));
+
+            CreateMap<JobViewModel, Job>()
+                .ForMember(dest => dest.BatchId, opt => opt.MapFrom(src => src.BatchId))
+                .ForMember(dest => dest.DepartmentId, opt => opt.MapFrom(src => src.DepartmentId));
         }
     }
 }

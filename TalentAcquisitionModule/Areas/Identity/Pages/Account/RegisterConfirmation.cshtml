@@ -4,20 +4,119 @@
     ViewData["Title"] = "Register confirmation";
 }
 
-<h1>@ViewData["Title"]</h1>
-@{
-    if (@Model.DisplayConfirmAccountLink)
-    {
-<p>
-    This app does not currently have a real email sender registered, see <a href="https://aka.ms/aspaccountconf">these docs</a> for how to configure a real email sender.
-    Normally this would be emailed: <a id="confirm-link" href="@Model.EmailConfirmationUrl">Click here to confirm your account</a>
-</p>
-    }
-    else
-    {
-<p>
-        Please check your email to confirm your account.
-</p>
-    }
-}
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+    <div class="row justify-content-center w-100">
+        <div class="col-md-10">
+            <!-- Card Container -->
+            <div class="card shadow-lg border-0 rounded-3 p-4 mx-auto" style="max-width: 600px;">
+                <!-- Confirmation Code Section -->
+                <div class="mb-3">
+                    <h5 class="fw-bold">Confirm Your Email</h5>
+                    <p class="text-muted">Please enter the confirmation code sent to your email.</p>
+                    <!-- Confirmation Code Form -->
+                    <form method="post">
+                        <input type="hidden" id="email" value="@Request.Query["email"]" />
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <div class="mb-3">
+                            <label for="code" class="form-label fw-semibold">
+                                Confirmation Code: <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-danger text-white"><i class="bi bi-shield-lock"></i></span>
+                                <input asp-for="Input.Code" class="form-control form-control-lg" id="code" placeholder="Enter your confirmation code" required>
+                            </div>
+                            <span asp-validation-for="Input.Code" class="text-danger"></span>
+                        </div>
 
+                        <!-- Submit Button -->
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-danger btn-lg w-100">Confirm</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Resend Code Section -->
+                <div class="text-center mt-3">
+                    <h5 class="fw-bold">Didn't receive the code?</h5>
+                    <a href="#" class="text-danger fw-semibold text-decoration-none" onclick="resendCode()">Resend code</a>
+                    <span class="text-muted">to your email.</span>
+                    <div id="resendMessage" class="mt-2 text-success" style="display: none;"></div>
+                </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    body {
+        font-family: 'Roboto', sans-serif;
+        background-color: #E0E0E0; /* Light gray background */
+    }
+
+    .card {
+        background-color: #ffffff; /* White card background */
+    }
+
+    .input-group-text {
+        background-color: #dc3545; /* Red background for input icons */
+        border: none;
+    }
+
+    .form-control-lg {
+        border-radius: 0.25rem; /* Rounded corners for inputs */
+    }
+
+    .btn-danger {
+        background-color: #dc3545; /* Red button background */
+        border: none;
+    }
+
+    .btn-danger:hover {
+        background-color: #c82333; /* Darker red on hover */
+    }
+</style>
+
+@section Scripts {
+        <script>
+            function resendCode() {
+                const email = document.getElementById('email').value;
+
+                if (!email) {
+                    alert("Email is missing. Please register again.");
+                    return;
+                }
+
+                fetch(`?handler=ResendCode`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: JSON.stringify({ email: email })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const messageElement = document.getElementById('resendMessage');
+                    if (data.success) {
+                        messageElement.style.display = 'block';
+                        messageElement.classList.remove('text-danger');
+                        messageElement.classList.add('text-success');
+                        messageElement.innerText = "A new confirmation code has been sent.";
+                    } else {
+                        messageElement.style.display = 'block';
+                        messageElement.classList.remove('text-success');
+                        messageElement.classList.add('text-danger');
+                        messageElement.innerText = data.message || "Failed to resend the code.";
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    const messageElement = document.getElementById('resendMessage');
+                    messageElement.style.display = 'block';
+                    messageElement.classList.remove('text-success');
+                    messageElement.classList.add('text-danger');
+                    messageElement.innerText = "An error occurred while resending the code.";
+                });
+            }
+        </script>
+    <partial name="_ValidationScriptsPartial" />
+}

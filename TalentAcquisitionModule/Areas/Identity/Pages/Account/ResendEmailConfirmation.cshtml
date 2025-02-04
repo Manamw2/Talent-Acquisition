@@ -4,22 +4,46 @@
     ViewData["Title"] = "Resend email confirmation";
 }
 
-<h1>@ViewData["Title"]</h1>
-<h2>Enter your email.</h2>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form method="post">
-            <div asp-validation-summary="All" class="text-danger" role="alert"></div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.Email" class="form-control" aria-required="true" placeholder="name@example.com" />
-                <label asp-for="Input.Email" class="form-label"></label>
-                <span asp-validation-for="Input.Email" class="text-danger"></span>
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+    <div class="row justify-content-center w-100">
+        <div class="col-md-10">
+            <!-- Card Container -->
+            <div class="card shadow-lg border-0 rounded-3 p-4 mx-auto" style="max-width: 600px;">
+                <!-- Resend Email Confirmation Section -->
+                <div class="mb-3">
+                    <h1 class="fw-bold text-center">@ViewData["Title"]</h1>
+                    <h2 class="text-center">Enter your email.</h2>
+
+                    <!-- Resend Email Form -->
+                    <form method="post">
+                        <div asp-validation-summary="All" class="text-danger" role="alert"></div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label fw-semibold">
+                                Email Address: <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-danger text-white"><i class="bi bi-envelope"></i></span>
+                                <input asp-for="Input.Email" class="form-control form-control-lg" id="email" placeholder="Enter your email" required>
+                            </div>
+                            <span asp-validation-for="Input.Email" class="text-danger"></span>
+                        </div>
+
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-danger btn-lg w-100">Resend</button>
+                        </div>
+                    </form>
+                </div>
             </div>
-            <button type="submit" class="w-100 btn btn-lg btn-primary">Resend</button>
-        </form>
+        </div>
     </div>
 </div>
+
+<style>
+    body {
+        font-family: 'Roboto', sans-serif;
+        background-color: #E0E0E0; /* Dark background */
+    }
+</style>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

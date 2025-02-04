@@ -89,7 +89,7 @@
                             </label>
                             <div class="input-group">
                                 <span class="input-group-text bg-danger text-white"><i class="bi bi-calendar"></i></span>
-                                <input asp-for="Input.DateOfBirth" type="date" class="form-control form-control-lg" id="dateOfBirth" required>
+                                <input asp-for="Input.DateOfBirth" type="date" class="form-control form-control-lg" id="dateOfBirth" asp-value=""  required>
                             </div>
                             <span asp-validation-for="Input.DateOfBirth" class="text-danger"></span>
                         </div>

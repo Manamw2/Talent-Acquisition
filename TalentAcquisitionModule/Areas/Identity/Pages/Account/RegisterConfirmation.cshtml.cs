@@ -3,6 +3,7 @@
 #nullable disable
 
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -11,7 +12,9 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Caching.Memory;
 using Models;
+using TalentAcquisitionModule.Services;
 
 namespace TalentAcquisitionModule.Areas.Identity.Pages.Account
 {
@@ -19,62 +22,96 @@ namespace TalentAcquisitionModule.Areas.Identity.Pages.Account
     public class RegisterConfirmationModel : PageModel
     {
         private readonly UserManager<AppUser> _userManager;
-        private readonly IEmailSender _sender;
+        private readonly SignInManager<AppUser> _signInManager;
+        private readonly IMemoryCache _memoryCache;
+        private readonly IEmailSender _emailSender;
 
-        public RegisterConfirmationModel(UserManager<AppUser> userManager, IEmailSender sender)
+        public RegisterConfirmationModel(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, IMemoryCache memoryCache, IEmailSender emailSender)
         {
             _userManager = userManager;
-            _sender = sender;
+            _signInManager = signInManager;
+            _memoryCache = memoryCache;
+            _emailSender = emailSender;
         }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
-        public string Email { get; set; }
+        [BindProperty]
+        public InputModel Input { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
-        public bool DisplayConfirmAccountLink { get; set; }
-
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
-        public string EmailConfirmationUrl { get; set; }
-
-        public async Task<IActionResult> OnGetAsync(string email, string returnUrl = null)
+        public class InputModel
         {
-            if (email == null)
+            [Required]
+            [Display(Name = "Confirmation Code")]
+            public string Code { get; set; }
+        }
+
+        public async Task<IActionResult> OnPostAsync(string email, string returnUrl = null)
+        {
+            if (!ModelState.IsValid)
             {
-                return RedirectToPage("/Index");
+                return Page();
             }
-            returnUrl = returnUrl ?? Url.Content("~/");
 
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
             {
-                return NotFound($"Unable to load user with email '{email}'.");
+                ModelState.AddModelError(string.Empty, "User not found.");
+                return Page();
             }
 
-            Email = email;
-            // Once you add a real email sender, you should remove this code that lets you confirm the account
-            DisplayConfirmAccountLink = true;
-            if (DisplayConfirmAccountLink)
+            var storedCode = _memoryCache.Get<string>(user.Id);
+            if (storedCode == null || storedCode != Input.Code)
             {
-                var userId = await _userManager.GetUserIdAsync(user);
-                var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-                EmailConfirmationUrl = Url.Page(
-                    "/Account/ConfirmEmail",
-                    pageHandler: null,
-                    values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
-                    protocol: Request.Scheme);
+                ModelState.AddModelError(string.Empty, "Invalid or expired confirmation code.");
+                return Page();
             }
 
-            return Page();
+            // Mark the user's email as confirmed
+            user.EmailConfirmed = true;
+            await _userManager.UpdateAsync(user);
+
+            // Clear the confirmation code from the cache
+            _memoryCache.Remove(user.Id);
+
+            if (_userManager.Options.SignIn.RequireConfirmedAccount)
+            {
+                await _signInManager.SignInAsync(user, isPersistent: false);
+                return RedirectToPage("ProfileCompletion");
+            }
+            else
+            {
+                await _signInManager.SignInAsync(user, isPersistent: false);
+                return LocalRedirect(returnUrl ?? Url.Content("~/"));
+            }
+        }
+
+        public async Task<JsonResult> OnPostResendCodeAsync([FromBody] ResendCodeRequest request)
+        {
+            if (string.IsNullOrEmpty(request.Email))
+            {
+                return new JsonResult(new { success = false, message = "Email is required." });
+            }
+
+            var user = await _userManager.FindByEmailAsync(request.Email);
+            if (user == null)
+            {
+                return new JsonResult(new { success = false, message = "User not found." });
+            }
+
+            // Generate a new confirmation code
+            var confirmationCode = new Random().Next(100000, 999999).ToString();
+            _memoryCache.Set(user.Id, confirmationCode, TimeSpan.FromMinutes(15));
+
+            // Send confirmation code via email
+            await _emailSender.SendEmailAsync(request.Email, "Confirm your email",
+                        $"Your confirmation code is: <strong>{confirmationCode}</strong>. Please enter this code on the confirmation page to verify your account.");
+
+            return new JsonResult(new { success = true });
+        }
+
+        public class ResendCodeRequest
+        {
+            public string Email { get; set; }
         }
     }
 }
+

@@ -1,165 +1,38 @@
-﻿@page
-@model ProfileCompletionModel
+﻿@model ProfilePageViewModel
 @{
-    ViewData["Title"] = "Complete Your Profile";
+    ViewBag.Title = "User Dashboard";
+    Layout = "_profileLayout";
 }
 
-<div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
-    <div class="row justify-content-center w-100">
-        <div class="col-md-10">
-            <!-- Card Container -->
-            <div class="card shadow-lg border-0 rounded-3 p-4 mx-auto" style="max-width: 800px;">
-                <!-- Profile Completion Section -->
-                <div class="text-center mb-4">
-                    <h1 class="fw-bold">Complete Your Profile</h1>
-                    <p class="text-muted">Stand out by sharing your professional journey</p>
-                </div>
+@{
+    ViewBag.Title = "User Dashboard";
+}
 
-                <form method="post">
-                    <!-- Work Experience Section -->
-                    <div class="mb-4">
-                        <h2 class="fw-bold mb-3">Work Experience</h2>
-                        <p class="text-muted mb-4">Share your professional journey to help us find the best opportunities for you</p>
-
-                        <div id="experiencesContainer">
-                            @for (var i = 0; i < Model.Experiences.Count; i++)
-                            {
-                                <div class="card mb-3">
-                                    <div class="card-body">
-                                        <div class="d-flex justify-content-between align-items-center mb-3">
-                                            <button type="button" class="btn btn-outline-secondary toggle-experience">
-                                                <span class="chevron-icon">▼</span>
-                                                Experience {index}
-                                            </button>
-                                            <button type="button" class="btn-close remove-experience" aria-label="Close"></button>
-                                        </div>
-                                        <div class="collapsible-content show">
-                                            <input type="hidden" asp-for="Experiences[i].Id" />
-                                            <div class="mb-3">
-                                                <input type="text" class="form-control" asp-for="Experiences[i].Company" placeholder="Company" />
-                                            </div>
-                                            <div class="mb-3">
-                                                <input type="text" class="form-control" asp-for="Experiences[i].Position" placeholder="Position" />
-                                            </div>
-                                            <div class="row mb-3">
-                                                <div class="col-md-6">
-                                                    <input type="date" class="form-control" asp-for="Experiences[i].StartDate" />
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <input type="date" class="form-control" asp-for="Experiences[i].EndDate" />
-                                                </div>
-                                            </div>
-                                            <div class="mb-3">
-                                                <textarea class="form-control" asp-for="Experiences[i].Description" rows="3" placeholder="Description"></textarea>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            }
-                        </div>
-                        <button type="button" id="addExperience" class="btn btn-outline-secondary w-100">
-                            + Add Experience
-                        </button>
-                    </div>
-
-                    <!-- Skills Section -->
-                    <div class="mb-4">
-                        <h2 class="fw-bold mb-3">Skills</h2>
-                        <p class="text-muted mb-4">Add your technical and professional skills</p>
-
-                        <div id="skillsContainer">
-                            @for (var i = 0; i < Model.Skills.Count; i++)
-                            {
-                                <div class="row mb-3">
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <button type="button" class="btn btn-outline-secondary toggle-skill">
-                                            <span class="chevron-icon">▼</span>
-                                            Skill {index}
-                                        </button>
-                                        <button type="button" class="btn-close remove-skill" aria-label="Close"></button>
-                                    </div>
-                                    <div class="collapsible-content show">
-                                        <input type="hidden" name="Skills[{index}].Id" value="0" />
-                                        <div class="col-md-8">
-                                            <input type="text" class="form-control" name="Skills[{index}].Name" placeholder="Skill name" />
-                                        </div>
-                                        <div class="col-md-4">
-                                            <select class="form-control" name="Skills[{index}].Level">
-                                                <option value="Beginner">Beginner</option>
-                                                <option value="Intermediate">Intermediate</option>
-                                                <option value="Advanced">Advanced</option>
-                                                <option value="Expert">Expert</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                            }
-                        </div>
-                        <button type="button" id="addSkill" class="btn btn-outline-secondary w-100">
-                            + Add Skill
-                        </button>
-                    </div>
-
-                    <!-- Projects Section -->
-                    <div class="mb-4">
-                        <h2 class="fw-bold mb-3">Projects</h2>
-                        <p class="text-muted mb-4">Showcase your best work and achievements</p>
-
-                        <div id="projectsContainer">
-                            @for (var i = 0; i < Model.Projects.Count; i++)
-                            {
-                                <div class="card mb-3">
-                                    <div class="card-body">
-                                        <div class="d-flex justify-content-between align-items-center mb-3">
-                                            <button type="button" class="btn btn-outline-secondary toggle-project">
-                                                <span class="chevron-icon">▼</span>
-                                                Project {index}
-                                            </button>
-                                            <button type="button" class="btn-close remove-project" aria-label="Close"></button>
-                                        </div>
-                                        <div class="collapsible-content show">
-                                            <div class="mb-3">
-                                                <input type="text" class="form-control" asp-for="Projects[i].Name" placeholder="Project name" />
-                                            </div>
-                                            <div class="mb-3">
-                                                <textarea class="form-control" asp-for="Projects[i].Description" rows="3" placeholder="Project description"></textarea>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            }
-                        </div>
-                        <button type="button" id="addProject" class="btn btn-outline-secondary w-100">
-                            + Add Project
-                        </button>
-                    </div>
-
-                    <!-- Submit Button -->
-                    <div class="text-center mt-4">
-                        <button type="submit" class="btn btn-danger btn-lg w-100">Complete Profile</button>
-                    </div>
-                </form>
-            </div>
-        </div>
+<div class="tab-content" id="userTabs">
+    <div class="tab-pane fade show active" id="user-info" role="tabpanel" aria-labelledby="user-info-tab">
+        @Html.Partial("_UserInfo", Model.ProfileInfoVM)
+    </div>
+    <div class="tab-pane fade" id="user-applications" role="tabpanel" aria-labelledby="user-applications-tab">
+        <partial name="_UserApplications" />
+    </div>
+    <div class="tab-pane fade" id="user-settings" role="tabpanel" aria-labelledby="user-settings-tab">
+        @Html.Partial("_UserSettings", Model.ChangePasswordViewModel)
     </div>
 </div>
 
-<style>
-    body {
-        font-family: 'Roboto', sans-serif;
-        background-color: #E0E0E0; /* Matching the login page background */
-    }
-
-    .collapsible-content {
-        display: none;
-    }
-
-        .collapsible-content.show {
-            display: block;
-        }
-</style>
-
 @section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('.nav-link').on('click', function (e) {
+                e.preventDefault();
+                var tab = $(this).data('tab');
+                $('.nav-link').removeClass('active');
+                $(this).addClass('active');
+                $('.tab-pane').removeClass('show active');
+                $('#' + tab).addClass('show active');
+            });
+        });
+    </script>
     <script>
                 document.addEventListener('DOMContentLoaded', function () {
             // Function to toggle collapsible content
@@ -343,6 +216,21 @@
                 });
             });
         });
+    </script>
+    <script>
+        function togglePassword(inputId) {
+            const passwordInput = document.getElementById(inputId);
+            const button = passwordInput.nextElementSibling;
+            const icon = button.querySelector('i');
+
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";
+                icon.classList.replace("bi-eye", "bi-eye-slash");
+            } else {
+                passwordInput.type = "password";
+                icon.classList.replace("bi-eye-slash", "bi-eye");
+            }
+        }
     </script>
     <partial name="_ValidationScriptsPartial" />
 }

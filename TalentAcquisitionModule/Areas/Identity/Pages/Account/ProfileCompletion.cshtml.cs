@@ -80,7 +80,7 @@ namespace TalentAcquisitionModule.Areas.Identity.Pages.Account
 
             }
 
-            return RedirectToPage("/Profile/View");
+            return RedirectToPage("Profile");
         }
     }
     public class ExperienceViewModel

@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using DataAccess.Repository.IRepository;
 using HrBackOffice.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -15,9 +17,10 @@ namespace HrBackOffice.Controllers
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-
-        public JobController(IUnitOfWork unitOfWork, IMapper mapper)
+        private readonly UserManager<AppUser> _userManager;
+        public JobController(IUnitOfWork unitOfWork, IMapper mapper , UserManager<AppUser> userManager)
         {
+            _userManager = userManager;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
@@ -54,7 +57,7 @@ namespace HrBackOffice.Controllers
         {
             var departments = await _unitOfWork.DepRepository.GetAllAsync();
             var batches = await _unitOfWork.BatchRepository.GetAllAsync(
-                filter: b => (b.Job == null || b.BatchId == model.BatchId) && b.EndDate >= DateTime.Now
+                filter: b => (b.Job == null || b.BatchId == model.BatchId ) && b.EndDate >= DateTime.Now 
             );
 
             model.Departments = departments.Select(d => new SelectListItem
@@ -86,6 +89,11 @@ namespace HrBackOffice.Controllers
         {
             var model = new JobViewModel();
             await PopulateDropdowns(model);
+            // Restore newly added batch selection
+            if (TempData["NewBatchId"] != null)
+            {
+                model.BatchId = (int)TempData["NewBatchId"];
+            }
             return View(model); // Return the populated model
         }
 
@@ -104,6 +112,7 @@ namespace HrBackOffice.Controllers
             }
 
             await PopulateDropdowns(model);
+
             return View(model);
         }
 
@@ -201,6 +210,22 @@ namespace HrBackOffice.Controllers
             return View(model);
         }
 
+        public IActionResult ApplicantProfile(string userId)
+        {
+            if (string.IsNullOrEmpty(userId))
+                return NotFound();
+
+            var applicant = _userManager.Users
+                .Include(u => u.ApplicantExperiences)
+                .Include(u => u.ApplicantSkills)
+                .Include(u => u.ApplicantProjects)
+                .FirstOrDefault(u => u.Id == userId);
+
+            if (applicant == null)
+                return NotFound();
+
+            return View(applicant);
+        }
 
 
 

@@ -74,14 +74,14 @@
                             <tbody id="applicationsTable">
                                 @foreach (var app in Model.JobApplications)
                                 {
-                                    <tr>
+                                    <tr ondblclick="viewApplicantProfile('@app.UserId')">
                                         <td>@app.ApplicantName</td>
                                         <td>@app.ApplicantEmail</td>
                                         <td>@app.AppliedDate.ToShortDateString()</td>
                                         <td>
                                             <span class="badge bg-@(app.Status.ToLower() == "pending" ? "warning" :
-                                                                   app.Status.ToLower() == "approved" ? "success" :
-                                                                   app.Status.ToLower() == "rejected" ? "danger" : "primary")">
+                                       app.Status.ToLower() == "approved" ? "success" :
+                                       app.Status.ToLower() == "rejected" ? "danger" : "primary")">
                                                 @app.Status
                                             </span>
                                         </td>
@@ -106,4 +106,11 @@
             row.style.display = name.includes(searchValue) || email.includes(searchValue) ? "" : "none";
         });
     });
+</script>
+<script>
+    function viewApplicantProfile(userId) {
+        if (userId) {
+            window.location.href = `/Job/ApplicantProfile?userId=${userId}`;
+        }
+    }
 </script>

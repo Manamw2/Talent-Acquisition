@@ -15,10 +15,10 @@ namespace Models
         public int ApplicationId { get; set; }
 
         [Required]
-        public int ApplicantId { get; set; }
+        public string? ApplicantId { get; set; }
 
         [ForeignKey("ApplicantId")]
-        public Applicant Applicant { get; set; }
+        public AppUser Applicant { get; set; }
 
         [Required]
         public int JobId { get; set; }
@@ -31,7 +31,15 @@ namespace Models
 
         [Required]
         [StringLength(20)]
-        public string Status { get; set; } = "Pending"; // Default value
+        public Status Status { get; set; } 
 
+    }
+
+    public enum Status
+    {
+        Applied,
+        UnderReviewing,
+        NotMached,
+        Pending
     }
 }

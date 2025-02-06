@@ -9,6 +9,7 @@ using DataAccess.Repository.IRepository;
 using DataAccess.Repository;
 using System.Net.Mail;
 using System.Net;
+using HrBackOffice.Helper;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,7 +23,10 @@ builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
-
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped(typeof(IRepository<Job>), typeof(Repository<Job>));
+builder.Services.AddScoped(typeof(IRepository<JobApplication>), typeof(Repository<JobApplication>));
+builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddRazorPages();
 
 // Register SmtpClient as a transient service
@@ -32,7 +36,7 @@ builder.Services.AddTransient(_ => new SmtpClient("smtp.gmail.com", 587)
     UseDefaultCredentials = false,
     Credentials = new NetworkCredential(
         userName: "mahmoud.amr.nabil23@gmail.com",
-        password: "ilkx xyer zybb muti"
+        password: "xhkc xizl herr lnrj"
     )
 });
 

@@ -1,0 +1,146 @@
+﻿@model IEnumerable<JobViewModel>
+
+@{
+    ViewData["Title"] = "Job Board";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Left Sidebar -->
+        <div class="col-md-3 border-end p-4">
+            <h5 class="mb-4">Latest Jobs</h5>
+            <div class="list-group">
+                @foreach (var job in Model)
+                {
+                    <a href="#" class="list-group-item list-group-item-action job-card"
+                       data-job-id="@job.JobId"
+                       data-job-title="@job.Title"
+                       data-job-location="@job.DepartmentName"
+                       data-job-description="@job.Description"
+                       data-job-application-count="@job.ApplicationCount"
+                       data-job-type="@job.JobType">
+                        <h6 class="mb-1">@job.Title</h6>
+                        <div class="job-location">📍 SoftTrend Headquarter</div>
+                        <div class="mb-1">@job.DepartmentName</div>
+                        <div class="category-tag mt-1">Valid till:@job.EndDate</div>
+                    </a>
+                }
+            </div>
+        </div>
+
+
+        <!-- Main Content -->
+        <div class="col-md-6 p-4">
+            <div class="job-detail-card">
+                @if (Model.Any())
+                {
+                    var firstJob = Model.First();
+                    <div class="d-flex justify-content-between align-items-start mb-4">
+                        <h4 id="job-title">@firstJob.Title</h4>
+                        <button id="applyButton" data-job-id="@firstJob.JobId" class="btn btn-primary">
+                            Apply for this Job
+                        </button>
+                    </div>
+                    <div class="job-description" id="job-description">
+                        <h5>Description:</h5>
+                        <p>@firstJob.Description</p>
+
+                        <div class="mt-3">
+                            <span class="badge bg-info">@firstJob.ApplicationCount Applications</span>
+                            <span class="badge bg-secondary ms-2">@firstJob.JobType</span>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Right Sidebar -->
+        <div class="col-md-3 border-start p-4">
+            <h5 class="mb-4">Filter by Job Type</h5>
+            <select class="form-select filter-dropdown" id="job-type-filter">
+                <option value="all">All</option>
+                @foreach (JobType jobType in Enum.GetValues(typeof(JobType)))
+                {
+                    <option value="@jobType.ToString().ToLower()">@jobType</option>
+                }
+            </select>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $("#applyButton").click(function () {
+                var jobId = $(this).data("job-id");
+                console.log(jobId);
+                var baseUrl = window.location.origin + '/TalentAcquisition/Applicants/ApplyForJob';
+                console.log(baseUrl);
+                        $.ajax({
+            url: baseUrl,
+            type: 'GET',
+            contentType: 'application/x-www-form-urlencoded',
+            data: {
+                jobId:parseInt(jobId),
+                // __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+            },
+            success: function (response) {
+                alert(response.message);
+            },
+            error: function (xhr, status, error) {
+                alert("An error occurred: " + xhr.responseText);
+                console.log("XHR:", xhr);
+            }
+        });
+                });
+            });
+    
+    </script>
+
+    <script>
+             $(document).ready(function () {
+            // Handle click event on job cards
+            $('.job-card').on('click', function (e) {
+                e.preventDefault(); // Prevent default link behavior
+
+                // Get job details from data attributes
+                const jobId = $(this).data('job-id');
+                const jobTitle = $(this).data('job-title');
+                const jobLocation = $(this).data('job-location');
+                const jobDescription = $(this).data('job-description');
+                const jobApplicationCount = $(this).data('job-application-count');
+                const jobType = $(this).data('job-type');
+
+                // Update the middle section with the clicked job's details
+                $('#job-title').text(jobTitle);
+                $('#job-location').text(`📍 ${jobLocation}`);
+                $('#job-description p').text(jobDescription);
+                $('#job-description .badge.bg-info').text(`${jobApplicationCount} Applications`);
+                $('#job-description .badge.bg-secondary').text(jobType);
+
+                // Update the Apply button's data-job-id attribute
+                $('#applyButton').attr('data-job-id', jobId);
+            });
+
+            // Handle job type filtering
+            $('#job-type-filter').on('change', function () {
+                const selectedJobType = $(this).val().toLowerCase(); // Get the selected job type
+
+                // Loop through all job cards
+                $('.job-card').each(function () {
+                    const jobType = $(this).data('job-type').toLowerCase(); // Get the job type of the card
+
+                    // Show or hide the job card based on the selected filter
+                    if (selectedJobType === 'all' || jobType === selectedJobType) {
+                        $(this).show(); // Show the job card
+                    } else {
+                        $(this).hide(); // Hide the job card
+                    }
+                });
+            });
+        });
+    </script>
+
+ @*    <script src="~/js/job-board.js"></script> *@
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+}

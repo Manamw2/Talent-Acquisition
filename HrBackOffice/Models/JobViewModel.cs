@@ -4,9 +4,13 @@ namespace HrBackOffice.Models
 {
     public class JobViewModel
     {
-        public int? Id { get; set; }
+        public int JobId { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
-        public string BatchName { get; set; } // Name of the associated batch
+        public JobType JobType { get; set; }
+        public string BatchName { get; set; }
+        public DateTime EndDate { get; set; }
+        public string DepartmentName { get; set; }
+        public int ApplicationCount { get; set; }
     }
 }

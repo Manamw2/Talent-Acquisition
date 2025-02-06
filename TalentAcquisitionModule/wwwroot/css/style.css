@@ -1,88 +1,57 @@
-html {
-  font-size: 14px;
+﻿
+
+.navbar {
+    transition: all 0.5s ease-in-out;
 }
 
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+.header .slide {
+    width: 70%;
+}
+.navbar {
+    background-color: black !important; /* Always dark */
+    transition: background-color 0.3s ease-in-out; /* Smooth transition */
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
-}
-
-body {
-  margin-bottom: 60px;
-}
-
-.hero-section {
-    background: url('/Content/images/bg-image.jpg') no-repeat center center;
+.invitation-bg {
+    background: linear-gradient(to bottom right, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url("~/images/invitation-background.jpg") center center no-repeat;
     background-size: cover;
-    text-align: left;
-    padding: 100px 0;
-    color: white;
 }
 
-    .hero-section h1 {
-        font-size: 3rem;
-        font-weight: bold;
+@media (max-width: 992px) {
+    .navbar {
+        background: var(--bs-dark);
     }
 
-.italic {
-    font-style: italic;
-}
+    .header {
+        height: 800px !important;
+        min-height: 100px !important;
+    }
 
-.bold {
-    font-weight: bold;
-    color: red;
-}
+        .header .slide {
+            width: 90%;
+        }
 
-.description {
-    font-size: 1.2rem;
-    max-width: 600px;
-}
+        .header p {
+            width: 100% !important;
+            font-size: 16px;
+        }
 
-.cta-buttons {
-    margin-top: 20px;
+    .summary {
+        width: 90% !important;
+    }
 }
-
-.btn-red {
-    background: red;
-    color: white;
-    padding: 10px 20px;
-    border-radius: 5px;
-    text-decoration: none;
-    font-size: 1rem;
-}
-
-.btn-light {
-    background: white;
-    color: black;
-    padding: 10px 20px;
-    border-radius: 5px;
-    text-decoration: none;
-    font-size: 1rem;
-    margin-left: 10px;
-}
-.nav-item {
-    background: blue;
-    color: white;
-    padding: 10px 20px;
-    border-radius: 5px;
-    text-decoration: none;
-    font-size: 1rem;
+body {
+    padding-top: 70px; /* Adjust based on navbar height */
 }
 .footer {
     background-color: #000;
     color: #fff;
     padding: 40px 0 0 0;
     font-family: Arial, sans-serif;
+    position: fixed; /* or absolute, depending on your needs */
+    bottom: 0;
+    left: 0;
+    width: 100%;
 }
 
 .footer-content {
@@ -92,6 +61,8 @@ body {
     grid-template-columns: 1.5fr 1fr 1fr 1fr;
     gap: 30px;
     padding: 0 20px;
+    min-height: 100vh; /* Ensures minimum height of viewport */
+    padding-bottom: [footer-height]px;
 }
 
 .footer-section h3 {
@@ -134,7 +105,7 @@ body {
     }
 
         .partners-list a::before {
-            content: "�";
+            content: "»";
             margin-right: 10px;
             color: #ff0000;
         }
@@ -184,3 +155,4 @@ body {
         color: #ff0000;
         text-decoration: none;
     }
+

@@ -1,22 +1,54 @@
 ﻿@model RoleViewModel
-@{
-    ViewData["Title"] = "Edit";
-}
 
-<h1>Edit Role</h1>
+<div class="container-fluid px-4">
+    <h1 class="mt-4 mb-4">Edit Role</h1>
 
-<hr />
-<form method="post" asp-action="Edit" class="mt-4">
-    <input asp-for="Id" class="form-control" hidden />
-    <div class="form-group mt-2">
-        <label asp-for="Name" class="form-control"></label>
-        <input asp-for="Name" class="form-control" />
+    <div class="row">
+        <div class="col-xl-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-edit me-1"></i>
+                    Role Information
+                </div>
+                <div class="card-body">
+                    <form method="post" asp-action="Edit">
+                        <input asp-for="Id" type="hidden" />
 
-        <div class="input-group mt-2 justify-content-center">
-            <button type="submit" class="btn btn-success m-2">Save</button>
-            <a class="btn btn-secondary m-2" asp-action="Index">Back To List</a>
+                        <div class="mb-3">
+                            <label asp-for="Name" class="small mb-1 fw-bold">Role Name</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-shield-alt"></i>
+                                </span>
+                                <input asp-for="Name" class="form-control" placeholder="Enter role name" />
+                            </div>
+                            <span asp-validation-for="Name" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-1"></i> Back to List
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
+</div>
 
-</form>
+@section Scripts {
+    <script>
+        function confirmDeleteRole(roleId, roleName) {
+            document.getElementById('roleIdToDelete').value = roleId;
+            document.getElementById('roleNameToDelete').textContent = roleName;
+            var modal = new bootstrap.Modal(document.getElementById('deleteRoleModal'));
+            modal.show();
+        }
+    </script>
+    <partial name="_ValidationScriptsPartial" />
+}
 

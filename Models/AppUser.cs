@@ -16,5 +16,8 @@ namespace Models
         public string? MethodOfContact { get; set; }
         public DateOnly? BirthDate { get; set; }
         public string? CvUrl { get; set; }
+        public List<ApplicantExperience> ApplicantExperiences { get; set; } = new List<ApplicantExperience>();
+        public List<ApplicantSkill> ApplicantSkills { get; set; } = new List<ApplicantSkill>();
+        public List<ApplicantProject> ApplicantProjects { get; set; } = new List<ApplicantProject>();
     }
 }

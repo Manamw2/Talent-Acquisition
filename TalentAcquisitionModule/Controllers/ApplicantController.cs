@@ -1,10 +1,10 @@
 ﻿using AutoMapper;
 using DataAccess.Repository.IRepository;
-using HrBackOffice.Models;
+using Models;
+using Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Models;
 using System.Security.Claims;
 
 namespace TalentAcquisitionModule.Controllers
@@ -51,10 +51,9 @@ namespace TalentAcquisitionModule.Controllers
 
                 var jobApplication = new JobApplication
                 {
-                    ApplicantId = applicantId,
+                    UserId = applicantId,
                     JobId = jobId,
                     AppliedDate = DateTime.UtcNow,
-                    Status = Status.Applied
                 };
 
                 await _unitOfWork.JobApplicationRepository.AddAsync(jobApplication);

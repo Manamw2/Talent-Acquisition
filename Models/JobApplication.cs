@@ -15,11 +15,10 @@ namespace Models
         public int ApplicationId { get; set; }
 
         [Required]
-        public string? ApplicantId { get; set; }
+        public string UserId { get; set; } // Foreign Key to AppUser
 
-        [ForeignKey("ApplicantId")]
-        public AppUser Applicant { get; set; }
-
+        [ForeignKey("UserId")]
+        public AppUser AppUser { get; set; } // Navigation Property
         [Required]
         public int JobId { get; set; }
 
@@ -31,10 +30,9 @@ namespace Models
 
         [Required]
         [StringLength(20)]
-        public Status Status { get; set; } 
+        public string Status { get; set; } = "Pending"; // Default value
 
     }
-
     public enum Status
     {
         Applied,

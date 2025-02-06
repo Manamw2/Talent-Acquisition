@@ -1,13 +1,16 @@
 ﻿using AutoMapper;
 using DataAccess.Repository.IRepository;
 using HrBackOffice.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Models;
 
 
 namespace HrBackOffice.Controllers
 {
-	public class BatchController : Controller
+    [Authorize]
+    public class BatchController : Controller
 	{
         private readonly IUnitOfWork _unitOfWork;
 
@@ -43,22 +46,68 @@ namespace HrBackOffice.Controllers
             }
             return View(batch);
         }
+        [HttpPost]
+        public async Task<IActionResult> CreateBatch(Batch model)
+        {
+            if (ModelState.IsValid)
+            {
+                // Save batch to database (example using EF Core)
+                await _unitOfWork.BatchRepository.AddAsync(model);
+                await _unitOfWork.SaveAsync();
+                TempData["NewBatchId"] = model.BatchId;
+                return RedirectToAction("Create", "Job");
+            }
 
-       
+            return PartialView("_CreateBatchPartial", model);
+        }
+        #region Comm
+        //[HttpPost]
+        //        [Route("Batch/CreateBatchAjax")]
 
-		public async Task<IActionResult> Delete(int id)
-		{
-			var batch = await _unitOfWork.BatchRepository.GetFirstOrDefaultAsync(filter: b => b.BatchId == id);
+        //        public async Task<IActionResult> CreateBatchAjax([FromBody] Batch batch)
+        //        {
+        //            if (batch == null || string.IsNullOrWhiteSpace(batch.BatchName))
+        //            {
+        //                return BadRequest("Invalid batch data");
+        //            }
+
+        //            await _unitOfWork.BatchRepository.AddAsync(batch);
+        //            await _unitOfWork.SaveAsync();
+
+        //            return Json(new { batchId = batch.BatchId, batchName = batch.BatchName });
+        //        }
+        #endregion
+
+
+
+
+        public async Task<IActionResult> Delete(int id)
+        {
+            var batch = await _unitOfWork.BatchRepository
+                .GetFirstOrDefaultAsync(filter: b => b.BatchId == id, includeProperties: "Job");
+
             if (batch == null)
             {
-                return NotFound(); // Return 404 if the batch is not found
+                return NotFound();
             }
+
+            // Check if any jobs are assigned to this batch
+            var isBatchAssigned = await _unitOfWork.JobRepository
+                .GetFirstOrDefaultAsync(j => j.BatchId == id) != null;
+
+            if (isBatchAssigned)
+            {
+                TempData["Error"] = "Cannot delete batch because it is assigned to a job.";
+                return RedirectToAction("Index");
+            }
+
             _unitOfWork.BatchRepository.Remove(batch);
+            await _unitOfWork.SaveAsync();
 
-			await _unitOfWork.SaveAsync();
+            TempData["Success"] = "Batch deleted successfully.";
+            return RedirectToAction("Index");
+        }
 
-			return RedirectToAction("Index");
-		}
 
         public async Task<IActionResult> Edit(int id)
         {

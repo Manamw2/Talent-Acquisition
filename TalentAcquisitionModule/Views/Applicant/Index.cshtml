@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Job Board";
+    // Layout = "~/Views/Shared/_ApplicantHomeNav.cshtml";
 }
 
 <div class="container-fluid">
@@ -43,7 +44,8 @@
                     </div>
                     <div class="job-description" id="job-description">
                         <h5>Description:</h5>
-                        <p>@firstJob.Description</p>
+                        <hr />
+                        @Html.Raw(firstJob.Description)
 
                         <div class="mt-3">
                             <span class="badge bg-info">@firstJob.ApplicationCount Applications</span>
@@ -114,7 +116,7 @@
                 // Update the middle section with the clicked job's details
                 $('#job-title').text(jobTitle);
                 $('#job-location').text(`📍 ${jobLocation}`);
-                $('#job-description p').text(jobDescription);
+                $('#job-description p').html(jobDescription);
                 $('#job-description .badge.bg-info').text(`${jobApplicationCount} Applications`);
                 $('#job-description .badge.bg-secondary').text(jobType);
 

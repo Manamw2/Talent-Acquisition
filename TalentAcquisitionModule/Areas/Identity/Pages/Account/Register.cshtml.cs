@@ -20,8 +20,10 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Models;
+using TalentAcquisitionModule.Services;
 
 namespace TalentAcquisitionModule.Areas.Identity.Pages.Account
 {
@@ -33,12 +35,13 @@ namespace TalentAcquisitionModule.Areas.Identity.Pages.Account
         private readonly IUserEmailStore<AppUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
-
+        private readonly IMemoryCache _memoryCache;
         public RegisterModel(
             UserManager<AppUser> userManager,
             IUserStore<AppUser> userStore,
             SignInManager<AppUser> signInManager,
             ILogger<RegisterModel> logger,
+            IMemoryCache memoryCache,
             IEmailSender emailSender)
         {
             _userManager = userManager;
@@ -47,6 +50,7 @@ namespace TalentAcquisitionModule.Areas.Identity.Pages.Account
             _signInManager = signInManager;
             _logger = logger;
             _emailSender = emailSender;
+            _memoryCache = memoryCache;
         }
 
         /// <summary>
@@ -148,27 +152,7 @@ namespace TalentAcquisitionModule.Areas.Identity.Pages.Account
 
         public async Task OnGetAsync(string returnUrl = null)
         {
-            IEnumerable<string> EducationLevels = ["Undergraduate", "Graduate"];
-            IEnumerable<string> EnglishProficiencyLevels = ["Beginner", "Intermediate", "Advanced", "Fluent"];
-            IEnumerable<string> MethodOfContactOptions = ["Email", "Phone"];
-            Input = new()
-            {
-                EducationLevels = EducationLevels.Select(u => new SelectListItem
-                {
-                    Text = u,
-                    Value = u
-                }),
-                EnglishProficiencyLevels = EnglishProficiencyLevels.Select(u => new SelectListItem
-                {
-                    Text = u,
-                    Value = u
-                }),
-                MethodOfContactOptions = MethodOfContactOptions.Select(u => new SelectListItem
-                {
-                    Text = u,
-                    Value = u
-                }),
-            };
+            InitDropDowns();
             ReturnUrl = returnUrl;
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
         }
@@ -207,6 +191,7 @@ namespace TalentAcquisitionModule.Areas.Identity.Pages.Account
                     catch (Exception ex)
                     {
                         ModelState.AddModelError(string.Empty, $"CV upload failed: {ex.Message}");
+                        InitDropDowns();
                         return Page();
                     }
                 }
@@ -225,16 +210,12 @@ namespace TalentAcquisitionModule.Areas.Identity.Pages.Account
                     _logger.LogInformation("User created a new account with password.");
 
                     var userId = await _userManager.GetUserIdAsync(user);
-                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                    code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-                    var callbackUrl = Url.Page(
-                        "/Account/ConfirmEmail",
-                        pageHandler: null,
-                        values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
-                        protocol: Request.Scheme);
+                    EmailConfirmationService emailService = new EmailConfirmationService(_memoryCache);
+                    var code = emailService.GenerateRandomCode(); // Generate a random 6-digit code
+                    emailService.StoreConfirmationCode(userId, code); // Store the code in memory cache
 
                     await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
-                        $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                        $"Your confirmation code is: <strong>{code}</strong>. Please enter this code on the confirmation page to verify your account.");
 
                     if (_userManager.Options.SignIn.RequireConfirmedAccount)
                     {
@@ -249,11 +230,18 @@ namespace TalentAcquisitionModule.Areas.Identity.Pages.Account
                 foreach (var error in result.Errors)
                 {
                     ModelState.AddModelError(string.Empty, error.Description);
+                    InitDropDowns();
                     return Page();
                 }
             }
 
             // If we got this far, something failed, redisplay form
+            InitDropDowns();
+            return Page();
+        }
+
+        private void InitDropDowns()
+        {
             IEnumerable<string> EducationLevels = ["Undergraduate", "Graduate"];
             IEnumerable<string> EnglishProficiencyLevels = ["Beginner", "Intermediate", "Advanced", "Fluent"];
             IEnumerable<string> MethodOfContactOptions = ["Email", "Phone"];
@@ -275,7 +263,6 @@ namespace TalentAcquisitionModule.Areas.Identity.Pages.Account
                     Value = u
                 }),
             };
-            return Page();
         }
 
         private AppUser CreateUser()

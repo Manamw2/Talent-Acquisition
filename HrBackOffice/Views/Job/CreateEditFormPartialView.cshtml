@@ -1,0 +1,119 @@
+﻿@model JobViewModel
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4 mb-4">@(Model.JobId == 0 ? "Create New Job" : "Edit Job")</h1>
+
+    <form asp-action="@(Model.JobId == 0 ? "Create" : "Edit")" method="post">
+        <input type="hidden" asp-for="JobId" />
+
+        <div class="row">
+            <div class="col-xl-8">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <i class="fas fa-edit me-1"></i>
+                        Job Information
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="Title" class="small mb-1 fw-bold">Job Title</label>
+                                    <input asp-for="Title" class="form-control" />
+                                    <span asp-validation-for="Title" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="JobType" class="small mb-1 fw-bold">Job Type</label>
+                                    <select asp-for="JobType" asp-items="Model.JobTypes" class="form-control">
+                                        <option value="">-- Select Job Type --</option>
+                                    </select>
+                                    <span asp-validation-for="JobType" class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Description" class="small mb-1 fw-bold">Description</label>
+                            <div id="editor" style="height: 300px;"></div>
+                            <textarea id="Description" asp-for="Description" class="d-none"></textarea>
+                            <span asp-validation-for="Description" class="text-danger small"></span>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="DepartmentId" class="small mb-1 fw-bold">Department</label>
+                                    <select asp-for="DepartmentId" asp-items="Model.Departments" class="form-control">
+                                        <option value="">Select Department</option>
+                                    </select>
+                                    <span asp-validation-for="DepartmentId" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="BatchId" class="small mb-1 fw-bold">Batch</label>
+                                    <div class="input-group">
+                                        <select id="BatchDropdown" asp-for="BatchId" asp-items="Model.Batches" class="form-control">
+                                            <option value="">Select Batch</option>
+                                        </select>
+                                        @* <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addBatchModal">
+                                            <i class="fas fa-plus"></i>
+                                        </button> *@
+                                    </div>
+                                    <span asp-validation-for="BatchId" class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-1"></i> Back to List
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i> Save Changes
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@* <!-- Add Batch Modal -->
+<!-- Add Batch Modal -->
+<div class="modal fade" id="addBatchModal" tabindex="-1" aria-labelledby="addBatchModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addBatchModalLabel">Create New Batch</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <partial name="_CreateBatchPartial" model="new Batch()" />
+            </div>
+        </div>
+    </div>
+</div>
+ *@
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    var quill = new Quill('#editor', {
+        theme: 'snow'
+    });
+
+    var description = document.getElementById("Description").value;
+    if (description) {
+        quill.root.innerHTML = description;
+    }
+
+    quill.on('text-change', function () {
+        document.getElementById("Description").value = quill.root.innerHTML;
+    });
+
+    
+
+</script>

@@ -1,0 +1,10 @@
+﻿@model JobViewModel
+
+@{
+    ViewData["Title"] = "Create Job";
+}
+
+
+<form asp-action="Create">
+    @await Html.PartialAsync("CreateEditFormPartialView", Model)
+</form>

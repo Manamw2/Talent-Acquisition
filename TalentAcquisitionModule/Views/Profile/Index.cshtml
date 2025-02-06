@@ -13,12 +13,13 @@
         @Html.Partial("_UserInfo", Model.ProfileInfoVM)
     </div>
     <div class="tab-pane fade" id="user-applications" role="tabpanel" aria-labelledby="user-applications-tab">
-        <partial name="_UserApplications" />
+        @Html.Partial("_UserApplications", Model.ApplicationVMs)
     </div>
     <div class="tab-pane fade" id="user-settings" role="tabpanel" aria-labelledby="user-settings-tab">
         @Html.Partial("_UserSettings", Model.ChangePasswordViewModel)
     </div>
 </div>
+
 
 @section Scripts {
     <script>
@@ -231,6 +232,12 @@
                 icon.classList.replace("bi-eye-slash", "bi-eye");
             }
         }
+        // Disable the register button after the first click
+        document.getElementById("save-changes").addEventListener("click", function (e) {
+            this.disabled = true; // Disable the button
+            this.innerText = "Saving Changes..."; // Optionally change the button text
+            this.form.submit(); // Submit the form
+        });
     </script>
     <partial name="_ValidationScriptsPartial" />
 }

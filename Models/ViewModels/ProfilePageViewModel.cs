@@ -11,5 +11,6 @@ namespace Models.ViewModels
     {
         public ProfileInfoVM ProfileInfoVM { get; set; }
         public ChangePasswordViewModel ChangePasswordViewModel { get; set; }
+        public List<ApplicationVM> ApplicationVMs { get; set; } = new List<ApplicationVM>();
     }
 }

@@ -16,6 +16,7 @@ namespace DataAccess.Repository
         public IRepository<Job> JobRepository { get; private set; }
         public IRepository<Batch> BatchRepository { get; private set; }
         public IRepository<Department> DepRepository { get; private set; }
+        public IRepository<JobApplication> JobApplicationRepository { get; private set; }
 
         public UnitOfWork(ApplicationDbContext context)
         {
@@ -23,6 +24,7 @@ namespace DataAccess.Repository
             JobRepository = new Repository<Job>(_context);
             BatchRepository = new Repository<Batch>(_context);
             DepRepository = new Repository<Department>(_context);
+            JobApplicationRepository = new Repository<JobApplication>(_context);
         }
 
         public async Task SaveAsync()

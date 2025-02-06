@@ -39,7 +39,7 @@ builder.Services.AddTransient(_ => new SmtpClient("smtp.gmail.com", 587)
     UseDefaultCredentials = false,
     Credentials = new NetworkCredential(
         userName: "mahmoud.amr.nabil23@gmail.com",
-        password: "mhlu kfzs jbda mfyy"
+        password: "ccuw ldxe jlje qrnx"
     )
 });
 // Register SmtpEmailSender as a transient service

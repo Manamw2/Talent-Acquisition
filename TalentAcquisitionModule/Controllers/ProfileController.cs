@@ -1,12 +1,17 @@
-﻿using DataAccess.Migrations;
+﻿using DataAccess.Data;
+using DataAccess.Migrations;
+using DataAccess.Repository.IRepository;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Shared;
 using Models;
 using Models.ViewModels;
 using System.Security.Claims;
+using TalentAcquisitionModule.Services;
 
 namespace TalentAcquisitionModule.Controllers
 {
@@ -15,10 +20,16 @@ namespace TalentAcquisitionModule.Controllers
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
-        public ProfileController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager)
+        private readonly ApplicationDbContext _context;
+        private readonly IEmailSender _emailSender;
+        private readonly IMemoryCache _memoryCache;
+        public ProfileController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, ApplicationDbContext context, IEmailSender emailSender, IMemoryCache memoryCache)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _context = context;
+            _memoryCache = memoryCache;
+            _emailSender = emailSender;
         }
         public async Task<IActionResult> Index()
         {
@@ -62,7 +73,19 @@ namespace TalentAcquisitionModule.Controllers
                     Description = project.Description
                 }).ToList()
             };
+            
             ProfilePageViewModel profilePageViewModel = new ProfilePageViewModel();
+            var jobApplicaions =  await _context.JobApplications.Where(u => u.UserId == userId).Include(u => u.Job).ThenInclude(u => u.Department).ToListAsync();
+            profilePageViewModel.ApplicationVMs = jobApplicaions.Select(x => new ApplicationVM
+            {
+                Id = x.ApplicationId,
+                JobTitle = x.Job.Title,
+                JobDescription = x.Job.Description,
+                DepartmentName = x.Job.Department.Name,
+                JobType = x.Job.JobType.ToString(),
+                Status = x.Status,
+                ApplicationDate = x.AppliedDate
+            }).ToList();
             profilePageViewModel.ProfileInfoVM = profileInfoVM;
             return View(profilePageViewModel);
         }
@@ -140,10 +163,20 @@ namespace TalentAcquisitionModule.Controllers
 
             if (oldEmail != profileInfoVM.Email)
             {
+                appUser.UserName = profileInfoVM.Email;
                 appUser.EmailConfirmed = false;
                 // Single database update
                 await _userManager.UpdateAsync(appUser);
-                return RedirectToPage("RegisterConfirmation", new { email = profileInfoVM.Email });
+
+                //send mail
+                EmailConfirmationService emailService = new EmailConfirmationService(_memoryCache);
+                var code = emailService.GenerateRandomCode(); // Generate a random 6-digit code
+                emailService.StoreConfirmationCode(userId, code); // Store the code in memory cache
+
+                await _emailSender.SendEmailAsync(profileInfoVM.Email, "Confirm your email",
+                    $"Your confirmation code is: <strong>{code}</strong>. Please enter this code on the confirmation page to verify your account.");
+
+                return RedirectToPage("/Account/RegisterConfirmation", new { area = "Identity", email = profileInfoVM.Email });
             }
             // Single database update
             await _userManager.UpdateAsync(appUser);

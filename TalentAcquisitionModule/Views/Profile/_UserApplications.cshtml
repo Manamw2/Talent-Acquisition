@@ -1,4 +1,61 @@
-﻿<div>
-    <h3>User Applications</h3>
-    <p>List of user applications...</p>
+﻿@model List<ApplicationVM>
+<div class="container">
+    <div class="row">
+        @foreach (var application in Model)
+        {
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="application-card card">
+                    <div class="card-header">
+                        <h5>@application.JobTitle</h5>
+                        <span class="badge @GetStatusBadgeClass(application.Status)">@application.Status</span>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Department:</strong> @application.DepartmentName</p>
+                        <p><strong>Applied On:</strong> @application.ApplicationDate.ToString("yyyy-MM-dd")</p>
+                        <p><strong>Job Type:</strong> @application.JobType</p>
+                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#modal-@application.Id">
+                            View Details
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal for each application -->
+            <div class="modal fade" id="modal-@application.Id" tabindex="-1" role="dialog" aria-labelledby="modalLabel-@application.Id" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalLabel-@application.Id">@application.JobTitle</h5>
+                        </div>
+                        <div class="modal-body">
+                            <p><strong>Department:</strong> @application.DepartmentName</p>
+                            <p><strong>Applied On:</strong> @application.ApplicationDate.ToString("yyyy-MM-dd")</p>
+                            <p><strong>Job Type:</strong> @application.JobType</p>
+                            <p><strong>Description:</strong> @application.JobDescription</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
 </div>
+
+@functions {
+    public string GetStatusBadgeClass(string status)
+    {
+        switch (status)
+        {
+            case "Applied":
+                return "badge-warning";
+            case "Approved":
+                return "badge-success";
+            case "Rejected":
+                return "badge-danger";
+            default:
+                return "badge-secondary";
+        }
+    }
+}

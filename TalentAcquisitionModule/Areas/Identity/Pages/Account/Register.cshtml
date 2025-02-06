@@ -150,7 +150,7 @@
 
                         <!-- Submit Button -->
                         <div class="text-center">
-                            <button type="submit" class="btn btn-danger btn-lg w-100">Register</button>
+                            <button type="submit" class="btn btn-danger btn-lg w-100" id="registerButton">Register</button>
                         </div>
                     </form>
                 </div>
@@ -208,6 +208,13 @@
                 passwordInput.type = "password";
                 icon.classList.replace("bi-eye-slash", "bi-eye");
             }
+        });
+
+        // Disable the register button after the first click
+        document.getElementById("registerButton").addEventListener("click", function (e) {
+            this.disabled = true; // Disable the button
+            this.innerText = "Registering..."; // Optionally change the button text
+            this.form.submit(); // Submit the form
         });
     </script>
 }

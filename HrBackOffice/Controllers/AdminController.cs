@@ -22,32 +22,35 @@ namespace HrBackOffice.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(LoginDto login)
         {
+            if (!ModelState.IsValid)
+            {
+                return View(login);
+            }
+
             var user = await _userManager.FindByEmailAsync(login.Email);
 
             if (user == null)
             {
-                ModelState.AddModelError("Email", "Invalid Email");
-                return RedirectToAction(nameof(Login));
+                ModelState.AddModelError("Email", "Invalid email or password");
+                return View(login);
             }
 
             var result = await _signInManager.CheckPasswordSignInAsync(user, login.Password, false);
 
             if (!result.Succeeded)
             {
-                ModelState.AddModelError(string.Empty, "Invalid Credentials");
-                return RedirectToAction(nameof(Login));
+                ModelState.AddModelError(string.Empty, "Invalid email or password");
+                return View(login);
             }
 
             var roles = await _userManager.GetRolesAsync(user);
             if (!roles.Contains("Admin") && !roles.Contains("HR"))
             {
-                ModelState.AddModelError(string.Empty, "You are not authorized");
-                return RedirectToAction(nameof(Login));
+                ModelState.AddModelError(string.Empty, "You are not authorized to access this system");
+                return View(login);
             }
 
-            // 🔥 FIX: This ensures the user is logged in with roles
             await _signInManager.SignInAsync(user, isPersistent: false);
-
             return RedirectToAction("Index", "Job");
         }
 

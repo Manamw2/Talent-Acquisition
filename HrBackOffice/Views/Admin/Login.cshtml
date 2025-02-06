@@ -15,6 +15,15 @@
 
                 <!-- Login Form -->
                 <form method="post" asp-action="Login" asp-controller="Admin">
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger">
+                            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                            {
+                                <p>@error.ErrorMessage</p>
+                            }
+                        </div>
+                    }
                     <div class="form-floating mb-4">
                         <input asp-for="Email" class="form-control" id="inputEmail" type="email" placeholder="name@example.com" required />
                         <label asp-for="Email" for="inputEmail">Email address</label>

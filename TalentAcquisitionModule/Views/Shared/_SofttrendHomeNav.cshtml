@@ -1,0 +1,123 @@
+﻿@* <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Your Application</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+    <!-- Add Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <!-- Photo on the Left -->
+            <a class="navbar-brand" href="#">
+                <img src="~/images/logo.png" alt="Logo" width="130" height="50" class="d-inline-block align-text-top">
+            </a>
+
+            <li class="nav-item">
+                <a class="nav-link text-dark" asp-area="" asp-controller="Applicant" asp-action="Index"> <button class="btn apply-btn">Available Jobs</button></a>
+            </li>
+
+            <!-- Profile Icon on the Right -->
+            <div class="d-flex">
+                <a class="nav-link" href="#">
+                    <i class="fas fa-user-circle fa-2x"></i>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container-fluid">
+        @RenderBody()
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html> *@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/fontawesome.css" />
+    <link rel="stylesheet" href="~/css/bootstrap.css" />
+    <link rel="stylesheet" href="~/css/style.css" />
+    <link rel="icon" href="~/images/st.png" />
+    <title>SoftTrend Carrers</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg fixed-top navbar-dark">
+        <div class="container">
+            <a href="index.html" class="navbar-brand">
+                <img src="~/images/logo.png" alt="" width="150" />
+            </a>
+            <a class="navbar-brand" href="#">
+@*                 <img src="C:\Users\hp\Downloads\hr/logo.png" alt="Logo" width="200" height="40" class="d-inline-block align-text-top">
+ *@            </a>
+            <button class="navbar-toggler"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#navbarNavDropdown"
+                    aria-controls="navbarNavDropdown"
+                    aria-expanded="false"
+                    aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavDropdown">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="#home">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#discover">Services</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-area="" asp-controller="Applicant" asp-action="Index">Jobs</a>
+
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#takeaways">About Us</a>
+                    </li>
+                </ul>
+                <span class="nav-item">
+                    <span class="fa-stack">
+                        <a href="#">
+                            <i class="fas fa-circle fa-stack-2x"></i>
+                            <i class="fab fa-facebook-f fa-stack-1x text-white"></i>
+                        </a>
+                    </span>
+                </span>
+                <span class="nav-item">
+                    <span class="fa-stack">
+                        <a href="#">
+                            <i class="fas fa-circle fa-stack-2x"></i>
+                            <i class="fab fa-twitter fa-stack-1x text-white"></i>
+                        </a>
+                    </span>
+                </span>
+            </div>
+        </div>
+    </nav>
+    <div class="container-fluid">
+        @RenderBody()
+    </div>
+    <script src="~/js/jquery-3.7.1.js"></script>
+    <script src="~/js/script.js"></script>
+    <script src="~/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

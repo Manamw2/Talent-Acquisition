@@ -68,7 +68,7 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
-    <script>
+   @*  <script>
         // Add date validation
         document.addEventListener('DOMContentLoaded', function () {
             const startDate = document.querySelector('[asp-for="StartDate"]');
@@ -82,5 +82,5 @@
                 startDate.max = this.value;
             });
         });
-    </script>
+    </script> *@
 }

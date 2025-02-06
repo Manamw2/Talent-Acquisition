@@ -1,0 +1,92 @@
+﻿@model AppUser
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4 mb-4">Applicant Profile</h1>
+
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">
+                <i class="fas fa-user-circle me-2"></i>@Model.DisplayName
+            </h4>
+        </div>
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <p><i class="fas fa-envelope me-2"></i><strong>Email:</strong> @Model.Email</p>
+                    <p><i class="fas fa-graduation-cap me-2"></i><strong>Faculty:</strong> @Model.Faculty</p>
+                    <p><i class="fas fa-user-graduate me-2"></i><strong>Education Level:</strong> @Model.EducationLevel</p>
+                </div>
+                <div class="col-md-6">
+                    <p><i class="fas fa-language me-2"></i><strong>English Level:</strong> @Model.EnglishLevel</p>
+                    <p><i class="fas fa-phone-alt me-2"></i><strong>Contact Method:</strong> @Model.MethodOfContact</p>
+                    <p><i class="fas fa-birthday-cake me-2"></i><strong>Birth Date:</strong> @Model.BirthDate?.ToShortDateString()</p>
+                </div>
+            </div>
+
+            @if (Model.ApplicantExperiences.Any())
+            {
+                <div class="card mb-3">
+                    <div class="card-header bg-secondary text-white">
+                        <i class="fas fa-briefcase me-2"></i>Experience
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        @foreach (var exp in Model.ApplicantExperiences)
+                        {
+                            <li class="list-group-item">
+                                <strong>@exp.Position</strong> at <em>@exp.Company</em>
+                                <span class="text-muted">(@exp.StartDate?.ToShortDateString() - @exp.EndDate?.ToShortDateString() ?? "Present")</span>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            @if (Model.ApplicantSkills.Any())
+            {
+                <div class="card mb-3">
+                    <div class="card-header bg-success text-white">
+                        <i class="fas fa-cogs me-2"></i>Skills
+                    </div>
+                    <div class="card-body">
+                        @foreach (var skill in Model.ApplicantSkills)
+                        {
+                            <span class="badge bg-info text-dark me-2 mb-2">
+                                <i class="fas fa-wrench me-1"></i>@skill.Name - @skill.Level
+                            </span>
+                        }
+                    </div>
+                </div>
+            }
+
+            @if (Model.ApplicantProjects.Any())
+            {
+                <div class="card mb-3">
+                    <div class="card-header bg-warning text-dark">
+                        <i class="fas fa-project-diagram me-2"></i>Projects
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        @foreach (var project in Model.ApplicantProjects)
+                        {
+                            <li class="list-group-item">
+                                <strong>@project.Name:</strong> <span>@project.Description</span>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(Model.CvUrl))
+            {
+                
+                <div class="d-flex justify-content-center mt-3">
+                    <a href="@Model.CvUrl" target="_blank" class="btn btn-outline-primary me-2">
+                        <i class="fas fa-eye me-1"></i> View CV
+                    </a>
+                    <a href="@Model.CvUrl" download class="btn btn-outline-success">
+                        <i class="fas fa-download me-1"></i> Download CV
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>

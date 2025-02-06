@@ -1,0 +1,214 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+   @*  <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Your Application</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+    <!-- Add Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" /> *@
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]SoftTrend Carrers</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/fontawesome.css" />
+    <link rel="stylesheet" href="~/css/bootstrap.css" />
+    <link rel="stylesheet" href="~/css/JobsStyle.css" />
+
+    <link rel="icon" href="~/images/st.png" />
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+</head>
+<body>
+    <!-- Navigation Bar -->
+    @* <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <!-- Photo on the Left -->
+            <a class="navbar-brand" href="#">
+                <img src="~/images/logo.png" alt="Logo" width="130" height="50" class="d-inline-block align-text-top">
+            </a>
+
+            <!-- Search Bar in the Middle -->
+            <form class="d-flex mx-auto">
+                <div class="search-bar">
+
+                    <input type="text" placeholder="Search for jobs..." class="form-control">
+                </div>
+            </form>
+            <div>
+            <li class="nav-item">
+                <a class="nav-link" aria-current="page" href="#home">Home</a>
+            </li>
+            </div>
+            <div>
+                <a class="btn btn-primary text-uppercase" asp-area="Identity" asp-page="/Account/Register">Register</a>
+                <a class="btn btn-primary-light text-uppercase" asp-area="Identity" asp-page="/Account/Login">Sign In</a>
+            </div>
+            <!-- Profile Icon on the Right -->
+            <div class="d-flex">
+                <a class="nav-link" href="#">
+                    <i class="fas fa-user-circle fa-2x"></i>
+                </a>
+            </div>
+        </div>
+    </nav> *@
+
+
+    <header>
+        <nav id="navbar" class="navbar navbar-expand-lg fixed-top navbar-dark bg-dark">
+
+            <div class="container">
+                <a href="index.html" class="navbar-brand">
+                    <img src="~/images/logo.png" alt="" width="150" />
+                </a>
+                <button class="navbar-toggler"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#navbarNavDropdown"
+                        aria-controls="navbarNavDropdown"
+                        aria-expanded="false"
+                        aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Search Bar in the Middle -->
+                <form class="d-flex mx-auto">
+                    <div class="search-bar">
+
+                        <input type="text" placeholder="Search for jobs..." class="form-control">
+                    </div>
+                </form>
+                <div class="collapse navbar-collapse" id="navbarNavDropdown">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Applicant" asp-action="Index">Jobs</a>
+                        </li>
+                        <li>
+                            <a class="btn btn-primary text-uppercase" asp-area="Identity" asp-page="/Account/Register">Register</a>
+                        </li>
+                        <li>
+                            <a class="btn btn-primary-light text-uppercase" asp-area="Identity" asp-page="/Account/Login">Sign In</a>
+                        </li>
+                    </ul>
+                    <!-- Profile Icon on the Right -->
+                    <div class="d-flex">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-user-circle fa-2x"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+
+    <!-- Main Content -->
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <!-- Company Info Section -->
+            <div class="footer-section">
+                <img src="~/images/logo.png" alt="Company Logo" style="margin-bottom: 20px; max-width: 150px;">
+                <div class="company-info">
+                    <p>SoftTrend is a fast-growing private company established in 2012, specialized in Software Licensing and IT services & solutions. Our great experience in the ﬁeld of information technology helps us to serve our customers’ needs and requirements in the best way possible. We provide our clients with full solutions which include: Licensing, Software Solutions, IT Infrastructure Services, Information Security, IT Outsourcing and IT Consulting,and Digital Transformation.</p>
+                </div>
+                <div class="social-icons">
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="#"><i class="fab fa-youtube"></i></a>
+                </div>
+            </div>
+
+            <!-- Partners Section -->
+            <div class="footer-section">
+                <h3>Partners</h3>
+                <ul class="partners-list">
+                    <li><a href="#">Microsoft</a></li>
+                    <li><a href="#">Kaspersky</a></li>
+                    <li><a href="#">SOPHOS</a></li>
+                    <li><a href="#">Dell</a></li>
+                    <li><a href="#">FORTINET</a></li>
+                </ul>
+            </div>
+
+            <!-- More Partners -->
+            <div class="footer-section">
+                <h3>&nbsp;</h3>
+                <ul class="partners-list">
+                    <li><a href="#">VMWare</a></li>
+                    <li><a href="#">Cisco</a></li>
+                    <li><a href="#">Citrix</a></li>
+                    <li><a href="#">VERITAS</a></li>
+                    <li><a href="#">Symantec</a></li>
+                </ul>
+            </div>
+
+            <!-- Contact Section -->
+            <div class="footer-section">
+                <h3>Contact Us</h3>
+                <ul class="contact-info">
+                    <li>
+                        <i class="fas fa-phone"></i>
+                        <span>+20 (2) 212 67 000</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-fax"></i>
+                        <span>+20 (2) 212 67 026</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-mobile-alt"></i>
+                        <span>+20 (10) 699 662 77</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-envelope"></i>
+                        <span>info@soft-trend.com</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>30, Street 85 off 16. Sarayat Maadi, Maadi, Cairo, Egypt</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Footer Bottom -->
+        <div class="footer-bottom">
+            <p>
+                Copyright © 2012-2025 <a href="#">SoftTrend</a>. All rights reserved |
+                <a href="#">Terms & Conditions</a> — <a href="#">Privacy Policy</a>
+            </p>
+        </div>
+    </footer>
+
+    <script src="~/js/jquery-3.7.1.js"></script>
+     <script src="~/js/script.js"></script>
+     <script src="~/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/job-board.js"></script>
+    <!-- Bootstrap Bundle (JS + Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+</body>
+</html>
+

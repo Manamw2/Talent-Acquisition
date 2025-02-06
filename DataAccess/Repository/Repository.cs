@@ -1,6 +1,7 @@
 ﻿using DataAccess.Data;
 using DataAccess.Repository.IRepository;
 using Microsoft.EntityFrameworkCore;
+using Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,6 +45,7 @@ namespace DataAccess.Repository
             }
 
             return await query.ToListAsync();
+
         }
 
         public async Task<T?> GetFirstOrDefaultAsync(Expression<Func<T, bool>> filter, string? includeProperties = null, bool tracked = true)
@@ -76,6 +78,14 @@ namespace DataAccess.Repository
         public void RemoveRange(IEnumerable<T> entities)
         {
             dbSet.RemoveRange(entities);
+        }
+
+        public async Task<IEnumerable<Job>> GetAllWithDetailsAsync()
+        {
+            return await _context.Jobs
+                .Include(j => j.Department)
+                .Include(j => j.Batch)
+                .ToListAsync();
         }
     }
 }

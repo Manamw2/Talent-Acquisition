@@ -1,5 +1,4 @@
 ﻿using DataAccess.Data;
-using DataAccess.Migrations;
 using DataAccess.Repository.IRepository;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;

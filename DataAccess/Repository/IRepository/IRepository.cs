@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -15,5 +16,7 @@ namespace DataAccess.Repository.IRepository
         void Update(T entity);
         void Remove(T entity);
         void RemoveRange(IEnumerable<T> entities);
+        Task<IEnumerable<Job>> GetAllWithDetailsAsync();
+
     }
 }

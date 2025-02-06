@@ -19,7 +19,6 @@ namespace Models
 
         [ForeignKey("UserId")]
         public AppUser AppUser { get; set; } // Navigation Property
-
         [Required]
         public int JobId { get; set; }
 
@@ -32,6 +31,13 @@ namespace Models
         [Required]
         [StringLength(20)]
         public string Status { get; set; } = "Pending"; // Default value
-    }
 
+    }
+    public enum Status
+    {
+        Applied,
+        UnderReviewing,
+        NotMached,
+        Pending
+    }
 }

@@ -185,13 +185,13 @@
                                             <button type="button" class="btn-close remove-skill" aria-label="Close"></button>
                                         </div>
                                         <div class="collapsible-content show">
-                                            <input type="hidden" name="Skills[{index}].Id" value="0" />
+                                            <input type="hidden" asp-for="Skills[index].Id" />
                                             <div class="row">
                                                 <div class="col-md-8">
-                                                    <input type="text" class="form-control" name="Skills[{index}].Name" placeholder="Skill name" />
+                                                    <input type="text" class="form-control" asp-for="Skills[index].Name" placeholder="Skill name" />
                                                 </div>
                                                 <div class="col-md-4">
-                                                    <select class="form-control" name="Skills[{index}].Level">
+                                                    <select class="form-control" asp-for="Skills[index].Level">
                                                         <option value="Beginner">Beginner</option>
                                                         <option value="Intermediate">Intermediate</option>
                                                         <option value="Advanced">Advanced</option>

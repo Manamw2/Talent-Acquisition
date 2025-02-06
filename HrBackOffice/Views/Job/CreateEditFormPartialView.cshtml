@@ -55,11 +55,11 @@
                                     <label asp-for="BatchId" class="small mb-1 fw-bold">Batch</label>
                                     <div class="input-group">
                                         <select id="BatchDropdown" asp-for="BatchId" asp-items="Model.Batches" class="form-control">
-                                            <option value="">-- Select Batch --</option>
+                                            <option value="">Select Batch</option>
                                         </select>
-                                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addBatchModal">
+                                        @* <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addBatchModal">
                                             <i class="fas fa-plus"></i>
-                                        </button>
+                                        </button> *@
                                     </div>
                                     <span asp-validation-for="BatchId" class="text-danger small"></span>
                                 </div>
@@ -81,81 +81,26 @@
     </form>
 </div>
 
-
-<!-- Batch Modal -->
+@* <!-- Add Batch Modal -->
+<!-- Add Batch Modal -->
 <div class="modal fade" id="addBatchModal" tabindex="-1" aria-labelledby="addBatchModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="addBatchModalLabel">Add New Batch</h5>
+                <h5 class="modal-title" id="addBatchModalLabel">Create New Batch</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="batchForm">
-                    <div class="form-group">
-                        <label for="BatchName">Batch Name</label>
-                        <input type="text" id="BatchName" name="BatchName" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="StartDate">Start Date</label>
-                        <input type="date" id="StartDate" name="StartDate" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="EndDate">End Date</label>
-                        <input type="date" id="EndDate" name="EndDate" class="form-control" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Save Batch</button>
-                </form>
+                <partial name="_CreateBatchPartial" model="new Batch()" />
             </div>
         </div>
     </div>
 </div>
+ *@
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        var quill = new Quill('#editor', {
-            theme: 'snow'
-        });
-
-        var description = document.getElementById("Description").value;
-        if (description) {
-            quill.root.innerHTML = description;
-        }
-
-        quill.on('text-change', function () {
-            document.getElementById("Description").value = quill.root.innerHTML;
-        });
-
-        $("#batchForm").submit(function (event) {
-            event.preventDefault();
-            var formData = {
-                BatchName: $("#BatchName").val(),
-                StartDate: $("#StartDate").val(),
-                EndDate: $("#EndDate").val()
-            };
-
-            $.ajax({
-                type: "POST",
-                url: "/Batch/CreateBatchAjax",
-                contentType: "application/json",
-                data: JSON.stringify(formData),
-                success: function (response) {
-                    $("#addBatchModal").modal("hide");
-                    $("#BatchDropdown").append(
-                        `<option value="${response.batchId}" selected>${response.batchName}</option>`
-                    );
-                    $("#batchForm")[0].reset();
-                },
-                error: function (xhr) {
-                    alert("Error adding batch: " + xhr.responseText);
-                }
-            });
-        });
-    });
-</script>
-@* <script>
     var quill = new Quill('#editor', {
         theme: 'snow'
     });
@@ -169,30 +114,6 @@
         document.getElementById("Description").value = quill.root.innerHTML;
     });
 
-    $("#batchForm").submit(function (event) {
-        event.preventDefault();
-        var formData = {
-            BatchName: $("#BatchName").val(),
-            StartDate: $("#StartDate").val(),
-            EndDate: $("#EndDate").val()
-        };
+    
 
-        $.ajax({
-            type: "POST",
-            url: "/Batch/CreateBatchAjax",
-            contentType: "application/json",
-            data: JSON.stringify(formData),
-            success: function (response) {
-                $("#addBatchModal").modal("hide");
-                $("#BatchDropdown").append(
-                    `<option value="${response.batchId}" selected>${response.batchName}</option>`
-                );
-                $("#batchForm")[0].reset();
-            },
-            error: function (xhr) {
-                alert("Error adding batch: " + xhr.responseText);
-            }
-        });
-    });
-</script> *@
-
+</script>

@@ -20,10 +20,6 @@ namespace DataAccess.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
-            modelBuilder.Entity<JobApplication>()
-                .HasKey(ja => new { ja.UserId, ja.JobId });
-
         }
     }
 }

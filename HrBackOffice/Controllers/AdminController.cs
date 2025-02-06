@@ -32,14 +32,25 @@ namespace HrBackOffice.Controllers
 
             var result = await _signInManager.CheckPasswordSignInAsync(user, login.Password, false);
 
-            if (!result.Succeeded || (!await _userManager.IsInRoleAsync(user, "Admin") && !await _userManager.IsInRoleAsync(user, "HR")))
+            if (!result.Succeeded)
             {
-                ModelState.AddModelError(string.Empty, "You are not Authorithezed");
-                return RedirectToAction(nameof(login));
+                ModelState.AddModelError(string.Empty, "Invalid Credentials");
+                return RedirectToAction(nameof(Login));
             }
-            else
-                return RedirectToAction("Index", "Home");
+
+            var roles = await _userManager.GetRolesAsync(user);
+            if (!roles.Contains("Admin") && !roles.Contains("HR"))
+            {
+                ModelState.AddModelError(string.Empty, "You are not authorized");
+                return RedirectToAction(nameof(Login));
+            }
+
+            // 🔥 FIX: This ensures the user is logged in with roles
+            await _signInManager.SignInAsync(user, isPersistent: false);
+
+            return RedirectToAction("Index", "Job");
         }
+
 
         public async Task<IActionResult> Logout()
         {

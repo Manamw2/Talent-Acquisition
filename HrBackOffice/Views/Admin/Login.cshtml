@@ -1,42 +1,40 @@
-﻿
-@model LoginDto
-
+﻿@model LoginDto
 @{
+    Layout = "_LoginLayout";
     ViewData["Title"] = "Log in";
 }
 
-<div class="container d-flex justify-content-center align-items-center " style="min-height: 80vh;">
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
     <div class="row justify-content-center w-100">
         <div class="col-md-10">
             <!-- Card Container -->
-            <div class="card shadow-lg border-0 rounded-3 p-4 mx-auto" style="max-width: 600px;">
-                <!-- Account Section -->
-                <div class="mb-3">
-                    <h5 class="fw-bold">Already have an account?</h5>
-                    <p class="text-muted">Enter your email and password (Credentials are case sensitive).</p>
-                    <p class="text-muted small">
-                        <span class="text-danger">*</span> indicates a required field.
-                    </p>
-                    <!-- Login Form -->
-                    <form method="post" asp-action="Login">
-                        <div class="form-floating mb-3">
-                            <input asp-for="Email" class="form-control" id="inputEmail" type="email" placeholder="name@example.com" />
-                            <label asp-for="Email" for="inputEmail">Email address</label>
-                            <span asp-validation-for="Email"></span>
-                        </div>
-                        <div class="form-floating mb-3">
-                            <input asp-for=" Password" class="form-control" id="inputPassword" type="password" placeholder="Password" />
-                            <label asp-for=" Password" for="inputPassword">Password</label>
-                            <span asp-validation-for="Password"></span>
-                        </div>
+            <div class="card shadow-sm border rounded-4 p-5 mx-auto" style="max-width: 500px; background: #f8f9fa;">
+                <!-- Title -->
+                <h3 class="fw-bold text-center text-dark">Sign In</h3>
+                <p class="text-muted text-center">Enter your credentials to continue</p>
 
-                        <div class="d-flex align-items-center justify-content-between mt-4 mb-0">
+                <!-- Login Form -->
+                <form method="post" asp-action="Login" asp-controller="Admin">
+                    <div class="form-floating mb-4">
+                        <input asp-for="Email" class="form-control" id="inputEmail" type="email" placeholder="name@example.com" required />
+                        <label asp-for="Email" for="inputEmail">Email address</label>
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
 
-                            <button class="btn btn-primary" type="submit">Login</button>
-                        </div>
-                    </form>
-                </div>
-                
+                    <div class="form-floating mb-4 position-relative">
+                        <input asp-for="Password" class="form-control" id="inputPassword" type="password" placeholder="Password" required />
+                        <label asp-for="Password" for="inputPassword">Password</label>
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                        <!-- Password Toggle Button -->
+                        <button type="button" id="togglePassword" class="btn position-absolute end-0 top-50 translate-middle-y me-3" style="border: none; background: transparent;">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+
+                    <div class="d-flex justify-content-center mt-4">
+                        <button class="btn btn-dark px-5 py-2 rounded-3" type="submit">Login</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -44,17 +42,54 @@
 
 <style>
     body {
-        font-family: 'Roboto', sans-serif;
-        background-color: #E0E0E0; /* Dark background */
+        font-family: 'Arial', sans-serif;
+        background-color: #e9ecef;
+        color: #212529;
     }
 
+    .card {
+        border: 1px solid #ddd;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s ease-in-out;
+    }
+
+        .card:hover {
+            transform: scale(1.01);
+        }
+
+    .form-control {
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        font-size: 1.1rem;
+        padding: 12px;
+    }
+
+    .btn-dark {
+        background-color: #343a40;
+        border: none;
+        font-size: 1.1rem;
+    }
+
+        .btn-dark:hover {
+            background-color: #23272b;
+        }
+
+    #togglePassword {
+        cursor: pointer;
+        color: #6c757d;
+        font-size: 1.2rem;
+    }
+
+        #togglePassword:hover {
+            color: #343a40;
+        }
 </style>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
         document.getElementById("togglePassword").addEventListener("click", function () {
-            let passwordInput = document.getElementById("password");
+            let passwordInput = document.getElementById("inputPassword");
             let icon = this.querySelector("i");
             if (passwordInput.type === "password") {
                 passwordInput.type = "text";

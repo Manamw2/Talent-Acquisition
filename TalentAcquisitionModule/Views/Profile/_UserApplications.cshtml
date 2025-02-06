@@ -31,7 +31,8 @@
                             <p><strong>Department:</strong> @application.DepartmentName</p>
                             <p><strong>Applied On:</strong> @application.ApplicationDate.ToString("yyyy-MM-dd")</p>
                             <p><strong>Job Type:</strong> @application.JobType</p>
-                            <p><strong>Description:</strong> @application.JobDescription</p>
+                            <hr>
+                            @Html.Raw(application.JobDescription)
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

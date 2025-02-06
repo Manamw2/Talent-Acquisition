@@ -53,10 +53,10 @@
                                         <a asp-action="Details" asp-route-id="@job.JobId" class="btn btn-sm btn-info">
                                             <i class="fas fa-info-circle"></i>
                                         </a>
-                                        <button type="button" class="btn btn-sm btn-danger"
-                                                onclick="confirmDelete(@job.JobId)">
+                                        <a  class="btn btn-sm btn-danger"
+                                                asp-action="Delete" asp-route-id="@job.JobId">
                                             <i class="fas fa-trash-alt"></i>
-                                        </button>
+                                        </a>
                                     </div>
                                 </td>
                             </tr>

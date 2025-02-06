@@ -1,13 +1,16 @@
 ﻿using AutoMapper;
 using DataAccess.Repository.IRepository;
 using HrBackOffice.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Models;
 
 
 namespace HrBackOffice.Controllers
 {
-	public class BatchController : Controller
+    [Authorize]
+    public class BatchController : Controller
 	{
         private readonly IUnitOfWork _unitOfWork;
 
@@ -43,22 +46,39 @@ namespace HrBackOffice.Controllers
             }
             return View(batch);
         }
-
         [HttpPost]
-        [Route("Batch/CreateBatchAjax")]
-
-        public async Task<IActionResult> CreateBatchAjax([FromBody] Batch batch)
+        public async Task<IActionResult> CreateBatch(Batch model)
         {
-            if (batch == null || string.IsNullOrWhiteSpace(batch.BatchName))
+            if (ModelState.IsValid)
             {
-                return BadRequest("Invalid batch data");
+                // Save batch to database (example using EF Core)
+                await _unitOfWork.BatchRepository.AddAsync(model);
+                await _unitOfWork.SaveAsync();
+                TempData["NewBatchId"] = model.BatchId;
+                return RedirectToAction("Create", "Job");
             }
 
-            await _unitOfWork.BatchRepository.AddAsync(batch);
-            await _unitOfWork.SaveAsync();
-
-            return Json(new { batchId = batch.BatchId, batchName = batch.BatchName });
+            return PartialView("_CreateBatchPartial", model);
         }
+        #region Comm
+        //[HttpPost]
+        //        [Route("Batch/CreateBatchAjax")]
+
+        //        public async Task<IActionResult> CreateBatchAjax([FromBody] Batch batch)
+        //        {
+        //            if (batch == null || string.IsNullOrWhiteSpace(batch.BatchName))
+        //            {
+        //                return BadRequest("Invalid batch data");
+        //            }
+
+        //            await _unitOfWork.BatchRepository.AddAsync(batch);
+        //            await _unitOfWork.SaveAsync();
+
+        //            return Json(new { batchId = batch.BatchId, batchName = batch.BatchName });
+        //        }
+        #endregion
+
+
 
 
         public async Task<IActionResult> Delete(int id)

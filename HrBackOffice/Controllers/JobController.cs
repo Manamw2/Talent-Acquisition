@@ -13,6 +13,7 @@ using X.PagedList.Mvc.Core;
 
 namespace HrBackOffice.Controllers
 {
+    [Authorize]
     public class JobController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;

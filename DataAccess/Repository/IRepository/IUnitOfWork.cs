@@ -10,6 +10,7 @@ namespace DataAccess.Repository.IRepository
     public interface IUnitOfWork
     {
         IRepository<Job> JobRepository { get; }
+        IRepository<AppUser> UserRepository { get; }
         IRepository<Batch> BatchRepository { get; }
         IRepository<Department> DepartmentRepository { get; }
         IRepository<JobApplication> JobApplicationRepository { get; }

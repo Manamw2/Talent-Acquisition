@@ -1,80 +1,44 @@
-﻿// Wait for the document to be fully loaded
-document.addEventListener('DOMContentLoaded', function () {
-    // Get all job cards and attach click handlers
-    const jobCards = document.querySelectorAll('.job-card');
-    const jobTypeFilter = document.getElementById('job-type-filter');
+﻿$(document).ready(function () {
+    // Handle click event on job cards
+    $('.job-card').on('click', function (e) {
+        e.preventDefault(); // Prevent default link behavior
 
-    // Function to update job details
-    function updateJobDetails(jobCard) {
-        // Get data from the clicked job card
-        const jobId = jobCard.dataset.jobId;
+        // Get job details from data attributes
+        const jobId = $(this).data('job-id');
+        const jobTitle = $(this).data('job-title');
+        const jobLocation = $(this).data('job-location');
+        const jobDescription = $(this).data('job-description');
+        const jobApplicationCount = $(this).data('job-application-count');
+        const jobType = $(this).data('job-type');
 
-        // Make an AJAX call to get job details
-        fetch(`/Job/GetJobDetails/${jobId}`)
-            .then(response => response.json())
-            .then(job => {
-                // Update the main content area
-                document.getElementById('job-title').textContent = job.title;
-                document.getElementById('job-location').textContent = `📍 ${job.departmentName}`;
-                document.getElementById('job-description').innerHTML = `
-                    <h5>Description:</h5>
-                    <p>${job.description}</p>
-                    <div class="mt-3">
-                        <span class="badge bg-info">${job.applicationCount} Applications</span>
-                        <span class="badge bg-secondary ms-2">${job.jobType}</span>
-                    </div>
-                `;
+        // Update the middle section with the clicked job's details
+        $('#job-title').text(jobTitle);
+        $('#job-location').text(`📍 ${jobLocation}`);
+        $('#job-description p').html(jobDescription);
+        $('#job-description .badge.bg-info').text(`${jobApplicationCount} Applications`);
+        $('#job-description .badge.bg-secondary').text(jobType);
 
-                // Update the apply button
-                const applyButton = document.getElementById('applyButton');
-                applyButton.dataset.jobId = jobId;
-            })
-            .catch(error => console.error('Error fetching job details:', error));
-    }
+        // Update the Apply button's data-job-id attribute
+        $('#applyButton').attr('data-job-id', jobId);
+    });
 
-    // Function to filter jobs
-    function filterJobs(jobType) {
-        jobCards.forEach(card => {
-            if (jobType === 'all' || card.dataset.jobType === jobType) {
-                card.style.display = 'block';
+    // Handle job type filtering
+    $('#job-type-filter').on('change', function () {
+        const selectedJobType = $(this).val().toLowerCase(); // Get the selected job type
+
+        // Loop through all job cards
+        $('.job-card').each(function () {
+            const jobType = $(this).data('job-type').toLowerCase(); // Get the job type of the card
+
+            // Show or hide the job card based on the selected filter
+            if (selectedJobType === 'all' || jobType === selectedJobType) {
+                $(this).show(); // Show the job card
             } else {
-                card.style.display = 'none';
+                $(this).hide(); // Hide the job card
             }
         });
-
-        // If there are visible jobs after filtering, select the first one
-        const visibleJobs = Array.from(jobCards).filter(card =>
-            card.style.display !== 'none');
-
-        if (visibleJobs.length > 0) {
-            updateJobDetails(visibleJobs[0]);
-        } else {
-            // Show "No jobs found" message in the main content area
-            document.querySelector('.job-detail-card').innerHTML = `
-                <div class="alert alert-info">
-                    No jobs found matching the selected criteria.
-                </div>
-            `;
-        }
-    }
-
-    // Add click event listeners to job cards
-    jobCards.forEach(card => {
-        card.addEventListener('click', function (e) {
-            e.preventDefault();
-
-            // Remove active class from all cards and add to clicked one
-            jobCards.forEach(c => c.classList.remove('active'));
-            this.classList.add('active');
-
-            updateJobDetails(this);
-        });
     });
-
-    // Add change event listener to job type filter
-    jobTypeFilter.addEventListener('change', function () {
-        filterJobs(this.value);
-    });
+});
 
 
 window.addEventListener("scroll", function () {

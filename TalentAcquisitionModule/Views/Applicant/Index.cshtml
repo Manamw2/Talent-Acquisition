@@ -72,6 +72,53 @@
 
 @section Scripts {
     <script>
+
+        $(document).ready(function () {
+            $("#applyButton").click(function () {
+                var jobId = $(this).data("job-id");
+                console.log(jobId);
+                var baseUrl = window.location.origin + '/TalentAcquisition/Applicants/ApplyForJob';
+                console.log(baseUrl);
+
+                $.ajax({
+                    url: baseUrl,
+                    type: 'GET',
+                    contentType: 'application/x-www-form-urlencoded',
+                    data: {
+                        jobId: parseInt(jobId),
+                        // __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success!',
+                                text: response.message,
+                                confirmButtonText: 'OK'
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Oops...',
+                                text: response.message,
+                                confirmButtonText: 'OK'
+                            });
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: "An error occurred: " + xhr.responseText,
+                            confirmButtonText: 'OK'
+                        });
+                        console.log("XHR:", xhr);
+                    }
+                });
+            });
+        });
+    </script>
+    @*  <script>
         $(document).ready(function () {
             $("#applyButton").click(function () {
                 var jobId = $(this).data("job-id");
@@ -96,53 +143,9 @@
         });
                 });
             });
-    
-    </script>
 
-    <script>
-             $(document).ready(function () {
-            // Handle click event on job cards
-            $('.job-card').on('click', function (e) {
-                e.preventDefault(); // Prevent default link behavior
+    </script> *@
 
-                // Get job details from data attributes
-                const jobId = $(this).data('job-id');
-                const jobTitle = $(this).data('job-title');
-                const jobLocation = $(this).data('job-location');
-                const jobDescription = $(this).data('job-description');
-                const jobApplicationCount = $(this).data('job-application-count');
-                const jobType = $(this).data('job-type');
-
-                // Update the middle section with the clicked job's details
-                $('#job-title').text(jobTitle);
-                $('#job-location').text(`📍 ${jobLocation}`);
-                $('#job-description p').html(jobDescription);
-                $('#job-description .badge.bg-info').text(`${jobApplicationCount} Applications`);
-                $('#job-description .badge.bg-secondary').text(jobType);
-
-                // Update the Apply button's data-job-id attribute
-                $('#applyButton').attr('data-job-id', jobId);
-            });
-
-            // Handle job type filtering
-            $('#job-type-filter').on('change', function () {
-                const selectedJobType = $(this).val().toLowerCase(); // Get the selected job type
-
-                // Loop through all job cards
-                $('.job-card').each(function () {
-                    const jobType = $(this).data('job-type').toLowerCase(); // Get the job type of the card
-
-                    // Show or hide the job card based on the selected filter
-                    if (selectedJobType === 'all' || jobType === selectedJobType) {
-                        $(this).show(); // Show the job card
-                    } else {
-                        $(this).hide(); // Hide the job card
-                    }
-                });
-            });
-        });
-    </script>
-
- @*    <script src="~/js/job-board.js"></script> *@
+    <script src="~/js/job-board.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 }

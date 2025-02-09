@@ -25,8 +25,6 @@ namespace TalentAcquisitionModule.Controllers
         {
             var jobs = await _unitOfWork.JobRepository.GetAllWithDetailsAsync() ?? new List<Job>();
             var jobDTOs = _mapper.Map<IEnumerable<JobViewModel>>(jobs);
-            //ViewBag.Departments = _unitOfWork.DepartmentRepository.GetAllAsync();
-            //ViewBag.Batchs = _unitOfWork.BatchRepository.GetAllAsync();
             return View(jobDTOs);
         }
 

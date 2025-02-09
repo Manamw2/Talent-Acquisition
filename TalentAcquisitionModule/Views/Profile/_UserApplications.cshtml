@@ -7,7 +7,7 @@
                 <div class="application-card card">
                     <div class="card-header">
                         <h5>@application.JobTitle</h5>
-                        <span class="badge @GetStatusBadgeClass(application.Status)">@application.Status</span>
+                        <span class="badge" id="statusBadge">@application.Status</span>
                     </div>
                     <div class="card-body">
                         <p><strong>Department:</strong> @application.DepartmentName</p>
@@ -31,6 +31,7 @@
                             <p><strong>Department:</strong> @application.DepartmentName</p>
                             <p><strong>Applied On:</strong> @application.ApplicationDate.ToString("yyyy-MM-dd")</p>
                             <p><strong>Job Type:</strong> @application.JobType</p>
+                            <p><strong>Application Status:</strong> @application.Status</p>
                             <hr>
                             @Html.Raw(application.JobDescription)
                         </div>
@@ -44,19 +45,3 @@
     </div>
 </div>
 
-@functions {
-    public string GetStatusBadgeClass(string status)
-    {
-        switch (status)
-        {
-            case "Applied":
-                return "badge-warning";
-            case "Approved":
-                return "badge-success";
-            case "Rejected":
-                return "badge-danger";
-            default:
-                return "badge-secondary";
-        }
-    }
-}

@@ -1,20 +1,18 @@
 ﻿using DataAccess.Data;
-using DataAccess.Repository.IRepository;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Shared;
 using Models;
 using Models.ViewModels;
 using System.Security.Claims;
+using System.Text.Json;
 using TalentAcquisitionModule.Services;
 
 namespace TalentAcquisitionModule.Controllers
 {
-    [Authorize]
     public class ProfileController : Controller
     {
         private readonly UserManager<AppUser> _userManager;
@@ -30,6 +28,7 @@ namespace TalentAcquisitionModule.Controllers
             _memoryCache = memoryCache;
             _emailSender = emailSender;
         }
+        [Authorize]
         public async Task<IActionResult> Index()
         {
             var claimsIdentity = (ClaimsIdentity)User.Identity;
@@ -72,9 +71,9 @@ namespace TalentAcquisitionModule.Controllers
                     Description = project.Description
                 }).ToList()
             };
-            
+
             ProfilePageViewModel profilePageViewModel = new ProfilePageViewModel();
-            var jobApplicaions =  await _context.JobApplications.Where(u => u.UserId == userId).Include(u => u.Job).ThenInclude(u => u.Department).ToListAsync();
+            var jobApplicaions = await _context.JobApplications.Where(u => u.UserId == userId).Include(u => u.Job).ThenInclude(u => u.Department).ToListAsync();
             profilePageViewModel.ApplicationVMs = jobApplicaions.Select(x => new ApplicationVM
             {
                 Id = x.ApplicationId,
@@ -89,6 +88,7 @@ namespace TalentAcquisitionModule.Controllers
             return View(profilePageViewModel);
         }
 
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> UpdateProfile(ProfileInfoVM profileInfoVM)
         {
@@ -119,21 +119,15 @@ namespace TalentAcquisitionModule.Controllers
             // Delete existing CV file if it exists
             if (profileInfoVM.CvFile != null)
             {
-                var existingFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", appUser.CvUrl.TrimStart('/'));
-                System.IO.File.Delete(existingFilePath);
-                // Save new CV file
-                var fileName = Path.GetRandomFileName() + Path.GetExtension(profileInfoVM.CvFile.FileName);
-                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/cvs", fileName);
-
-                // Ensure directory exists
-                Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+                var fileName = Path.GetRandomFileName() + Path.GetExtension(profileInfoVM.CvFile.FileName); // Safer filename
+                string sharedFolderPath = FileStorageService.GetSharedCsvFolderPath();
+                string filePath = Path.Combine(sharedFolderPath, fileName);
 
                 using (var stream = new FileStream(filePath, FileMode.Create))
                 {
                     await profileInfoVM.CvFile.CopyToAsync(stream);
                 }
-
-                appUser.CvUrl = $"/cvs/{fileName}";
+                appUser.CvUrl = filePath;
             }
 
             appUser.ApplicantExperiences = profileInfoVM.Experiences.Select(exp => new ApplicantExperience
@@ -182,6 +176,7 @@ namespace TalentAcquisitionModule.Controllers
             return RedirectToAction("Index");
         }
 
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> ChangePassword(ChangePasswordViewModel changePasswordViewModel)
         {
@@ -209,6 +204,99 @@ namespace TalentAcquisitionModule.Controllers
             await _signInManager.RefreshSignInAsync(user);
 
             return RedirectToAction("Index");
+        }
+
+        [HttpGet]
+        public IActionResult ConfirmResumeInfo()
+        {
+            if (TempData["ProfileInfo"] is string profileInfoJson)
+            {
+                var profileInfoVM = JsonSerializer.Deserialize<ProfileInfoVM>(profileInfoJson);
+                return View(profileInfoVM);
+            }
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ConfirmResumeInfo(ProfileInfoVM profileInfoVM)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(profileInfoVM);
+            }
+
+            var appUser = new AppUser();
+
+            appUser.DisplayName = profileInfoVM.Name;
+            appUser.Email = profileInfoVM.Email;
+            appUser.Faculty = profileInfoVM.Faculty;
+            appUser.BirthDate = profileInfoVM.DateOfBirth;
+            appUser.PhoneNumber = profileInfoVM.Phone;
+            appUser.EducationLevel = profileInfoVM.EducationLevel;
+            appUser.EnglishLevel = profileInfoVM.EnglishProficiencyLevel;
+            appUser.MethodOfContact = profileInfoVM.MethodOfContact;
+
+            appUser.CvUrl = profileInfoVM.CvUrl;
+
+            appUser.ApplicantExperiences = profileInfoVM.Experiences.Select(exp => new ApplicantExperience
+            {
+                AppUserId = appUser.Id,
+                Company = exp.Company,
+                Position = exp.Position,
+                StartDate = exp.StartDate,
+                EndDate = exp.EndDate,
+                Description = exp.Description
+            }).ToList();
+
+            appUser.ApplicantSkills = profileInfoVM.Skills.Select(skill => new ApplicantSkill
+            {
+                AppUserId = appUser.Id,
+                Name = skill.Name,
+                Level = skill.Level
+            }).ToList();
+
+            appUser.ApplicantProjects = profileInfoVM.Projects.Select(project => new ApplicantProject
+            {
+                AppUserId = appUser.Id,
+                Name = project.Name,
+                Description = project.Description
+            }).ToList();
+
+
+            appUser.UserName = profileInfoVM.Email;
+            appUser.EmailConfirmed = false;
+            // Single database update
+            var result = await _userManager.CreateAsync(appUser, profileInfoVM.UserPassword);
+            if (result.Succeeded)
+            {
+                result = await _userManager.AddToRoleAsync(appUser, "applicant");
+
+                var userId = await _userManager.GetUserIdAsync(appUser);
+                //send mail
+                EmailConfirmationService emailService = new EmailConfirmationService(_memoryCache);
+                var code = emailService.GenerateRandomCode(); // Generate a random 6-digit code
+                emailService.StoreConfirmationCode(userId, code); // Store the code in memory cache
+
+                await _emailSender.SendEmailAsync(profileInfoVM.Email, "Confirm your email",
+                    $"Your confirmation code is: <strong>{code}</strong>. Please enter this code on the confirmation page to verify your account.");
+
+                return RedirectToPage("/Account/RegisterConfirmation", new { area = "Identity", email = profileInfoVM.Email, isFromRegisterPage = false });
+            }
+            else
+            {
+                return View(profileInfoVM);
+            }
+        }
+
+        [Authorize]
+        [HttpGet]
+        public IActionResult DownloadCV(string filePath, string fileName)
+        {
+            if (!System.IO.File.Exists(filePath))
+                return NotFound("File not found");
+
+            var fileBytes = System.IO.File.ReadAllBytes(filePath);
+            return File(fileBytes, "application/pdf", $"{fileName}");
         }
     }
 }

@@ -17,6 +17,17 @@
                     <p class="text-muted small">
                         <span class="text-danger">*</span> indicates a required field.
                     </p>
+                   <!--extract data from cv-->
+                    <form id="cvForm" enctype="multipart/form-data" method="post" asp-page-handler="UploadCv">
+                        <!-- Hidden file input -->
+                        <input asp-for="CvFile" type="file" class="form-control form-control-lg" id="cvFile" style="display: none;" required>
+                        <span asp-validation-for="CvFile" class="text-danger"></span>
+
+                        <!-- Upload CV link/button -->
+                        <button type="button" id="uploadCvButton" class="btn btn-link p-0">
+                            <span class="text-primary fw-semibold">Extract from CV instead</span>
+                        </button>
+                    </form>
                     <!-- Registration Form -->
                     <form enctype="multipart/form-data" method="post">
                         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
@@ -81,6 +92,18 @@
                                 <input asp-for="Input.Phone" class="form-control form-control-lg" id="phone" placeholder="Enter your phone number" required>
                             </div>
                             <span asp-validation-for="Input.Phone" class="text-danger"></span>
+                        </div>
+
+                        <!-- Faculty -->
+                        <div class="mb-3">
+                            <label for="faculty" class="form-label fw-semibold">
+                                Faculty: <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-danger text-white"><i class="bi bi-mortarboard"></i></span>
+                                <input asp-for="Input.Faculty" class="form-control form-control-lg" id="faculty" placeholder="Enter your Faculty Name" required>
+                            </div>
+                            <span asp-validation-for="Input.Faculty" class="text-danger"></span>
                         </div>
 
                         <!-- Date of Birth -->
@@ -198,6 +221,17 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Trigger file input when the "Upload CV" button is clicked
+        document.getElementById('uploadCvButton').addEventListener('click', function () {
+            document.getElementById('cvFile').click();
+        });
+
+        // Automatically submit the form when a file is selected
+        document.getElementById('cvFile').addEventListener('change', function () {
+            document.getElementById('cvForm').submit();
+        });
+    </script>
     <script>
         document.getElementById("togglePassword").addEventListener("click", function () {
             let passwordInput = document.getElementById("password");

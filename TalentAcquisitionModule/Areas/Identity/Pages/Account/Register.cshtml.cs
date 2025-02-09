@@ -6,11 +6,15 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using DataAccess.Data;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -23,7 +27,11 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Models;
+using Models.Mappers;
+using Models.ViewModels;
+using Newtonsoft.Json;
 using TalentAcquisitionModule.Services;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace TalentAcquisitionModule.Areas.Identity.Pages.Account
 {
@@ -36,12 +44,14 @@ namespace TalentAcquisitionModule.Areas.Identity.Pages.Account
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
         private readonly IMemoryCache _memoryCache;
+        private readonly HttpClient _httpClient;
         public RegisterModel(
             UserManager<AppUser> userManager,
             IUserStore<AppUser> userStore,
             SignInManager<AppUser> signInManager,
             ILogger<RegisterModel> logger,
             IMemoryCache memoryCache,
+            HttpClient httpClient,
             IEmailSender emailSender)
         {
             _userManager = userManager;
@@ -51,6 +61,7 @@ namespace TalentAcquisitionModule.Areas.Identity.Pages.Account
             _logger = logger;
             _emailSender = emailSender;
             _memoryCache = memoryCache;
+            _httpClient = httpClient;
         }
 
         /// <summary>
@@ -108,7 +119,11 @@ namespace TalentAcquisitionModule.Areas.Identity.Pages.Account
 
             [Required]
             [DisplayName("Name")]
-            public string Name { get; set; }
+            public string Name { get; set; } = string.Empty;
+
+            [Required]
+            [DisplayName("Faculty")]
+            public string Faculty { get; set; } = string.Empty;
 
             [Required]
             [Phone]
@@ -177,16 +192,14 @@ namespace TalentAcquisitionModule.Areas.Identity.Pages.Account
                     try
                     {
                         var fileName = Path.GetRandomFileName() + Path.GetExtension(CvFile.FileName); // Safer filename
-                        var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/cvs", fileName);
-
-                        // Ensure directory exists
-                        Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+                        string sharedFolderPath = FileStorageService.GetSharedCsvFolderPath();
+                        string filePath = Path.Combine(sharedFolderPath, fileName);
 
                         using (var stream = new FileStream(filePath, FileMode.Create))
                         {
                             await CvFile.CopyToAsync(stream);
                         }
-                        user.CvUrl = $"/cvs/{fileName}";
+                        user.CvUrl = filePath;
                     }
                     catch (Exception ex)
                     {
@@ -198,6 +211,7 @@ namespace TalentAcquisitionModule.Areas.Identity.Pages.Account
 
                 user.DisplayName = Input.Name;
                 user.BirthDate = Input.DateOfBirth;
+                user.Faculty = Input.Faculty;
                 user.PhoneNumber = Input.Phone;
                 user.EducationLevel = Input.EducationLevel;
                 user.EnglishLevel = Input.EnglishProficiencyLevel;
@@ -208,6 +222,7 @@ namespace TalentAcquisitionModule.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User created a new account with password.");
+                    result = await _userManager.AddToRoleAsync(user, "applicant");
 
                     var userId = await _userManager.GetUserIdAsync(user);
                     EmailConfirmationService emailService = new EmailConfirmationService(_memoryCache);
@@ -239,6 +254,80 @@ namespace TalentAcquisitionModule.Areas.Identity.Pages.Account
             InitDropDowns();
             return Page();
         }
+
+
+        public async Task<IActionResult> OnPostUploadCvAsync()
+        {
+            if (CvFile == null || CvFile.Length == 0)
+            {
+                ModelState.AddModelError(string.Empty, "Please upload a CV file.");
+                InitDropDowns();
+                return Page();
+            }
+
+            try
+            {
+                // Call your API to extract data from the CV
+                var profileInfoVM = await ExtractDataFromCv(CvFile);
+                var fileName = Path.GetRandomFileName() + Path.GetExtension(CvFile.FileName); // Safer filename
+                string sharedFolderPath = FileStorageService.GetSharedCsvFolderPath();
+                string filePath = Path.Combine(sharedFolderPath, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await CvFile.CopyToAsync(stream);
+                }
+                profileInfoVM.CvUrl = filePath;
+                TempData["ProfileInfo"] = JsonSerializer.Serialize(profileInfoVM);
+                return RedirectToAction("ConfirmResumeInfo", "Profile");
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, $"CV data extraction failed: {ex.Message}");
+            }
+
+            InitDropDowns();
+            return Page();
+        }
+
+        private async Task<ProfileInfoVM> ExtractDataFromCv(IFormFile cvFile)
+        {
+            var content = new MultipartFormDataContent();
+            // Read the file content from cvFile into a MemoryStream
+            using (var memoryStream = new MemoryStream())
+            {
+                await cvFile.CopyToAsync(memoryStream); // Copy the file content to the MemoryStream
+                memoryStream.Position = 0; // Reset the stream position to the beginning
+
+                // Create ByteArrayContent from the MemoryStream
+                var fileContentStream = new ByteArrayContent(memoryStream.ToArray());
+
+                // Set the Content-Disposition header
+                fileContentStream.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("form-data")
+                {
+                    Name = "file", // Name of the form field
+                    FileName = cvFile.FileName // Name of the file
+                };
+
+                // Set the Content-Type header based on the file type
+                fileContentStream.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(cvFile.ContentType);
+
+                // Add the file content to the MultipartFormDataContent
+                content.Add(fileContentStream);
+
+                // Make the API call
+                var response = await _httpClient.PostAsync("http://127.0.0.1:8000/parse-resume", content);
+                response.EnsureSuccessStatusCode();
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+                ResumeViewModel resumeViewModel = JsonSerializer.Deserialize<ResumeViewModel>(jsonResponse, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+                var profileVM = resumeViewModel.ResumeToProfileInfo();
+                return profileVM;
+            }
+        }
+
 
         private void InitDropDowns()
         {

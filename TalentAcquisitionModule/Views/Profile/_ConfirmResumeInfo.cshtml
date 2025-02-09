@@ -1,6 +1,6 @@
 ﻿@model ProfileInfoVM
 @{
-    ViewData["Title"] = "Update Profile";
+    ViewData["Title"] = "Confirm Information";
 }
 
 <div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
@@ -12,8 +12,9 @@
                 <div class="mb-3">
                     <h5 class="fw-bold">Basic Information Section</h5>
                     <!-- Registration Form -->
-                    <form enctype="multipart/form-data" method="post" asp-action="UpdateProfile">
+                    <form enctype="multipart/form-data" method="post">
                         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <input type="hidden" asp-for="@Model.CvUrl" />
                         <!-- Email -->
                         <div class="mb-3">
                             <label for="Email" class="form-label fw-semibold">
@@ -24,6 +25,35 @@
                                 <input asp-for="Email" class="form-control form-control-lg" id="email" placeholder="Enter your email" required>
                             </div>
                             <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+
+                        
+                        <!-- Password -->
+                        <div class="mb-3">
+                            <label for="password" class="form-label fw-semibold">
+                                Password: <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-danger text-white"><i class="bi bi-lock"></i></span>
+                                <input asp-for="UserPassword" type="password" class="form-control form-control-lg" id="password" placeholder="Enter your password" required>
+                                <button class="btn btn-outline-danger" type="button" id="togglePassword">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            <span asp-validation-for="UserPassword" class="text-danger"></span>
+                        </div>
+
+
+                        <!-- Confirm Password -->
+                        <div class="mb-3">
+                            <label for="confirmPassword" class="form-label fw-semibold">
+                                Confirm Password: <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-danger text-white"><i class="bi bi-lock"></i></span>
+                                <input asp-for="ConfirmPassword" type="password" class="form-control form-control-lg" id="confirmPassword" placeholder="Confirm your password" required>
+                            </div>
+                            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
                         </div>
 
                         <!-- Name -->
@@ -114,25 +144,6 @@
                                 </select>
                             </div>
                             <span asp-validation-for="MethodOfContact" class="text-danger"></span>
-                        </div>
-
-                        <!-- CV Upload -->
-                        <div class="row">
-                            <div class="mb-3">
-                                <label for="cvFile" class="form-label fw-semibold">
-                                    Upload CV: <span class="text-danger">*</span>
-                                </label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-danger text-white"><i class="bi bi-file-earmark-arrow-up"></i></span>
-                                    <input asp-for="CvFile" type="file" class="form-control form-control-lg" id="cvFile">
-                                    <a href="@Url.Action("DownloadCv", "Profile", new { filePath = Model.CvUrl, fileName = Model.Name + ".pdf" })"
-                                       class="btn btn-danger ms-2 d-flex align-items-center justify-content-center"
-                                       style="min-width: 120px;">
-                                        Download CV
-                                    </a>
-                                </div>
-                                <span asp-validation-for="CvFile" class="text-danger"></span>
-                            </div>
                         </div>
 
                         <!-- Profile Completion Section -->
@@ -257,7 +268,7 @@
 
                         <!-- Submit Button -->
                         <div class="text-center mt-4">
-                            <button type="submit" class="btn btn-danger btn-lg mt-5" id="save-changes">Save Changes</button>
+                            <button type="submit" class="btn btn-danger btn-lg mt-5" id="save-changes">Register</button>
                         </div>
                     </form>
                 </div>
@@ -267,10 +278,8 @@
 </div>
 
 <style>
-    body {Share your professional journey to help us find the best opportunities for you
-
-
-        font-family: 'Roboto', sans-serif;
+    body {
+        Share your professional journey to help us find the best opportunities for you font-family: 'Roboto', sans-serif;
         background-color: #E0E0E0; /* Light gray background */
     }
 

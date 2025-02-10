@@ -19,23 +19,29 @@
         });
     </script>
     <script>
-        function togglePassword(inputId) {
-            const passwordInput = document.getElementById(inputId);
-            const button = passwordInput.nextElementSibling;
-            const icon = button.querySelector('i');
+        function togglePasswords(passwordId, confirmPasswordId, buttonId) {
+            const passwordInput = document.getElementById(passwordId);
+            const confirmPasswordInput = document.getElementById(confirmPasswordId);
+            const button = document.getElementById(buttonId);
+            const icon = button.querySelector("i");
 
+            // Toggle both fields
             if (passwordInput.type === "password") {
                 passwordInput.type = "text";
+                confirmPasswordInput.type = "text";
                 icon.classList.replace("bi-eye", "bi-eye-slash");
             } else {
                 passwordInput.type = "password";
+                confirmPasswordInput.type = "password";
                 icon.classList.replace("bi-eye-slash", "bi-eye");
             }
         }
 
-         document.getElementById("togglePassword").addEventListener("click", function () {
-            togglePassword("password");
+        // Attach event listener to the single toggle button
+        document.getElementById("togglePassword").addEventListener("click", function () {
+            togglePasswords("password", "confirmPassword", "togglePassword");
         });
+
         // Disable the register button after the first click
         document.getElementById("save-changes").addEventListener("click", function (e) {
             this.disabled = true; // Disable the button

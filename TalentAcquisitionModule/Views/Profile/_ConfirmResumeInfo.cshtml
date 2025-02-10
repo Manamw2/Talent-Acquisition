@@ -3,7 +3,7 @@
     ViewData["Title"] = "Confirm Information";
 }
 
-<div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+<div class="container d-flex justify-content-center align-items-center mt-3" style="min-height: 80vh;">
     <div class="row justify-content-center w-100">
         <div class="col-md-10">
             <!-- Card Container -->
@@ -21,7 +21,7 @@
                                 Email Address: <span class="text-danger">*</span>
                             </label>
                             <div class="input-group">
-                                <span class="input-group-text bg-danger text-white"><i class="bi bi-envelope"></i></span>
+                                <span class="input-group-text bg-primary text-white"><i class="bi bi-envelope"></i></span>
                                 <input asp-for="Email" class="form-control form-control-lg" id="email" placeholder="Enter your email" required>
                             </div>
                             <span asp-validation-for="Email" class="text-danger"></span>
@@ -34,9 +34,9 @@
                                 Password: <span class="text-danger">*</span>
                             </label>
                             <div class="input-group">
-                                <span class="input-group-text bg-danger text-white"><i class="bi bi-lock"></i></span>
+                                <span class="input-group-text bg-primary text-white"><i class="bi bi-lock"></i></span>
                                 <input asp-for="UserPassword" type="password" class="form-control form-control-lg" id="password" placeholder="Enter your password" required>
-                                <button class="btn btn-outline-danger" type="button" id="togglePassword">
+                                <button class="btn btn-outline-primary" type="button" id="togglePassword">
                                     <i class="bi bi-eye"></i>
                                 </button>
                             </div>
@@ -50,7 +50,7 @@
                                 Confirm Password: <span class="text-danger">*</span>
                             </label>
                             <div class="input-group">
-                                <span class="input-group-text bg-danger text-white"><i class="bi bi-lock"></i></span>
+                                <span class="input-group-text bg-primary text-white"><i class="bi bi-lock"></i></span>
                                 <input asp-for="ConfirmPassword" type="password" class="form-control form-control-lg" id="confirmPassword" placeholder="Confirm your password" required>
                             </div>
                             <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
@@ -62,7 +62,7 @@
                                 Name: <span class="text-danger">*</span>
                             </label>
                             <div class="input-group">
-                                <span class="input-group-text bg-danger text-white"><i class="bi bi-person"></i></span>
+                                <span class="input-group-text bg-primary text-white"><i class="bi bi-person"></i></span>
                                 <input asp-for="Name" class="form-control form-control-lg" id="name" placeholder="Enter your name" required>
                             </div>
                             <span asp-validation-for="Name" class="text-danger"></span>
@@ -74,7 +74,7 @@
                                 Phone Number: <span class="text-danger">*</span>
                             </label>
                             <div class="input-group">
-                                <span class="input-group-text bg-danger text-white"><i class="bi bi-phone"></i></span>
+                                <span class="input-group-text bg-primary text-white"><i class="bi bi-phone"></i></span>
                                 <input asp-for="Phone" class="form-control form-control-lg" id="phone" placeholder="Enter your phone number" required>
                             </div>
                             <span asp-validation-for="Phone" class="text-danger"></span>
@@ -86,7 +86,7 @@
                                 Faculty: <span class="text-danger">*</span>
                             </label>
                             <div class="input-group">
-                                <span class="input-group-text bg-danger text-white"><i class="bi bi-mortarboard"></i></span>
+                                <span class="input-group-text bg-primary text-white"><i class="bi bi-mortarboard"></i></span>
                                 <input asp-for="Faculty" class="form-control form-control-lg" id="faculty" placeholder="Enter your Faculty Name" required>
                             </div>
                             <span asp-validation-for="Faculty" class="text-danger"></span>
@@ -98,7 +98,7 @@
                                 Date of Birth: <span class="text-danger">*</span>
                             </label>
                             <div class="input-group">
-                                <span class="input-group-text bg-danger text-white"><i class="bi bi-calendar"></i></span>
+                                <span class="input-group-text bg-primary text-white"><i class="bi bi-calendar"></i></span>
                                 <input asp-for="DateOfBirth" type="date" class="form-control form-control-lg" id="dateOfBirth" asp-value="" required>
                             </div>
                             <span asp-validation-for="DateOfBirth" class="text-danger"></span>
@@ -110,7 +110,7 @@
                                 Education Level: <span class="text-danger">*</span>
                             </label>
                             <div class="input-group">
-                                <span class="input-group-text bg-danger text-white"><i class="bi bi-book"></i></span>
+                                <span class="input-group-text bg-primary text-white"><i class="bi bi-book"></i></span>
                                 <select asp-for="EducationLevel" asp-items="Model.Input.EducationLevels" class="form-control form-control-lg" id="educationLevel" required>
                                     <option value="">Select education level</option>
                                 </select>
@@ -124,7 +124,7 @@
                                 English Proficiency Level: <span class="text-danger">*</span>
                             </label>
                             <div class="input-group">
-                                <span class="input-group-text bg-danger text-white"><i class="bi bi-translate"></i></span>
+                                <span class="input-group-text bg-primary text-white"><i class="bi bi-translate"></i></span>
                                 <select asp-for="EnglishProficiencyLevel" asp-items="Model.Input.EnglishProficiencyLevels" class="form-control form-control-lg" id="englishProficiency" required>
                                     <option value="">Select English proficiency level</option>
                                 </select>
@@ -138,7 +138,7 @@
                                 Method of Contact: <span class="text-danger">*</span>
                             </label>
                             <div class="input-group">
-                                <span class="input-group-text bg-danger text-white"><i class="bi bi-telephone"></i></span>
+                                <span class="input-group-text bg-primary text-white"><i class="bi bi-telephone"></i></span>
                                 <select asp-for="MethodOfContact" asp-items="Model.Input.MethodOfContactOptions" class="form-control form-control-lg" id="methodOfContact" required>
                                     <option value="">Select preferred method of contact</option>
                                 </select>
@@ -268,7 +268,7 @@
 
                         <!-- Submit Button -->
                         <div class="text-center mt-4">
-                            <button type="submit" class="btn btn-danger btn-lg mt-5" id="save-changes">Register</button>
+                            <button type="submit" class="btn btn-primary btn-lg mt-5" id="save-changes">Register</button>
                         </div>
                     </form>
                 </div>
@@ -279,8 +279,8 @@
 
 <style>
     body {
-        Share your professional journey to help us find the best opportunities for you font-family: 'Roboto', sans-serif;
-        background-color: #E0E0E0; /* Light gray background */
+        font-family: 'Roboto', sans-serif;
+        background-color: #808080; /* Light gray background */
     }
 
     .card {
@@ -292,18 +292,13 @@
         border: none;
     }
 
-    .form-control-lg {
+    .btn {
         border-radius: 0.25rem; /* Rounded corners for inputs */
     }
 
-    .btn-danger {
-        background-color: #dc3545; /* Red button background */
-        border: none;
+    .form-control-lg {
+        border-radius: 0.25rem; /* Rounded corners for inputs */
     }
-
-        .btn-danger:hover {
-            background-color: #c82333; /* Darker red on hover */
-        }
 
     .collapsible-content {
         display: none;

@@ -37,15 +37,18 @@
     </script>
     <script>
         function togglePassword(inputId) {
+            const confirmPassword = document.getElementById("confirmPassword")
             const passwordInput = document.getElementById(inputId);
             const button = passwordInput.nextElementSibling;
             const icon = button.querySelector('i');
 
             if (passwordInput.type === "password") {
                 passwordInput.type = "text";
+                confirmPassword.type = "text";
                 icon.classList.replace("bi-eye", "bi-eye-slash");
             } else {
                 passwordInput.type = "password";
+                confirmPassword.type = "password";
                 icon.classList.replace("bi-eye-slash", "bi-eye");
             }
         }

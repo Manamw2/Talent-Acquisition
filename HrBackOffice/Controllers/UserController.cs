@@ -22,9 +22,9 @@ namespace HrBackOffice.Controllers
         }
         public async Task<IActionResult> Index()
         {
-            // Fetch the list of users without roles
+            // Fetch all users first
             var users = await _userManager.Users
-                .Select(u => new UserViewModel()
+                .Select(u => new UserViewModel
                 {
                     Id = u.Id,
                     UserName = u.UserName,
@@ -32,27 +32,37 @@ namespace HrBackOffice.Controllers
                 })
                 .ToListAsync();
 
-            // Fetch roles for each user asynchronously
+            // Fetch roles for each user asynchronously and filter those with "HR Admin" role
+            var filteredUsers = new List<UserViewModel>();
+
             foreach (var user in users)
             {
                 var userEntity = await _userManager.FindByIdAsync(user.Id);
-                user.Roles = await _userManager.GetRolesAsync(userEntity);
+                var roles = await _userManager.GetRolesAsync(userEntity);
+
+                if (roles.Contains("HR")) // Check if the user has "HR Admin" role
+                {
+                    user.Roles = roles;
+                    filteredUsers.Add(user);
+                }
             }
 
-            return View(users);
+            return View(filteredUsers);
         }
 
-        [HttpGet]
+
         public IActionResult Create()
         {
             var viewModel = new UserViewModel
             {
-                Roles = _roleManager.Roles.Select(r => r.Name).ToList() // Fetch all roles
+                Roles = _roleManager.Roles
+                    .Where(r => r.Name == "HR" || r.Name == "Admin") // Fetch only HR and Admin roles
+                    .Select(r => r.Name)
+                    .ToList()
             };
             return View(viewModel);
         }
 
-        [HttpPost]
         [HttpPost]
         public async Task<IActionResult> Create(UserViewModel model)
         {
@@ -65,6 +75,7 @@ namespace HrBackOffice.Controllers
 
             var user = new AppUser
             {
+                DisplayName = model.DisplayName,
                 UserName = model.UserName,
                 Email = model.Email,
             };
@@ -76,9 +87,12 @@ namespace HrBackOffice.Controllers
                 {
                     foreach (var role in model.Roles)
                     {
-                        if (await _roleManager.RoleExistsAsync(role))
+                        if (role == "HR" || role == "Admin") // Ensure only HR and Admin roles are assigned
                         {
-                            await _userManager.AddToRoleAsync(user, role);
+                            if (await _roleManager.RoleExistsAsync(role))
+                            {
+                                await _userManager.AddToRoleAsync(user, role);
+                            }
                         }
                     }
                 }
@@ -95,7 +109,6 @@ namespace HrBackOffice.Controllers
 
 
 
-
         public async Task<IActionResult> Edit(string id)
         {
             var user = await _userManager.FindByIdAsync(id);
@@ -103,6 +116,7 @@ namespace HrBackOffice.Controllers
 
             var viewModel = new UserRoleViewModel()
             {
+                DisplayName = user.DisplayName,
                 UserId = user.Id,
                 UserName = user.UserName,
                 Roles = allRoles.Select(r => new RoleViewModel()

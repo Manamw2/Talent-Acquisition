@@ -48,3 +48,29 @@ body {
     --bs-gutter-x: 0;
     margin-top: -10px !important;
 }
+
+/* Custom Pagination Styles */
+.custom - pagination.page - item.page - link {
+    color: gray; /* Default color for unselected items */
+    background - color: transparent;
+    border: 1px solid gray;
+    margin: 0 2px; /* Add spacing between pagination items */
+}
+
+.custom - pagination.page - item.active.page - link {
+    color: white; /* Text color for the active page */
+    background - color: pink; /* Background color for the active page */
+    border - color: pink; /* Border color for the active page */
+}
+
+.custom - pagination.page - item.disabled.page - link {
+    color: lightgray; /* Color for disabled items (e.g., Previous/Next when inactive) */
+    border - color: lightgray;
+    background - color: transparent;
+}
+
+.custom - pagination.page - item: not(.disabled): not(.active).page - link:hover {
+    color: gray; /* Text color on hover */
+    border - color: gray; /* Border color on hover */
+    background - color: transparent;
+}

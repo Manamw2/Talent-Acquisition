@@ -29,7 +29,6 @@ namespace Models.ViewModels
         [Required]
         [Display(Name = "Department")]
         public int DepartmentId { get; set; }
-        public string BatchName { get; set; } = string.Empty;
         public string DepartmentName { get; set; } = string.Empty;
 
         public List<SelectListItem> Batches { get; set; } = new();

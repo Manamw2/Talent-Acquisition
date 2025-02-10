@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using Microsoft.CodeAnalysis.Elfie.Diagnostics;
 
 namespace TalentAcquisitionModule.Controllers
 {
@@ -21,17 +22,42 @@ namespace TalentAcquisitionModule.Controllers
             _mapper = mapper;
         }
 
-        public async Task<IActionResult> Index()
+        //public async Task<IActionResult> Index()  // for apply jobs to applicants
+        //{
+        //    var jobs = await _unitOfWork.JobRepository.GetAllWithDetailsAsync() ?? new List<Job>();
+        //    var jobDTOs = _mapper.Map<IEnumerable<JobViewModel>>(jobs);
+        //    return View(jobDTOs);
+        //}
+        [Route("Applicant/{page:int?}")]
+        public async Task<IActionResult> Index(int page = 1)  // Add a default page parameter
         {
-            var jobs = await _unitOfWork.JobRepository.GetAllWithDetailsAsync() ?? new List<Job>();
-            var jobDTOs = _mapper.Map<IEnumerable<JobViewModel>>(jobs);
-            return View(jobDTOs);
-        }
+            const int pageSize = 5; // Number of jobs per page
 
-        [Route("FirstView")]
-        public IActionResult FirstView()
-        {
-            return View();
+            // Fetch all jobs
+            var jobs = await _unitOfWork.JobRepository.GetAllWithDetailsAsync() ?? new List<Job>();
+
+            foreach (var job in jobs)
+            {
+                Console.WriteLine($"Job ID: {job.JobId}, Batch ID: {job.BatchId}, Batch EndDate: {job.Batch?.EndDate}");
+            }
+
+
+            var jobDTOs = _mapper.Map<IEnumerable<JobViewModel>>(jobs);
+
+     
+
+            // Paginate the jobs
+            var paginatedJobs = jobDTOs.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+            // Calculate total pages
+            var totalJobs = jobDTOs.Count();
+            var totalPages = (int)Math.Ceiling(totalJobs / (double)pageSize);
+
+            // Pass data to the view
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+
+            return View(paginatedJobs);
         }
 
         [HttpGet]
@@ -55,13 +81,13 @@ namespace TalentAcquisitionModule.Controllers
                 };
 
                 await _unitOfWork.JobApplicationRepository.AddAsync(jobApplication);
-                await _unitOfWork.SaveAsync(); // Ensure changes are saved
+                await _unitOfWork.SaveAsync(); 
 
                 return Json(new { success = true, message = "You applied successfully!" });
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error: {ex.Message}"); // Log the error message
+                Console.WriteLine($"Error: {ex.Message}"); 
                 return Json(new { success = false, message = "An error occurred while processing your request." });
             }
         }

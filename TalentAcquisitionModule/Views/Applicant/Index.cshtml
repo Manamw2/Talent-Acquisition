@@ -2,7 +2,8 @@
 
 @{
     ViewData["Title"] = "Job Board";
-    // Layout = "~/Views/Shared/_ApplicantHomeNav.cshtml";
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int totalPages = ViewBag.TotalPages ?? 1;
 }
 
 <div class="container-fluid">
@@ -23,12 +24,35 @@
                         <h6 class="mb-1">@job.Title</h6>
                         <div class="job-location">📍 SoftTrend Headquarter</div>
                         <div class="mb-1">@job.DepartmentName</div>
-                        <div class="category-tag mt-1">Valid till:@job.EndDate</div>
+                        <div class="category-tag mt-1">Valid till: @job.EndDate.ToString("yyyy-MM-dd")</div>
                     </a>
                 }
-            </div>
-        </div>
 
+            </div>
+            <br />
+            <!-- Pagination Controls -->
+            <nav aria-label="Page navigation">
+                <ul class="pagination custom-pagination">
+                    <!-- Previous Button -->
+                    <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                        <a class="page-link" href="@Url.Action("Index", new { page = currentPage - 1 })">Previous</a>
+                    </li>
+
+                    <!-- Page Numbers -->
+                    @for (int i = 1; i <= totalPages; i++)
+                    {
+                        <li class="page-item @(i == currentPage ? "active" : "")">
+                            <a class="page-link" href="@Url.Action("Index", new { page = i })">@i</a>
+                        </li>
+                    }
+
+                    <!-- Next Button -->
+                    <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                        <a class="page-link" href="@Url.Action("Index", new { page = currentPage + 1 })">Next</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
 
         <!-- Main Content -->
         <div class="col-md-6 p-4">
@@ -72,7 +96,6 @@
 
 @section Scripts {
     <script>
-
         $(document).ready(function () {
             $("#applyButton").click(function () {
                 var jobId = $(this).data("job-id");
@@ -86,7 +109,6 @@
                     contentType: 'application/x-www-form-urlencoded',
                     data: {
                         jobId: parseInt(jobId),
-                        // __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
                     },
                     success: function (response) {
                         if (response.success) {
@@ -117,35 +139,9 @@
                 });
             });
         });
+
     </script>
-    @*  <script>
-        $(document).ready(function () {
-            $("#applyButton").click(function () {
-                var jobId = $(this).data("job-id");
-                console.log(jobId);
-                var baseUrl = window.location.origin + '/TalentAcquisition/Applicants/ApplyForJob';
-                console.log(baseUrl);
-                        $.ajax({
-            url: baseUrl,
-            type: 'GET',
-            contentType: 'application/x-www-form-urlencoded',
-            data: {
-                jobId:parseInt(jobId),
-                // __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
-            },
-            success: function (response) {
-                alert(response.message);
-            },
-            error: function (xhr, status, error) {
-                alert("An error occurred: " + xhr.responseText);
-                console.log("XHR:", xhr);
-            }
-        });
-                });
-            });
-
-    </script> *@
-
     <script src="~/js/job-board.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-}
+    }
+

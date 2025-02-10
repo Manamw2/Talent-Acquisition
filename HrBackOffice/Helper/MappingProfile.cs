@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
-using HrBackOffice.Models;
 using Models;
+
+//using HrBackOffice.Models;
+using Models.ViewModels;
 
 namespace HrBackOffice.Helper
 {
@@ -10,6 +12,7 @@ namespace HrBackOffice.Helper
         {
             CreateMap<Job, JobViewModel>()
                 .ForMember(dest => dest.BatchId, opt => opt.MapFrom(src => src.BatchId))
+                .ForMember(dest => dest.EndDate, opt => opt.MapFrom(src => src.Batch.EndDate))
                 .ForMember(dest => dest.DepartmentId, opt => opt.MapFrom(src => src.DepartmentId));
 
             CreateMap<JobViewModel, Job>()

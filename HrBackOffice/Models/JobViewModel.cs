@@ -26,9 +26,7 @@ namespace HrBackOffice.Models
         [Required]
         [Display(Name = "Department")]
         public int DepartmentId { get; set; }
-        public string BatchName { get; set; } = string.Empty;
         public string DepartmentName { get; set; } = string.Empty;
-
         public List<SelectListItem> Batches { get; set; } = new();
         public List<SelectListItem> Departments { get; set; } = new();
 
@@ -39,7 +37,9 @@ namespace HrBackOffice.Models
                 Value = ((int)jt).ToString(),
                 Text = jt.ToString()
             }).ToList();
-
+        public int ApplicationCount { get; set; }
+        public int MyProperty { get; set; }
+        public DateTime EndDate { get; set; }
         public List<JobApplicationViewModel> JobApplications { get; set; } = new List<JobApplicationViewModel>();
 
     }

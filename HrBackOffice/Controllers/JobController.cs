@@ -13,6 +13,7 @@ using X.PagedList.Mvc.Core;
 
 namespace HrBackOffice.Controllers
 {
+    [Authorize]
     public class JobController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
@@ -161,8 +162,57 @@ namespace HrBackOffice.Controllers
             await _unitOfWork.SaveAsync();
             return RedirectToAction(nameof(Index));
         }
+        #region Details
+        //public async Task<IActionResult> Details(int id)
+        //{
+        //    var job = await _unitOfWork.JobRepository.GetFirstOrDefaultAsync(
+        //        filter: j => j.JobId == id,
+        //        includeProperties: "Batch,Department,JobApplications.AppUser"
+        //    );
 
-        public async Task<IActionResult> Details(int id)
+        //    if (job == null)
+        //    {
+        //        return NotFound();
+        //    }
+
+        //    var model = new JobViewModel
+        //    {
+        //        JobId = job.JobId,
+        //        Title = job.Title,
+        //        Description = job.Description,
+        //        JobType = job.JobType,
+        //        BatchId = job.BatchId,
+        //        DepartmentId = job.DepartmentId,
+
+        //        // Populate Batches and Departments lists
+        //        Batches = (await _unitOfWork.BatchRepository.GetAllAsync()).Select(b => new SelectListItem
+        //        {
+        //            Value = b.BatchId.ToString(),
+        //            Text = b.BatchName // Change this to match your Batch entity's name field
+        //        }).ToList(),
+
+        //        Departments = (await _unitOfWork.DepRepository.GetAllAsync()).Select(d => new SelectListItem
+        //        {
+        //            Value = d.DepartmentId.ToString(),
+        //            Text = d.Name // Change this to match your Department entity's name field
+        //        }).ToList(),
+
+        //        JobApplications = job.JobApplications.Select(app => new JobApplicationViewModel
+        //        {
+        //            ApplicationId = app.ApplicationId,
+        //            UserId = app.UserId,
+        //            ApplicantName = app.AppUser.UserName,
+        //            ApplicantEmail = app.AppUser.Email,
+        //            AppliedDate = app.AppliedDate,
+        //            Status = app.Status
+        //        }).ToList()
+        //    };
+
+        //    return View(model);
+        //}
+        #endregion
+
+        public async Task<IActionResult> Details(int id, string searchQuery = null)
         {
             var job = await _unitOfWork.JobRepository.GetFirstOrDefaultAsync(
                 filter: j => j.JobId == id,
@@ -174,6 +224,47 @@ namespace HrBackOffice.Controllers
                 return NotFound();
             }
 
+            var applications = new List<JobApplicationViewModel>();
+
+            if (!string.IsNullOrEmpty(searchQuery))
+            {
+                using (var client = new HttpClient())
+                {
+                    var response = await client.GetAsync($"http://localhost:8000/search?query={Uri.EscapeDataString(searchQuery)}&max_results=5&exact_thresh=0.9&nonexact_thresh=0.5");
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var searchResult = await response.Content.ReadFromJsonAsync<SearchResult>();
+                        var matchedUserIds = searchResult.Results.Select(r => r.Id).ToList();
+
+                        // Filter applications based on matched user IDs
+                        applications = job.JobApplications
+                            .Where(app => matchedUserIds.Contains(app.UserId))
+                            .Select(app => new JobApplicationViewModel
+                            {
+                                ApplicationId = app.ApplicationId,
+                                UserId = app.UserId,
+                                ApplicantName = app.AppUser.UserName,
+                                ApplicantEmail = app.AppUser.Email,
+                                AppliedDate = app.AppliedDate,
+                                Status = app.Status
+                            }).ToList();
+                    }
+                }
+            }
+            else
+            {
+                applications = job.JobApplications.Select(app => new JobApplicationViewModel
+                {
+                    ApplicationId = app.ApplicationId,
+                    UserId = app.UserId,
+                    ApplicantName = app.AppUser.UserName,
+                    ApplicantEmail = app.AppUser.Email,
+                    AppliedDate = app.AppliedDate,
+                    Status = app.Status
+                }).ToList();
+            }
+
             var model = new JobViewModel
             {
                 JobId = job.JobId,
@@ -182,34 +273,21 @@ namespace HrBackOffice.Controllers
                 JobType = job.JobType,
                 BatchId = job.BatchId,
                 DepartmentId = job.DepartmentId,
-
-                // Populate Batches and Departments lists
                 Batches = (await _unitOfWork.BatchRepository.GetAllAsync()).Select(b => new SelectListItem
                 {
                     Value = b.BatchId.ToString(),
-                    Text = b.BatchName // Change this to match your Batch entity's name field
+                    Text = b.BatchName
                 }).ToList(),
-
                 Departments = (await _unitOfWork.DepRepository.GetAllAsync()).Select(d => new SelectListItem
                 {
                     Value = d.DepartmentId.ToString(),
-                    Text = d.Name // Change this to match your Department entity's name field
+                    Text = d.Name
                 }).ToList(),
-
-                JobApplications = job.JobApplications.Select(app => new JobApplicationViewModel
-                {
-                    ApplicationId = app.ApplicationId,
-                    UserId = app.UserId,
-                    ApplicantName = app.AppUser.UserName,
-                    ApplicantEmail = app.AppUser.Email,
-                    AppliedDate = app.AppliedDate,
-                    Status = app.Status
-                }).ToList()
+                JobApplications = applications
             };
 
             return View(model);
         }
-
         public IActionResult ApplicantProfile(string userId)
         {
             if (string.IsNullOrEmpty(userId))

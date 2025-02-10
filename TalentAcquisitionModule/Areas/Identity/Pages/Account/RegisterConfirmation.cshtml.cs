@@ -44,7 +44,7 @@ namespace TalentAcquisitionModule.Areas.Identity.Pages.Account
             public string Code { get; set; }
         }
 
-        public async Task<IActionResult> OnPostAsync(string email, string returnUrl = null)
+        public async Task<IActionResult> OnPostAsync(string email, bool isFromRegisterPage = true , string returnUrl = null)
         {
             if (!ModelState.IsValid)
             {
@@ -75,7 +75,9 @@ namespace TalentAcquisitionModule.Areas.Identity.Pages.Account
             if (_userManager.Options.SignIn.RequireConfirmedAccount)
             {
                 await _signInManager.SignInAsync(user, isPersistent: false);
-                return RedirectToPage("ProfileCompletion");
+                if(isFromRegisterPage)
+                    return RedirectToPage("ProfileCompletion");
+                return RedirectToAction("Index", "Profile");
             }
             else
             {

@@ -5,7 +5,7 @@
 
 }
 
-<div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+<div class="container d-flex justify-content-center align-items-center mt-3">
     <div class="row justify-content-center w-100">
         <div class="col-md-10">
             <!-- Card Container -->
@@ -13,10 +13,21 @@
                 <!-- Registration Section -->
                 <div class="mb-3">
                     <h5 class="fw-bold">Create a new account</h5>
-                    <p class="text-muted">Fill in the form below to register.</p>
+                    <p class="text-muted">Fill in the form below to start your career.</p>
                     <p class="text-muted small">
                         <span class="text-danger">*</span> indicates a required field.
                     </p>
+                   <!--extract data from cv-->
+                    <form id="cvForm" enctype="multipart/form-data" method="post" asp-page-handler="UploadCv">
+                        <!-- Hidden file input -->
+                        <input asp-for="CvFile" type="file" class="form-control form-control-lg" id="cvFile" style="display: none;" required>
+                        <span asp-validation-for="CvFile" class="text-danger"></span>
+
+                        <!-- Upload CV link/button -->
+                        <button type="button" id="uploadCvButton" class="btn btn-link p-0">
+                            <span class="text-primary fw-semibold">Extract from CV instead</span>
+                        </button>
+                    </form>
                     <!-- Registration Form -->
                     <form enctype="multipart/form-data" method="post">
                         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
@@ -26,7 +37,7 @@
                                 Email Address: <span class="text-danger">*</span>
                             </label>
                             <div class="input-group">
-                                <span class="input-group-text bg-danger text-white"><i class="bi bi-envelope"></i></span>
+                                <span class="input-group-text bg-primary text-white"><i class="bi bi-envelope"></i></span>
                                 <input asp-for="Input.Email" class="form-control form-control-lg" id="email" placeholder="Enter your email" required>
                             </div>
                             <span asp-validation-for="Input.Email" class="text-danger"></span>
@@ -38,9 +49,9 @@
                                 Password: <span class="text-danger">*</span>
                             </label>
                             <div class="input-group">
-                                <span class="input-group-text bg-danger text-white"><i class="bi bi-lock"></i></span>
+                                <span class="input-group-text bg-primary text-white"><i class="bi bi-lock"></i></span>
                                 <input asp-for="Input.Password" type="password" class="form-control form-control-lg" id="password" placeholder="Enter your password" required>
-                                <button class="btn btn-outline-danger" type="button" id="togglePassword">
+                                <button class="btn btn-outline-primary" type="button" id="togglePassword">
                                     <i class="bi bi-eye"></i>
                                 </button>
                             </div>
@@ -53,7 +64,7 @@
                                 Confirm Password: <span class="text-danger">*</span>
                             </label>
                             <div class="input-group">
-                                <span class="input-group-text bg-danger text-white"><i class="bi bi-lock"></i></span>
+                                <span class="input-group-text bg-primary text-white"><i class="bi bi-lock"></i></span>
                                 <input asp-for="Input.ConfirmPassword" type="password" class="form-control form-control-lg" id="confirmPassword" placeholder="Confirm your password" required>
                             </div>
                             <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
@@ -65,7 +76,7 @@
                                 Name: <span class="text-danger">*</span>
                             </label>
                             <div class="input-group">
-                                <span class="input-group-text bg-danger text-white"><i class="bi bi-person"></i></span>
+                                <span class="input-group-text bg-primary text-white"><i class="bi bi-person"></i></span>
                                 <input asp-for="Input.Name" class="form-control form-control-lg" id="name" placeholder="Enter your name" required>
                             </div>
                             <span asp-validation-for="Input.Name" class="text-danger"></span>
@@ -77,10 +88,22 @@
                                 Phone Number: <span class="text-danger">*</span>
                             </label>
                             <div class="input-group">
-                                <span class="input-group-text bg-danger text-white"><i class="bi bi-phone"></i></span>
+                                <span class="input-group-text bg-primary text-white"><i class="bi bi-phone"></i></span>
                                 <input asp-for="Input.Phone" class="form-control form-control-lg" id="phone" placeholder="Enter your phone number" required>
                             </div>
                             <span asp-validation-for="Input.Phone" class="text-danger"></span>
+                        </div>
+
+                        <!-- Faculty -->
+                        <div class="mb-3">
+                            <label for="faculty" class="form-label fw-semibold">
+                                Faculty: <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-primary text-white"><i class="bi bi-mortarboard"></i></span>
+                                <input asp-for="Input.Faculty" class="form-control form-control-lg" id="faculty" placeholder="Enter your Faculty Name" required>
+                            </div>
+                            <span asp-validation-for="Input.Faculty" class="text-danger"></span>
                         </div>
 
                         <!-- Date of Birth -->
@@ -89,7 +112,7 @@
                                 Date of Birth: <span class="text-danger">*</span>
                             </label>
                             <div class="input-group">
-                                <span class="input-group-text bg-danger text-white"><i class="bi bi-calendar"></i></span>
+                                <span class="input-group-text bg-primary text-white"><i class="bi bi-calendar"></i></span>
                                 <input asp-for="Input.DateOfBirth" type="date" class="form-control form-control-lg" id="dateOfBirth" asp-value=""  required>
                             </div>
                             <span asp-validation-for="Input.DateOfBirth" class="text-danger"></span>
@@ -101,7 +124,7 @@
                                 Education Level: <span class="text-danger">*</span>
                             </label>
                             <div class="input-group">
-                                <span class="input-group-text bg-danger text-white"><i class="bi bi-book"></i></span>
+                                <span class="input-group-text bg-primary text-white"><i class="bi bi-book"></i></span>
                                 <select asp-for="Input.EducationLevel" asp-items="Model.Input.EducationLevels" class="form-control form-control-lg" id="educationLevel" required>
                                     <option value="">Select education level</option>
                                 </select>
@@ -115,7 +138,7 @@
                                 English Proficiency Level: <span class="text-danger">*</span>
                             </label>
                             <div class="input-group">
-                                <span class="input-group-text bg-danger text-white"><i class="bi bi-translate"></i></span>
+                                <span class="input-group-text bg-primary text-white"><i class="bi bi-translate"></i></span>
                                 <select asp-for="Input.EnglishProficiencyLevel" asp-items="Model.Input.EnglishProficiencyLevels" class="form-control form-control-lg" id="englishProficiency" required>
                                     <option value="">Select English proficiency level</option>
                                 </select>
@@ -129,7 +152,7 @@
                                 Method of Contact: <span class="text-danger">*</span>
                             </label>
                             <div class="input-group">
-                                <span class="input-group-text bg-danger text-white"><i class="bi bi-telephone"></i></span>
+                                <span class="input-group-text bg-primary text-white"><i class="bi bi-telephone"></i></span>
                                 <select asp-for="Input.MethodOfContact" asp-items="Model.Input.MethodOfContactOptions" class="form-control form-control-lg" id="methodOfContact" required>
                                     <option value="">Select preferred method of contact</option>
                                 </select>
@@ -143,7 +166,7 @@
                                 Upload CV: <span class="text-danger">*</span>
                             </label>
                             <div class="input-group">
-                                <span class="input-group-text bg-danger text-white"><i class="bi bi-file-earmark-arrow-up"></i></span>
+                                <span class="input-group-text bg-primary text-white"><i class="bi bi-file-earmark-arrow-up"></i></span>
                                 <input asp-for="CvFile" type="file" class="form-control form-control-lg" id="cvFile" required>
                             </div>
                             <span asp-validation-for="CvFile" class="text-danger"></span>
@@ -151,7 +174,7 @@
 
                         <!-- Submit Button -->
                         <div class="text-center">
-                            <button type="submit" class="btn btn-danger btn-lg w-100" id="registerButton">Register</button>
+                            <button type="submit" class="btn btn-primary btn-lg w-100" id="registerButton">Register</button>
                         </div>
                     </form>
                 </div>
@@ -159,7 +182,7 @@
                 <!-- Login Section -->
                 <div class="text-center mt-3">
                     <h5 class="fw-bold">Already have an account?</h5>
-                    <a asp-page="./Login" class="text-danger fw-semibold text-decoration-none">Sign in</a>
+                    <a asp-page="./Login" class="text-primary fw-semibold text-decoration-none">Sign in</a>
                     <span class="text-muted">to access your account.</span>
                 </div>
             </div>
@@ -170,7 +193,7 @@
 <style>
     body {
         font-family: 'Roboto', sans-serif;
-        background-color: #E0E0E0; /* Light gray background */
+        background-color: #808080; /* Light gray background */
     }
 
     .card {
@@ -182,33 +205,50 @@
         border: none;
     }
 
-    .form-control-lg {
+    .btn {
         border-radius: 0.25rem; /* Rounded corners for inputs */
     }
 
-    .btn-danger {
-        background-color: #dc3545; /* Red button background */
-        border: none;
+    .form-control-lg {
+        border-radius: 0.25rem; /* Rounded corners for inputs */
     }
-
-        .btn-danger:hover {
-            background-color: #c82333; /* Darker red on hover */
-        }
 </style>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
-        document.getElementById("togglePassword").addEventListener("click", function () {
-            let passwordInput = document.getElementById("password");
-            let icon = this.querySelector("i");
+        // Trigger file input when the "Upload CV" button is clicked
+        document.getElementById('uploadCvButton').addEventListener('click', function () {
+            document.getElementById('cvFile').click();
+        });
+
+        // Automatically submit the form when a file is selected
+        document.getElementById('cvFile').addEventListener('change', function () {
+            document.getElementById('cvForm').submit();
+        });
+    </script>
+    <script>
+        function togglePasswords(passwordId, confirmPasswordId, buttonId) {
+            const passwordInput = document.getElementById(passwordId);
+            const confirmPasswordInput = document.getElementById(confirmPasswordId);
+            const button = document.getElementById(buttonId);
+            const icon = button.querySelector("i");
+
+            // Toggle both fields
             if (passwordInput.type === "password") {
                 passwordInput.type = "text";
+                confirmPasswordInput.type = "text";
                 icon.classList.replace("bi-eye", "bi-eye-slash");
             } else {
                 passwordInput.type = "password";
+                confirmPasswordInput.type = "password";
                 icon.classList.replace("bi-eye-slash", "bi-eye");
             }
+        }
+
+        // Attach event listener to the single toggle button
+        document.getElementById("togglePassword").addEventListener("click", function () {
+            togglePasswords("password", "confirmPassword", "togglePassword");
         });
 
         // Disable the register button after the first click

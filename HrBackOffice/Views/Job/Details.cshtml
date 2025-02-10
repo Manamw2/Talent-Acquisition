@@ -20,6 +20,7 @@
         </div>
         <div class="card-body">
             <div class="tab-content">
+                <!-- Details tab content remains the same -->
                 <div class="tab-pane fade show active" id="details" role="tabpanel">
                     <div class="row">
                         <div class="col-md-6 mb-3">
@@ -56,7 +57,8 @@
                                 <span class="input-group-text">
                                     <i class="fas fa-search"></i>
                                 </span>
-                                <input type="text" id="searchBox" class="form-control" placeholder="Search applicants...">
+                                <input type="text" id="searchBox" class="form-control" placeholder="Search applicants..."
+                                       value="@Context.Request.Query["searchQuery"]">
                             </div>
                         </div>
                     </div>
@@ -80,8 +82,8 @@
                                         <td>@app.AppliedDate.ToShortDateString()</td>
                                         <td>
                                             <span class="badge bg-@(app.Status.ToLower() == "pending" ? "warning" :
-                                       app.Status.ToLower() == "approved" ? "success" :
-                                       app.Status.ToLower() == "rejected" ? "danger" : "primary")">
+                                                   app.Status.ToLower() == "approved" ? "success" :
+                                                   app.Status.ToLower() == "rejected" ? "danger" : "primary")">
                                                 @app.Status
                                             </span>
                                         </td>
@@ -95,22 +97,38 @@
         </div>
     </div>
 </div>
-<script>
-    document.getElementById("searchBox").addEventListener("keyup", function () {
-        let searchValue = this.value.toLowerCase();
-        let rows = document.querySelectorAll("#applicationsTable tr");
 
-        rows.forEach(row => {
-            let name = row.cells[0].innerText.toLowerCase();
-            let email = row.cells[1].innerText.toLowerCase();
-            row.style.display = name.includes(searchValue) || email.includes(searchValue) ? "" : "none";
+@section Scripts {
+    <script>
+        let searchTimeout;
+
+        document.getElementById('searchBox').addEventListener('input', function (e) {
+            clearTimeout(searchTimeout);
+            const query = e.target.value;
+
+            searchTimeout = setTimeout(() => {
+                const currentUrl = new URL(window.location.href);
+                if (query.length > 0) {
+                    currentUrl.searchParams.set('searchQuery', query);
+                } else {
+                    currentUrl.searchParams.delete('searchQuery');
+                }
+                window.location.href = currentUrl.toString();
+            }, 500); // Debounce for 500ms
         });
-    });
-</script>
-<script>
-    function viewApplicantProfile(userId) {
-        if (userId) {
-            window.location.href = `/Job/ApplicantProfile?userId=${userId}`;
+
+        function viewApplicantProfile(userId) {
+            if (userId) {
+                window.location.href = `/Job/ApplicantProfile?userId=${userId}`;
+            }
         }
-    }
-</script>
+
+        // Preserve active tab after search
+        document.addEventListener('DOMContentLoaded', function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('searchQuery')) {
+                document.querySelector('#applications-tab').click();
+            }
+        });
+    </script>
+}

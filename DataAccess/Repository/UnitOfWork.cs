@@ -14,6 +14,7 @@ namespace DataAccess.Repository
     {
         private readonly ApplicationDbContext _context;
         public IRepository<Job> JobRepository { get; private set; }
+        public IRepository<AppUser> UserRepository { get; private set; }
         public IRepository<Batch> BatchRepository { get; private set; }
 
         public IRepository<JobApplication> JobApplicationRepository { get; private set; }
@@ -25,6 +26,7 @@ namespace DataAccess.Repository
         {
             _context = context;
             JobRepository = new Repository<Job>(_context);
+            UserRepository = new Repository<AppUser>(_context);
             BatchRepository = new Repository<Batch>(_context);
             JobApplicationRepository = new Repository<JobApplication>(_context);
             DepartmentRepository = new Repository<Department>(_context);

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -11,6 +12,8 @@ namespace Models.ViewModels
     public class ProfileInfoVM
     {
         public string Email { get; set; } = string.Empty;
+        public string UserPassword { get; set; } = string.Empty;
+        public string ConfirmPassword { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
         public string Faculty { get; set; } = string.Empty;
         public string EducationLevel { get; set; } = string.Empty;
@@ -19,6 +22,7 @@ namespace Models.ViewModels
         public string MethodOfContact { get; set; } = string.Empty;
         public DateOnly? DateOfBirth { get; set; }
         public string? CvUrl { get; set; }
+        //[JsonIgnore] // Prevent serialization of IFormFile
         public IFormFile? CvFile { get; set; }
 
         // Changed to property with initialization

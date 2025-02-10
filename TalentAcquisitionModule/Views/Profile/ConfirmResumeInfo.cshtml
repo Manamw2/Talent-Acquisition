@@ -1,0 +1,53 @@
+﻿@model ProfileInfoVM
+
+<div class="tab-pane fade show active" id="user-info" role="tabpanel" aria-labelledby="user-info-tab">
+    @Html.Partial("_ConfirmResumeInfo", Model)
+</div>
+
+@section Scripts {
+    <script src="~/js/profile.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('.nav-link').on('click', function (e) {
+                e.preventDefault();
+                var tab = $(this).data('tab');
+                $('.nav-link').removeClass('active');
+                $(this).addClass('active');
+                $('.tab-pane').removeClass('show active');
+                $('#' + tab).addClass('show active');
+            });
+        });
+    </script>
+    <script>
+        function togglePasswords(passwordId, confirmPasswordId, buttonId) {
+            const passwordInput = document.getElementById(passwordId);
+            const confirmPasswordInput = document.getElementById(confirmPasswordId);
+            const button = document.getElementById(buttonId);
+            const icon = button.querySelector("i");
+
+            // Toggle both fields
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";
+                confirmPasswordInput.type = "text";
+                icon.classList.replace("bi-eye", "bi-eye-slash");
+            } else {
+                passwordInput.type = "password";
+                confirmPasswordInput.type = "password";
+                icon.classList.replace("bi-eye-slash", "bi-eye");
+            }
+        }
+
+        // Attach event listener to the single toggle button
+        document.getElementById("togglePassword").addEventListener("click", function () {
+            togglePasswords("password", "confirmPassword", "togglePassword");
+        });
+
+        // Disable the register button after the first click
+        document.getElementById("save-changes").addEventListener("click", function (e) {
+            this.disabled = true; // Disable the button
+            this.innerText = "Registering..."; // Optionally change the button text
+            this.form.submit(); // Submit the form
+        });
+    </script>
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -21,70 +21,70 @@
                         <span class="input-group-text bg-light">
                             <i class="fas fa-search"></i>
                         </span>
-                        <input type="text" id="searchBox" class="form-control" placeholder="Search jobs..." onkeyup="searchApplicants()">
+                        <input type="text" id="searchBox" class="form-control" placeholder="Search applicants...">
                     </div>
                 </div>
             </div>
 
-            @if (Model.Any())
-            {
-                <div class="table-responsive">
-                    <table class="table table-hover border">
-                        <thead class="table-light">
-                            <tr>
-                                <th>User Name</th>
-                                <th>Email</th>
-                                <th>Roles</th>
-                                <th>Education Level</th>
-                                <th>English Level</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var user in Model)
-                            {
-                                <tr ondblclick="viewApplicantProfile('@user.Id')" style="cursor: pointer;">
-                                    <td><span class="badge bg-primary">@user.UserName</span></td>
-                                    <td>@user.Email</td>
-                                    <td>
-                                        @if (user.Roles.Any())
-                                        {
-                                            @foreach (var role in user.Roles)
-                                            {
-                                                <span class="badge bg-secondary">@role</span>
-                                            }
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-warning">No Roles</span>
-                                        }
-                                    </td>
-                                    <td>@user.EducationLevel</td>
-                                    <td>@user.EnglishLevel</td>
-                                    <td>
-                                        <button type="button" class="btn btn-sm btn-danger"
-                                                onclick="confirmDeleteUser('@user.Id', '@user.UserName')">
-                                            <i class="fas fa-trash-alt"></i>
-                                        </button>
-                                    </td>
+            <div id="searchResults">
+                @if (Model.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover border">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>User Name</th>
+                                    <th>Email</th>
+                                    <th>Roles</th>
+                                    <th>Education Level</th>
+                                    <th>English Level</th>
+                                    <th></th>
                                 </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            }
-            else
-            {
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle me-2"></i> No applicants found. Start by adding a new applicant.
-                </div>
-            }
-
-       
+                            </thead>
+                            <tbody>
+                                @foreach (var user in Model)
+                                {
+                                    <tr ondblclick="viewApplicantProfile('@user.Id')" style="cursor: pointer;">
+                                        <td><span class="badge bg-primary">@user.UserName</span></td>
+                                        <td>@user.Email</td>
+                                        <td>
+                                            @if (user.Roles.Any())
+                                            {
+                                                @foreach (var role in user.Roles)
+                                                {
+                                                    <span class="badge bg-secondary">@role</span>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-warning">No Roles</span>
+                                            }
+                                        </td>
+                                        <td>@user.EducationLevel</td>
+                                        <td>@user.EnglishLevel</td>
+                                        <td>
+                                            <button type="button" class="btn btn-sm btn-danger"
+                                                    onclick="confirmDeleteUser('@user.Id', '@user.UserName')">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i> No applicants found.
+                    </div>
+                }
+            </div>
 
             <!-- Pagination Controls -->
             <div class="d-flex justify-content-center mt-4">
-                @Html.PagedListPager(Model, page => Url.Action("Index", new { page }))
+                @Html.PagedListPager(Model, page => Url.Action("Index", new { page, searchQuery = Context.Request.Query["searchQuery"] }))
             </div>
         </div>
     </div>
@@ -92,50 +92,25 @@
 
 @section Scripts {
     <script>
-        async function searchApplicants() {
-            let query = document.getElementById("searchBox").value.trim();
-            if (query.length < 3) { 
-                return; // Prevent sending queries that are too short
-            }
+        let searchTimeout;
 
-            let apiUrl = `http://localhost:8000/search?query=${encodeURIComponent(query)}&max_results=5&exact_thresh=0.9&nonexact_thresh=0.5`;
+        document.getElementById('searchBox').addEventListener('input', function (e) {
+            clearTimeout(searchTimeout);
+            const query = e.target.value;
 
-            try {
-                let response = await fetch(apiUrl);
-                let data = await response.json();
-
-                if (data.results) {
-                    updateApplicantsTable(data.results);
+            searchTimeout = setTimeout(() => {
+                if (query.length > 0) {
+                    window.location.href = `/Applicant/Index?searchQuery=${encodeURIComponent(query)}`;
+                } else {
+                    window.location.href = '/Applicant/Index';
                 }
-            } catch (error) {
-                console.error("Error fetching applicants:", error);
-            }
-        }
+            }, 500); // Debounce for 500ms
+        });
 
-        function updateApplicantsTable(results) {
-            let tbody = document.querySelector("table tbody");
-            tbody.innerHTML = ""; // Clear existing rows
-
-            if (results.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center">No applicants found</td></tr>`;
-                return;
-            }
-
-            results.forEach(user => {
-                let row = `<tr ondblclick="viewApplicantProfile('${user.id}')" style="cursor: pointer;">
-                                <td><span class="badge bg-primary">${user.name}</span></td>
-                                        <td>${user.name.includes ${user.name}: 'N/A'}</td>
-                                <td>${user.skills ? user.skills.map(skill => `<span class="badge bg-secondary">${skill}</span>`).join(' ') : '<span class="badge bg-warning">No Skills</span>'}</td>
-                                <td>${user.experience ? user.experience.length + ' Experience(s)' : 'N/A'}</td>
-                                <td>${user.score.toFixed(2)}</td>
-                                <td>
-                                    <button type="button" class="btn btn-sm btn-danger" onclick="confirmDeleteUser('${user.id}', '${user.name}')">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
-                                </td>
-                            </tr>`;
-                tbody.innerHTML += row;
-            });
+        function confirmDeleteUser(id, name) {
+            document.getElementById("userIdToDelete").value = id;
+            document.getElementById("userNameToDelete").innerText = name;
+            new bootstrap.Modal(document.getElementById("deleteUserModal")).show();
         }
 
         function viewApplicantProfile(id) {
@@ -144,14 +119,16 @@
             }
         }
 
-        function confirmDeleteUser(id, name) {
-            document.getElementById("userIdToDelete").value = id;
-            document.getElementById("userNameToDelete").innerText = name;
-            new bootstrap.Modal(document.getElementById("deleteUserModal")).show();
-        }
+        // Set search box value from URL parameter on page load
+        document.addEventListener('DOMContentLoaded', function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchQuery = urlParams.get('searchQuery');
+            if (searchQuery) {
+                document.getElementById('searchBox').value = searchQuery;
+            }
+        });
     </script>
 }
-
 
 
 

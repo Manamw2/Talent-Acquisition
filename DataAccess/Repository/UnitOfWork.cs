@@ -16,6 +16,9 @@ namespace DataAccess.Repository
         public IRepository<Job> JobRepository { get; private set; }
         public IRepository<AppUser> UserRepository { get; private set; }
         public IRepository<Batch> BatchRepository { get; private set; }
+        public IRepository<ApplicantExperience> AppExpRepository { get; private set; }
+        public IRepository<ApplicantSkill> AppSkillRepository { get; private set; }
+        public IRepository<ApplicantProject> AppProjRepository { get; private set; }
 
         public IRepository<JobApplication> JobApplicationRepository { get; private set; }
 
@@ -31,6 +34,10 @@ namespace DataAccess.Repository
             JobApplicationRepository = new Repository<JobApplication>(_context);
             DepartmentRepository = new Repository<Department>(_context);
             DepRepository = new Repository<Department>(_context);
+            AppExpRepository = new Repository<ApplicantExperience>(_context);
+            AppSkillRepository = new Repository<ApplicantSkill>(_context);
+            AppProjRepository = new Repository<ApplicantProject>(_context);
+            
         }
 
         public async Task SaveAsync()

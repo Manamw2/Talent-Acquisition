@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 namespace HrBackOffice.Models
 {
 
-    public class JobViewModel
+    public class JobViewM
     {
         public int JobId { get; set; }
 

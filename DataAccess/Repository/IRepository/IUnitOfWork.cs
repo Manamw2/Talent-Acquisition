@@ -15,6 +15,9 @@ namespace DataAccess.Repository.IRepository
         IRepository<Department> DepartmentRepository { get; }
         IRepository<JobApplication> JobApplicationRepository { get; }
         IRepository<Department> DepRepository { get; }
+        IRepository<ApplicantExperience> AppExpRepository { get;  }
+        IRepository<ApplicantSkill> AppSkillRepository { get;}
+        IRepository<ApplicantProject> AppProjRepository { get; }
         Task SaveAsync();
     }
 }

@@ -1,0 +1,75 @@
+﻿@model ProfileInfoVM
+
+@{
+    ViewData["Title"] = "Confirm Resume Info";
+}
+
+<h2>Confirm Your Resume Information</h2>
+
+<form asp-action="ConfirmResumeInfo" method="post" enctype="multipart/form-data">
+    <div class="form-group">
+        <label asp-for="Email" class="control-label"></label>
+        <input asp-for="Email" class="form-control" />
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Name" class="control-label"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Faculty" class="control-label"></label>
+        <input asp-for="Faculty" class="form-control" />
+        <span asp-validation-for="Faculty" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="EducationLevel" class="control-label"></label>
+        <select asp-for="EducationLevel" asp-items="Model?.Input?.EducationLevels ?? new List<SelectListItem>()" class="form-control">
+            <option value="">Select Education Level</option>
+        </select>
+        <span asp-validation-for="EducationLevel" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Phone" class="control-label"></label>
+        <input asp-for="Phone" class="form-control" />
+        <span asp-validation-for="Phone" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="EnglishProficiencyLevel" class="control-label"></label>
+        <select asp-for="EnglishProficiencyLevel" asp-items="Model?.Input?.EnglishProficiencyLevels ?? new List<SelectListItem>()" class="form-control">
+            <option value="">Select English Proficiency</option>
+        </select>
+        <span asp-validation-for="EnglishProficiencyLevel" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="MethodOfContact" class="control-label"></label>
+        <select asp-for="MethodOfContact" asp-items="Model?.Input?.MethodOfContactOptions ?? new List<SelectListItem>()" class="form-control">
+            <option value="">Preferred Contact Method</option>
+        </select>
+        <span asp-validation-for="MethodOfContact" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="DateOfBirth" class="control-label"></label>
+        <input asp-for="DateOfBirth" type="date" class="form-control" />
+        <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label>Upload CV</label>
+        <input type="file" name="CvFile" class="form-control" />
+        @if (!string.IsNullOrEmpty(Model?.CvUrl))
+        {
+            <p>Current CV: <a href="@Model.CvUrl" target="_blank">View CV</a></p>
+        }
+        <span asp-validation-for="CvFile" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-3">Save</button>
+</form>

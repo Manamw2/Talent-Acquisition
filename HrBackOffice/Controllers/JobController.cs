@@ -34,7 +34,7 @@ namespace HrBackOffice.Controllers
             var jobs = await _unitOfWork.JobRepository
                 .GetAllAsync(includeProperties: "Batch,Department");
 
-            var jobViewModels = jobs.Select(job => new JobViewModel
+            var jobViewModels = jobs.Select(job => new JobViewM
             {
                 JobId = job.JobId,
                 Title = job.Title,
@@ -54,7 +54,7 @@ namespace HrBackOffice.Controllers
 
 
         // Load dropdowns for Create/Edit
-        private async Task PopulateDropdowns(JobViewModel model)
+        private async Task PopulateDropdowns(JobViewM model)
         {
             var departments = await _unitOfWork.DepRepository.GetAllAsync();
             var batches = await _unitOfWork.BatchRepository.GetAllAsync(
@@ -88,7 +88,7 @@ namespace HrBackOffice.Controllers
         // Create - GET
         public async Task<IActionResult> Create()
         {
-            var model = new JobViewModel();
+            var model = new JobViewM();
             await PopulateDropdowns(model);
             // Restore newly added batch selection
             if (TempData["NewBatchId"] != null)
@@ -101,7 +101,7 @@ namespace HrBackOffice.Controllers
         // Create - POST
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(JobViewModel model)
+        public async Task<IActionResult> Create(JobViewM model)
         {
 
             if (ModelState.IsValid)
@@ -126,7 +126,7 @@ namespace HrBackOffice.Controllers
                 return NotFound();
             }
 
-            var model = _mapper.Map<JobViewModel>(job);
+            var model = _mapper.Map<JobViewM>(job);
             model.BatchId = job.BatchId;
             await PopulateDropdowns(model);
             
@@ -137,7 +137,7 @@ namespace HrBackOffice.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         
-        public async Task<IActionResult> Edit(int id, JobViewModel model)
+        public async Task<IActionResult> Edit(int id, JobViewM model)
         {
             if (id != model.JobId) return NotFound();
 
@@ -265,7 +265,7 @@ namespace HrBackOffice.Controllers
                 }).ToList();
             }
 
-            var model = new JobViewModel
+            var model = new JobViewM
             {
                 JobId = job.JobId,
                 Title = job.Title,

@@ -101,9 +101,13 @@
                             </label>
                             <div class="input-group">
                                 <span class="input-group-text bg-primary text-white"><i class="bi bi-book"></i></span>
-                                <select asp-for="Input.University" asp-items="Model.Input.Universities" class="form-control form-control-lg" id="university" required>
-                                    <option value="">Select University</option>
-                                </select>
+                                <input list="universities" asp-for="Input.University" class="form-control form-control-lg" id="university" placeholder="Type or select university" required />
+                                <datalist id="universities">
+                                    @foreach (var university in Model.Input.Universities)
+                                    {
+                                        <option value="@university.Text"></option>
+                                    }
+                                </datalist>
                             </div>
                             <span asp-validation-for="Input.University" class="text-danger"></span>
                         </div>
@@ -122,7 +126,7 @@
                         </div> *@
 
                         <!-- Faculty level -->
-                            <div class="mb-3">
+                           @*  <div class="mb-3">
                                 <label for="faculty" class="form-label fw-semibold">
                                     Faculty: <span class="text-danger">*</span>
                                 </label>
@@ -131,6 +135,23 @@
                                 <select asp-for="Input.Faculty" asp-items="Model.Input.Faculties" class="form-control form-control-lg" id="faculty" required>
                                     <option value="">Select Faculty</option>
                                 </select>
+                            </div>
+                            <span asp-validation-for="Input.Faculty" class="text-danger"></span>
+                        </div> *@
+
+                        <div class="mb-3">
+                            <label for="faculty" class="form-label fw-semibold">
+                                Faculty: <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-primary text-white"><i class="bi bi-book"></i></span>
+                                <input list="faculties" asp-for="Input.Faculty" class="form-control form-control-lg" id="faculty" placeholder="Type or select faculty" required />
+                                <datalist id="faculties">
+                                    @foreach (var faculty in Model.Input.Faculties)
+                                    {
+                                        <option value="@faculty.Text"></option> <!-- Use faculty.Text instead of faculty -->
+                                    }
+                                </datalist>
                             </div>
                             <span asp-validation-for="Input.Faculty" class="text-danger"></span>
                         </div>

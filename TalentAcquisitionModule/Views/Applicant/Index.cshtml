@@ -24,10 +24,9 @@
                         <h6 class="mb-1">@job.Title</h6>
                         <div class="job-location">📍 SoftTrend Headquarter</div>
                         <div class="mb-1">@job.DepartmentName</div>
-                        <div class="category-tag mt-1">Valid till: @job.EndDate.ToString("yyyy-MM-dd")</div>
+                        <div class="category-tag mt-1">Valid till:@job.EndDate</div>
                     </a>
                 }
-
             </div>
             <br />
             <!-- Pagination Controls -->
@@ -140,8 +139,34 @@
             });
         });
 
+                $(document).ready(function () {
+            console.log("Document is ready!"); // Check if jQuery is working
+
+            // Handle click event on job cards
+            $('.job-card').on('click', function (e) {
+                e.preventDefault(); // Prevent default link behavior
+                console.log("Job card clicked!"); // Check if the click event is firing
+
+                // Remove the 'selected-job' class from all job cards
+                $('.job-card').removeClass('selected-job');
+
+                // Add the 'selected-job' class to the clicked job card
+                $(this).addClass('selected-job');
+
+                // Optional: Scroll the selected job card into view
+                this.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            });
+        });
     </script>
-    <script src="~/js/job-board.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="~/js/job-board.js"></script>
     }
+    <style>
+
+    .selected-job {
+        border: 3px solid #8f1412 !important;
+        background-color: #ebeada;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    </style>
 

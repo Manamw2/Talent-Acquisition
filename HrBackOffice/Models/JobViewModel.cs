@@ -22,6 +22,7 @@ namespace HrBackOffice.Models
         [Required]
         [Display(Name = "Batch")]
         public int BatchId { get; set; }
+        public string BatchName { get; set; } = string.Empty;
 
         [Required]
         [Display(Name = "Department")]

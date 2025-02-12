@@ -10,6 +10,7 @@ namespace Models
     public class AppUser : IdentityUser
     {
         public string? DisplayName { get; set; }
+        public string? University { get; set; }
         public string? Faculty { get; set; }
         public string? EducationLevel { get; set; }
         public string? EnglishLevel { get; set; }

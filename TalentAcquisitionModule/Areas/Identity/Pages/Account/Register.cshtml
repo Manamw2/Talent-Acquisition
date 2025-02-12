@@ -17,7 +17,7 @@
                     <p class="text-muted small">
                         <span class="text-danger">*</span> indicates a required field.
                     </p>
-                   <!--extract data from cv-->
+                    <!--extract data from cv-->
                     <form id="cvForm" enctype="multipart/form-data" method="post" asp-page-handler="UploadCv">
                         <!-- Hidden file input -->
                         <input asp-for="CvFile" type="file" class="form-control form-control-lg" id="cvFile" style="display: none;" required>
@@ -94,7 +94,22 @@
                             <span asp-validation-for="Input.Phone" class="text-danger"></span>
                         </div>
 
-                        <!-- Faculty -->
+                        <!-- University level -->
+                        <div class="mb-3">
+                            <label for="university" class="form-label fw-semibold">
+                                University: <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-primary text-white"><i class="bi bi-book"></i></span>
+                                <select asp-for="Input.University" asp-items="Model.Input.Universities" class="form-control form-control-lg" id="university" required>
+                                    <option value="">Select University</option>
+                                </select>
+                            </div>
+                            <span asp-validation-for="Input.University" class="text-danger"></span>
+                        </div>
+
+
+                        @* <!-- Faculty -->
                         <div class="mb-3">
                             <label for="faculty" class="form-label fw-semibold">
                                 Faculty: <span class="text-danger">*</span>
@@ -102,6 +117,20 @@
                             <div class="input-group">
                                 <span class="input-group-text bg-primary text-white"><i class="bi bi-mortarboard"></i></span>
                                 <input asp-for="Input.Faculty" class="form-control form-control-lg" id="faculty" placeholder="Enter your Faculty Name" required>
+                            </div>
+                            <span asp-validation-for="Input.Faculty" class="text-danger"></span>
+                        </div> *@
+
+                        <!-- Faculty level -->
+                            <div class="mb-3">
+                                <label for="faculty" class="form-label fw-semibold">
+                                    Faculty: <span class="text-danger">*</span>
+                                </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-primary text-white"><i class="bi bi-book"></i></span>
+                                <select asp-for="Input.Faculty" asp-items="Model.Input.Faculties" class="form-control form-control-lg" id="faculty" required>
+                                    <option value="">Select Faculty</option>
+                                </select>
                             </div>
                             <span asp-validation-for="Input.Faculty" class="text-danger"></span>
                         </div>
@@ -113,7 +142,7 @@
                             </label>
                             <div class="input-group">
                                 <span class="input-group-text bg-primary text-white"><i class="bi bi-calendar"></i></span>
-                                <input asp-for="Input.DateOfBirth" type="date" class="form-control form-control-lg" id="dateOfBirth" asp-value=""  required>
+                                <input asp-for="Input.DateOfBirth" type="date" class="form-control form-control-lg" id="dateOfBirth" asp-value="" required>
                             </div>
                             <span asp-validation-for="Input.DateOfBirth" class="text-danger"></span>
                         </div>

@@ -42,6 +42,7 @@ namespace TalentAcquisitionModule.Controllers
             {
                 Email = appUser.Email,
                 Name = appUser.DisplayName,
+                University = appUser.University,
                 Faculty = appUser.Faculty,
                 EducationLevel = appUser.EducationLevel,
                 EnglishProficiencyLevel = appUser.EnglishLevel,
@@ -109,6 +110,7 @@ namespace TalentAcquisitionModule.Controllers
 
             appUser.DisplayName = profileInfoVM.Name;
             appUser.Email = profileInfoVM.Email;
+            appUser.University = profileInfoVM.University;
             appUser.Faculty = profileInfoVM.Faculty;
             appUser.BirthDate = profileInfoVM.DateOfBirth;
             appUser.PhoneNumber = profileInfoVM.Phone;
@@ -229,6 +231,7 @@ namespace TalentAcquisitionModule.Controllers
 
             appUser.DisplayName = profileInfoVM.Name;
             appUser.Email = profileInfoVM.Email;
+            appUser.University = profileInfoVM.University;
             appUser.Faculty = profileInfoVM.Faculty;
             appUser.BirthDate = profileInfoVM.DateOfBirth;
             appUser.PhoneNumber = profileInfoVM.Phone;

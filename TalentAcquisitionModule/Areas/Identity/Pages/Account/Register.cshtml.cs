@@ -122,8 +122,16 @@ namespace TalentAcquisitionModule.Areas.Identity.Pages.Account
             public string Name { get; set; } = string.Empty;
 
             [Required]
+            [DisplayName("University")]
+            public string University { get; set; } = string.Empty;
+            public IEnumerable<SelectListItem> Universities { get; set; }
+
+
+            [Required]
             [DisplayName("Faculty")]
             public string Faculty { get; set; } = string.Empty;
+            public IEnumerable<SelectListItem> Faculties { get; set; }
+
 
             [Required]
             [Phone]
@@ -211,6 +219,7 @@ namespace TalentAcquisitionModule.Areas.Identity.Pages.Account
 
                 user.DisplayName = Input.Name;
                 user.BirthDate = Input.DateOfBirth;
+                user.University = Input.University;
                 user.Faculty = Input.Faculty;
                 user.PhoneNumber = Input.Phone;
                 user.EducationLevel = Input.EducationLevel;
@@ -331,11 +340,74 @@ namespace TalentAcquisitionModule.Areas.Identity.Pages.Account
 
         private void InitDropDowns()
         {
+            IEnumerable<string> Universities = [
+                 "Cairo University",
+                "Ain Shams University",
+                "Alexandria University",
+                "Helwan University",
+                "Mansoura University",
+                "Zagazig University",
+                "Assiut University",
+                "Tanta University",
+                "Benha University",
+                "Suez Canal University",
+                "Minia University",
+                "South Valley University",
+                "Fayoum University",
+                "Beni-Suef University",
+                "Sohag University",
+                "Kafr El Sheikh University",
+                "Damietta University",
+                "Port Said University",
+                "Menoufia University",
+                "Al-Azhar University",
+                "The British University in Egypt (BUE)",
+                "The American University in Cairo (AUC)",
+                "German University in Cairo (GUC)",
+                "Misr University for Science and Technology (MUST)",
+                "Future University in Egypt (FUE)",
+                "October 6 University",
+                "Modern Sciences and Arts University (MSA)",
+                "Nahda University",
+                "Sinai University"
+                ];
+           IEnumerable<string> Faculties = [ "Faculty of Engineering",
+                "Faculty of Medicine",
+                "Faculty of Pharmacy",
+                "Faculty of Science",
+                "Faculty of Commerce",
+                "Faculty of Law",
+                "Faculty of Arts",
+                "Faculty of Education",
+                "Faculty of Agriculture",
+                "Faculty of Dentistry",
+                "Faculty of Computer and Artificial Intelligence",
+                "Faculty of Veterinary Medicine",
+                "Faculty of Nursing",
+                "Faculty of Physical Therapy",
+                "Faculty of Tourism and Hotels",
+                "Faculty of Mass Communication",
+                "Faculty of Fine Arts",
+                "Faculty of Applied Arts",
+                "Faculty of Al-Alsun (Languages)",
+                "Faculty of Islamic Studies"
+            ];
             IEnumerable<string> EducationLevels = ["Undergraduate", "Graduate"];
             IEnumerable<string> EnglishProficiencyLevels = ["Beginner", "Intermediate", "Advanced", "Fluent"];
             IEnumerable<string> MethodOfContactOptions = ["Email", "Phone"];
             Input = new()
             {
+                Universities = Universities.Select(u => new SelectListItem
+                {
+                    Text = u,
+                    Value = u
+                }),
+
+                Faculties = Faculties.Select(u => new SelectListItem
+                {
+                    Text = u,
+                    Value = u
+                }),
                 EducationLevels = EducationLevels.Select(u => new SelectListItem
                 {
                     Text = u,

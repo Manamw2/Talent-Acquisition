@@ -26,48 +26,65 @@
                 </div>
             </div>
 
-            <div class="table-responsive">
-                <table class="table table-hover border">
-                    <thead class="table-light">
-                        <tr>
-                            <th><i class="fas fa-tag me-1"></i>Job Title</th>
-                            <th><i class="fas fa-list me-1"></i>Type</th>
-                            <th><i class="fas fa-users me-1"></i>Batch</th>
-                            <th><i class="fas fa-building me-1"></i>Department</th>
-                            <th class="text-center">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="jobTable">
-                        @foreach (var job in Model)
-                        {
-                            <tr>
-                                <td class="align-middle">@job.Title</td>
-                                <td class="align-middle">@job.JobType</td>
-                                <td class="align-middle">@job.BatchName</td>
-                                <td class="align-middle">@job.DepartmentName</td>
-                                <td class="text-center">
-                                    <div class="btn-group" role="group">
-                                        <a asp-action="Edit" asp-route-id="@job.JobId" class="btn btn-sm btn-primary">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <a asp-action="Details" asp-route-id="@job.JobId" class="btn btn-sm btn-info">
-                                            <i class="fas fa-info-circle"></i>
-                                        </a>
-                                        <a class="btn btn-sm btn-danger"
-                                           asp-action="Delete" asp-route-id="@job.JobId">
-                                            <i class="fas fa-trash-alt"></i>
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
+            <div id="jobResults">
+                @if (Model.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover border">
+                            <thead class="table-light">
+                                <tr>
+                                    <th><i class="fas fa-tag me-1"></i>Job Title</th>
+                                    <th><i class="fas fa-list me-1"></i>Type</th>
+                                    <th><i class="fas fa-users me-1"></i>Batch</th>
+                                    <th><i class="fas fa-building me-1"></i>Department</th>
+                                    <th class="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="jobTable">
+                                @foreach (var job in Model)
+                                {
+                                    <tr>
+                                        <td class="align-middle">@job.Title</td>
+                                        <td class="align-middle">@job.JobType</td>
+                                        <td class="align-middle">@job.BatchName</td>
+                                        <td class="align-middle">@job.DepartmentName</td>
+                                        <td class="text-center">
+                                            <div class="btn-group" role="group">
+                                                <a asp-action="Edit" asp-route-id="@job.JobId" class="btn btn-sm btn-primary">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a asp-action="Details" asp-route-id="@job.JobId" class="btn btn-sm btn-info">
+                                                    <i class="fas fa-info-circle"></i>
+                                                </a>
+                                                <a class="btn btn-sm btn-danger"
+                                                   asp-action="Delete" asp-route-id="@job.JobId">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
 
-            <!-- Pagination Controls -->
-            <div class="d-flex justify-content-center mt-4">
-                @Html.PagedListPager(Model, page => Url.Action("Index", new { page }))
+                    <!-- Pagination Controls -->
+                    <div class="d-flex justify-content-center mt-4">
+                        @Html.PagedListPager(Model, page => Url.Action("Index", new { page }))
+                    </div>
+                }
+                else
+                {
+                    <!-- Display this message when no jobs are found -->
+                    <div class="alert alert-warning text-center p-4">
+                        <i class="fas fa-exclamation-circle fa-2x mb-2"></i>
+                        <h5>No jobs available</h5>
+                        <p>There are currently no job listings. Create a new job now!</p>
+                        <a asp-action="Create" class="btn btn-primary">
+                            <i class="fas fa-plus-circle"></i> Create Job
+                        </a>
+                    </div>
+                }
             </div>
         </div>
     </div>
@@ -77,10 +94,32 @@
     document.getElementById("searchBox").addEventListener("keyup", function () {
         let searchValue = this.value.toLowerCase();
         let rows = document.querySelectorAll("#jobTable tr");
+        let hasResults = false;
 
         rows.forEach(row => {
             let jobTitle = row.cells[0].innerText.toLowerCase();
-            row.style.display = jobTitle.includes(searchValue) ? "" : "none";
+            if (jobTitle.includes(searchValue)) {
+                row.style.display = "";
+                hasResults = true;
+            } else {
+                row.style.display = "none";
+            }
         });
+
+        // Show message if no search results found
+        let jobResults = document.getElementById("jobResults");
+        let noResultsMessage = document.getElementById("noResultsMessage");
+
+        if (!hasResults) {
+            if (!noResultsMessage) {
+                noResultsMessage = document.createElement("div");
+                noResultsMessage.id = "noResultsMessage";
+                noResultsMessage.className = "alert alert-info text-center mt-3";
+                noResultsMessage.innerHTML = '<i class="fas fa-info-circle"></i> No matching jobs found.';
+                jobResults.appendChild(noResultsMessage);
+            }
+        } else if (noResultsMessage) {
+            noResultsMessage.remove();
+        }
     });
 </script>

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using DataAccess.Migrations;
 using DataAccess.Repository.IRepository;
+using HrBackOffice.Helper.ApplicantService;
 using HrBackOffice.Helper.EmailSetting;
 using HrBackOffice.Models;
 using Microsoft.AspNetCore.Identity;
@@ -26,17 +27,18 @@ namespace HrBackOffice.Controllers
         private readonly UserManager<AppUser> _userManager;
         private readonly IEmailSend _emailSender;
         private readonly HttpClient _httpClient;
+        private readonly IApplicantService _AppSevice;
 
-        public ApplicantController(HttpClient httpClient,IEmailSend emailSender,IUnitOfWork unitOfWork, IMapper mapper, UserManager<AppUser> userManager)
+        public ApplicantController(IApplicantService applicantService,HttpClient httpClient,IEmailSend emailSender,IUnitOfWork unitOfWork, IMapper mapper, UserManager<AppUser> userManager)
         {
             _emailSender = emailSender;
             _userManager = userManager;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _httpClient = httpClient;
+            _AppSevice= applicantService;
         }
       
-
         public async Task<IActionResult> Index(int? page, string searchQuery = null)
         {
             int pageSize = 5;
@@ -66,7 +68,7 @@ namespace HrBackOffice.Controllers
                                     UserName = user.UserName,
                                     Email = user.Email,
                                     EducationLevel = user.EducationLevel,
-                                    EnglishLevel = user.EnglishLevel,
+                                    EnglishProficiencyLevel = user.EnglishLevel,
                                     Roles = (await _userManager.GetRolesAsync(user)).ToList()
                                 });
                             }
@@ -88,7 +90,7 @@ namespace HrBackOffice.Controllers
                             UserName = user.UserName,
                             Email = user.Email,
                             EducationLevel = user.EducationLevel,
-                            EnglishLevel = user.EnglishLevel,
+                            EnglishProficiencyLevel = user.EnglishLevel,
                             Roles = (await _userManager.GetRolesAsync(user)).ToList()
                         });
                     }
@@ -98,43 +100,7 @@ namespace HrBackOffice.Controllers
             var pagedApplicant = applicants.ToPagedList(pageNumber, pageSize);
             return View(pagedApplicant);
         }
-        public async Task<UserViewModel> ExtractDataFromCv(IFormFile cvFile)
-        {
-            var content = new MultipartFormDataContent();
-            // Read the file content from cvFile into a MemoryStream
-            using (var memoryStream = new MemoryStream())
-            {
-                await cvFile.CopyToAsync(memoryStream); // Copy the file content to the MemoryStream
-                memoryStream.Position = 0; // Reset the stream position to the beginning
-
-                // Create ByteArrayContent from the MemoryStream
-                var fileContentStream = new ByteArrayContent(memoryStream.ToArray());
-
-                // Set the Content-Disposition header
-                fileContentStream.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("form-data")
-                {
-                    Name = "file", // Name of the form field
-                    FileName = cvFile.FileName // Name of the file
-                };
-
-                // Set the Content-Type header based on the file type
-                fileContentStream.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(cvFile.ContentType);
-
-                // Add the file content to the MultipartFormDataContent
-                content.Add(fileContentStream);
-
-                // Make the API call
-                var response = await _httpClient.PostAsync("http://127.0.0.1:8000/parse-resume", content);
-                response.EnsureSuccessStatusCode();
-                var jsonResponse = await response.Content.ReadAsStringAsync();
-                ResumeViewModel resumeViewModel = JsonSerializer.Deserialize<ResumeViewModel>(jsonResponse, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
-                var userViewModel = resumeViewModel.HRResumeToProfileInfo();
-                return userViewModel;
-            }
-        }
+        
 
         public IActionResult AddApplicant()
         {
@@ -144,7 +110,7 @@ namespace HrBackOffice.Controllers
                 ApplicantSkills = new List<AppSkillViewModel>(),
                 ApplicantProjects = new List<AppProjectViewModel>()
             };
-
+            _AppSevice.PopulateDropdownLists(model);
             return View(model);
         }
         [HttpPost]
@@ -152,9 +118,14 @@ namespace HrBackOffice.Controllers
         {
             if (!ModelState.IsValid)
             {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                Console.WriteLine(string.Join("\n", errors)); // Check logs for the actual errors
+                _AppSevice.PopulateDropdownLists(model);
                 return View(model);
             }
 
+            var university = model.University == "Other" ? Request.Form["University"].ToString() : model.University;
+            var faculty = model.Faculty == "Other" ? Request.Form["Faculty"].ToString() : model.Faculty;
 
             var user = new AppUser
             {
@@ -231,7 +202,7 @@ namespace HrBackOffice.Controllers
 
             return RedirectToAction(nameof(Index));
         }
-
+        
         [HttpPost]
         public async Task<IActionResult> ExtractDataFromCv(UserViewModel model)
         {
@@ -240,9 +211,10 @@ namespace HrBackOffice.Controllers
                 ModelState.AddModelError("CvFile", "Please upload a valid CV.");
                 return View("AddApplicant", model);
             }
+            _AppSevice.PopulateDropdownLists(model);
 
             // Call API to extract data
-            var extractedData = await ExtractDataFromCv(model.CvFile);
+            var extractedData = await _AppSevice.ExtractDataFromCv(model.CvFile);
 
             // Populate model with extracted data
             model.UserName = extractedData.UserName;
@@ -260,6 +232,42 @@ namespace HrBackOffice.Controllers
 
             return View("AddApplicant", model);
         }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteApplicant(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                return BadRequest("Invalid applicant ID.");
+            }
+
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound("Applicant not found.");
+            }
+
+            // Delete related data
+            var experiences = await _unitOfWork.AppExpRepository.GetAllAsync(e => e.AppUserId == id);
+            var skills = await _unitOfWork.AppSkillRepository.GetAllAsync(s => s.AppUserId == id);
+            var projects = await _unitOfWork.AppProjRepository.GetAllAsync(p => p.AppUserId == id);
+
+            _unitOfWork.AppExpRepository.RemoveRange(experiences);
+            _unitOfWork.AppSkillRepository.RemoveRange(skills);
+            _unitOfWork.AppProjRepository.RemoveRange(projects);
+
+            await _unitOfWork.SaveAsync();
+
+            // Remove user from database
+            var result = await _userManager.DeleteAsync(user);
+            if (!result.Succeeded)
+            {
+                return BadRequest("Error deleting the applicant.");
+            }
+
+            return Ok(new { success = true, message = "Applicant deleted successfully!" });
+        }
+
 
 
     }

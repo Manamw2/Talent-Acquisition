@@ -7,6 +7,7 @@ using Models;
 using HrBackOffice.Helper;
 using HrBackOffice.Helper.EmailSetting;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using HrBackOffice.Helper.ApplicantService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +20,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 });
 
 builder.Services.AddHttpClient();
+builder.Services.AddScoped<IApplicantService, ApplicantService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IEmailSend, EmailSender>();
 builder.Services.AddScoped(typeof(IRepository<Job>), typeof(Repository<Job>));

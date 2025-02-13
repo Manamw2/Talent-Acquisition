@@ -30,7 +30,6 @@
                                 <thead class="table-light">
                                     <tr>
                                         <th><i class="fas fa-tag me-1"></i>Role Name</th>
-                                        <th><i class="fas fa-users me-1"></i>Users Count</th>
                                         <th class="text-center">Actions</th>
                                     </tr>
                                 </thead>
@@ -41,10 +40,7 @@
                                             <td class="align-middle">
                                                 <span class="badge bg-primary">@role.Name</span>
                                             </td>
-                                            <td class="align-middle">
-                                                @* Add users count if available in your model *@
-                                                <span class="badge bg-secondary">0 Users</span>
-                                            </td>
+                                            
                                             <td class="text-center">
                                                 <div class="btn-group" role="group">
                                                     <a class="btn btn-sm btn-primary" asp-action="Edit" asp-route-id="@role.Id">

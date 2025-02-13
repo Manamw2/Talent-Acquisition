@@ -146,5 +146,37 @@ namespace HrBackOffice.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteUser(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                return BadRequest("Invalid user ID.");
+            }
+
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            // Ensure the user is HR or Admin before deleting
+            var roles = await _userManager.GetRolesAsync(user);
+            if (!roles.Contains("HR") && !roles.Contains("Admin"))
+            {
+                return BadRequest("You can only delete HR or Admin users.");
+            }
+
+            // Remove user from database
+            var result = await _userManager.DeleteAsync(user);
+            if (!result.Succeeded)
+            {
+                return BadRequest("Error deleting the user.");
+            }
+
+            return Ok(new { success = true, message = "User deleted successfully!" });
+        }
+
     }
 }

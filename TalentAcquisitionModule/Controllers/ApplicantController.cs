@@ -39,12 +39,23 @@ namespace TalentAcquisitionModule.Controllers
             foreach (var job in jobs)
             {
                 Console.WriteLine($"Job ID: {job.JobId}, Batch ID: {job.BatchId}, Batch EndDate: {job.Batch?.EndDate}");
+                //var jobDTO = _mapper.Map<JobViewModel>(job);
+                //jobDTOs.Add(jobDTO);
             }
 
+            var jobDTOs = jobs.Select(job => new JobViewModel
+            {
+                JobId = job.JobId,
+                Title = job.Title,
+                Description = job.Description,
+                JobType = job.JobType,
+                BatchId = job.BatchId,
+                EndDate = job.Batch.EndDate
+                
+            }).ToList();
+            //var jobDTOs = _mapper.Map<JobViewModel>(jobs);
 
-            var jobDTOs = _mapper.Map<IEnumerable<JobViewModel>>(jobs);
 
-     
 
             // Paginate the jobs
             var paginatedJobs = jobDTOs.Skip((page - 1) * pageSize).Take(pageSize).ToList();

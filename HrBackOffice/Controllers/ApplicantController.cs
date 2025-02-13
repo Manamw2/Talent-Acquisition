@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using DataAccess.Migrations;
 using DataAccess.Repository.IRepository;
 using HrBackOffice.Helper.ApplicantService;
 using HrBackOffice.Helper.EmailSetting;

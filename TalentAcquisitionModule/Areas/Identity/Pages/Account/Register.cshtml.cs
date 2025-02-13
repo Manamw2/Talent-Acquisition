@@ -45,6 +45,7 @@ namespace TalentAcquisitionModule.Areas.Identity.Pages.Account
         private readonly IEmailSender _emailSender;
         private readonly IMemoryCache _memoryCache;
         private readonly HttpClient _httpClient;
+        private readonly FileStorageService _fileStorage;
         public RegisterModel(
             UserManager<AppUser> userManager,
             IUserStore<AppUser> userStore,
@@ -52,7 +53,8 @@ namespace TalentAcquisitionModule.Areas.Identity.Pages.Account
             ILogger<RegisterModel> logger,
             IMemoryCache memoryCache,
             HttpClient httpClient,
-            IEmailSender emailSender)
+            IEmailSender emailSender,
+            FileStorageService fileStorage)
         {
             _userManager = userManager;
             _userStore = userStore;
@@ -62,6 +64,7 @@ namespace TalentAcquisitionModule.Areas.Identity.Pages.Account
             _emailSender = emailSender;
             _memoryCache = memoryCache;
             _httpClient = httpClient;
+            _fileStorage = fileStorage;
         }
 
         /// <summary>
@@ -200,7 +203,7 @@ namespace TalentAcquisitionModule.Areas.Identity.Pages.Account
                     try
                     {
                         var fileName = Path.GetRandomFileName() + Path.GetExtension(CvFile.FileName); // Safer filename
-                        string sharedFolderPath = FileStorageService.GetSharedCsvFolderPath();
+                        string sharedFolderPath = _fileStorage.GetSharedCsvFolderPath();
                         string filePath = Path.Combine(sharedFolderPath, fileName);
 
                         using (var stream = new FileStream(filePath, FileMode.Create))
@@ -279,7 +282,7 @@ namespace TalentAcquisitionModule.Areas.Identity.Pages.Account
                 // Call your API to extract data from the CV
                 var profileInfoVM = await ExtractDataFromCv(CvFile);
                 var fileName = Path.GetRandomFileName() + Path.GetExtension(CvFile.FileName); // Safer filename
-                string sharedFolderPath = FileStorageService.GetSharedCsvFolderPath();
+                string sharedFolderPath = _fileStorage.GetSharedCsvFolderPath();
                 string filePath = Path.Combine(sharedFolderPath, fileName);
 
                 using (var stream = new FileStream(filePath, FileMode.Create))

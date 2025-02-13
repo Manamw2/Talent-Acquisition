@@ -10,9 +10,11 @@ namespace HrBackOffice.Helper.ApplicantService
     public class ApplicantService : IApplicantService
     {
         private readonly HttpClient _httpClient;
-        public ApplicantService(HttpClient httpClient)
+        private readonly IConfiguration _configuration;
+        public ApplicantService(HttpClient httpClient , IConfiguration configuration)
         {
             _httpClient = httpClient;
+            _configuration = configuration;
         }
         public async Task<UserViewModel> ExtractDataFromCv(IFormFile cvFile)
         {
@@ -38,9 +40,9 @@ namespace HrBackOffice.Helper.ApplicantService
 
                 // Add the file content to the MultipartFormDataContent
                 content.Add(fileContentStream);
-
+                var baseURl = _configuration["CVModelURl"]; 
                 // Make the API call
-                var response = await _httpClient.PostAsync("http://127.0.0.1:8000/parse-resume", content);
+                var response = await _httpClient.PostAsync(baseURl, content);
                 response.EnsureSuccessStatusCode();
                 var jsonResponse = await response.Content.ReadAsStringAsync();
                 ResumeViewModel resumeViewModel = JsonSerializer.Deserialize<ResumeViewModel>(jsonResponse, new JsonSerializerOptions
@@ -111,55 +113,7 @@ namespace HrBackOffice.Helper.ApplicantService
         }
 
 
-        //public void PopulateDropdownLists(UserViewModel model)
-        //{
-        //    IEnumerable<string> Universities = new List<string>
-        //    {
-        //        "Cairo University", "Ain Shams University", "Alexandria University", "Helwan University",
-        //        "Mansoura University", "Zagazig University", "Assiut University", "Tanta University",
-        //        "Benha University", "Suez Canal University", "Minia University", "South Valley University",
-        //        "Fayoum University", "Beni-Suef University", "Sohag University", "Kafr El Sheikh University",
-        //        "Damietta University", "Port Said University", "Menoufia University", "Al-Azhar University",
-        //        "The British University in Egypt (BUE)", "The American University in Cairo (AUC)",
-        //        "German University in Cairo (GUC)", "Misr University for Science and Technology (MUST)",
-        //        "Future University in Egypt (FUE)", "October 6 University", "Modern Sciences and Arts University (MSA)",
-        //        "Nahda University", "Sinai University"
-        //    };
 
-        //    IEnumerable<string> Faculties = new List<string>
-        //    {
-        //        "Faculty of Engineering", "Faculty of Medicine", "Faculty of Pharmacy", "Faculty of Science",
-        //        "Faculty of Commerce", "Faculty of Law", "Faculty of Arts", "Faculty of Education",
-        //        "Faculty of Agriculture", "Faculty of Dentistry", "Faculty of Computer and Artificial Intelligence",
-        //        "Faculty of Veterinary Medicine", "Faculty of Nursing", "Faculty of Physical Therapy",
-        //        "Faculty of Tourism and Hotels", "Faculty of Mass Communication", "Faculty of Fine Arts",
-        //        "Faculty of Applied Arts", "Faculty of Al-Alsun (Languages)", "Faculty of Islamic Studies"
-        //    };
-
-        //    model.Universities = Universities.Select(u => new SelectListItem { Value = u, Text = u }).ToList();
-        //    model.Universities.Insert(0, new SelectListItem { Value = "", Text = "Select University" });
-
-        //    model.Faculties = Faculties.Select(f => new SelectListItem { Value = f, Text = f }).ToList();
-        //    model.Faculties.Insert(0, new SelectListItem { Value = "", Text = "Select Faculty" });
-
-        //    model.EducationLevels = new List<SelectListItem>
-        //    {
-        //        new SelectListItem { Value = "High School", Text = "High School" },
-        //        new SelectListItem { Value = "Bachelor", Text = "Bachelor" },
-        //        new SelectListItem { Value = "Master", Text = "Master" },
-        //        new SelectListItem { Value = "PhD", Text = "PhD" }
-        //    };
-        //    model.EnglishProficiencyLevels.Insert(1, new SelectListItem { Value = "Other", Text = "Other" });
-
-        //    model.EnglishProficiencyLevels = new List<SelectListItem>
-        //    {
-        //        new SelectListItem { Value = "Beginner", Text = "Beginner" },
-        //        new SelectListItem { Value = "Intermediate", Text = "Intermediate" },
-        //        new SelectListItem { Value = "Advanced", Text = "Advanced" },
-        //        new SelectListItem { Value = "Fluent", Text = "Fluent" }
-        //    };
-        //    model.EnglishProficiencyLevels.Insert(0, new SelectListItem { Value = "", Text = "Select English Proficiency" });
-        //}
 
     }
 }

@@ -2,8 +2,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Models;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -55,11 +57,16 @@ namespace HrBackOffice.Controllers
         {
             var viewModel = new UserViewModel
             {
-                Roles = _roleManager.Roles
-                    .Where(r => r.Name == "HR" || r.Name == "Admin") // Fetch only HR and Admin roles
-                    .Select(r => r.Name)
-                    .ToList()
-            };
+                Roless = _roleManager.Roles
+                        .Where(r => r.Name == "HR" || r.Name == "Admin") // Filter HR and Admin roles
+                        .Select(r => new SelectListItem
+                        {
+                            Value = r.Name,  // Set role name as value
+                            Text = r.Name     // Display role name as text
+                        })
+                        .ToList() // Convert to List<SelectListItem>
+                            };
+
             return View(viewModel);
         }
 
@@ -73,26 +80,26 @@ namespace HrBackOffice.Controllers
                 return View(model);
             }
 
+            // Extract username from email (before @ symbol)
+            var username = model.Email.Split('@')[0];
+
             var user = new AppUser
             {
                 DisplayName = model.DisplayName,
-                UserName = model.UserName,
+                UserName = username, // Automatically set username
                 Email = model.Email,
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
             if (result.Succeeded)
             {
-                if (model.Roles != null)
+                if (model.Role != null)
                 {
-                    foreach (var role in model.Roles)
+                    if (model.Role == "HR" || model.Role == "Admin") // Ensure only HR and Admin roles are assigned
                     {
-                        if (role == "HR" || role == "Admin") // Ensure only HR and Admin roles are assigned
+                        if (await _roleManager.RoleExistsAsync(model.Role))
                         {
-                            if (await _roleManager.RoleExistsAsync(role))
-                            {
-                                await _userManager.AddToRoleAsync(user, role);
-                            }
+                            await _userManager.AddToRoleAsync(user, model.Role);
                         }
                     }
                 }
@@ -106,6 +113,7 @@ namespace HrBackOffice.Controllers
 
             return View(model);
         }
+
 
 
 

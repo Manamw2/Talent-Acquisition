@@ -1,4 +1,8 @@
-﻿@{
+﻿@using Microsoft.AspNetCore.Identity
+
+@inject SignInManager<AppUser> SignInManager
+@inject UserManager<AppUser> UserManager
+@{
     ViewData["Title"] = "Home Page";
 }
 
@@ -42,9 +46,12 @@
                     “we make IT happen”<br>
                     SoftTrend is a fast-growing private company established in 2012, specialized in Software Licensing and IT services & solutions. Our great experience in the ﬁeld of information technology helps us to serve our customers’ needs and requirements in the best way possible. We provide our clients with full solutions which include: Licensing, Software Solutions, IT Infrastructure Services, Information Security Virtualization including SaaS, IT Outsourcing and IT Consulting, RPA Automated solutions and Digital Transformation.
                 </p><br>
+                @if (!(SignInManager.IsSignedIn(User))){
+
+                
                 <a class="btn btn-primary text-uppercase" asp-area="Identity" asp-page="/Account/Register">Register</a>
                 <a class="btn btn-outline-light text-uppercase" asp-area="Identity" asp-page="/Account/Login">Sign In</a>
-
+                }
             </div>
         </div>
         

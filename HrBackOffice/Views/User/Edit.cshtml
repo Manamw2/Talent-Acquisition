@@ -18,13 +18,11 @@
                         <input asp-for="UserId" class="form-control" hidden />
 
                         <div class="mb-3">
-                            <label asp-for="DisplayName" class="form-label"></label>
-                            <input asp-for="DisplayName" class="form-control" disabled />
+                            <label for="DisplayName" class="form-label fw-semibold">Display Name</label>
+                            <input asp-for="DisplayName" id="DisplayName" class="form-control">
+                            <span asp-validation-for="DisplayName" class="text-danger"></span>
                         </div>
-                        <div class="mb-3">
-                            <label asp-for="UserName" class="form-label"></label>
-                            <input asp-for="UserName" class="form-control" disabled />
-                        </div>
+                       
 
                         <h5>Assign Roles</h5>
                         <hr />

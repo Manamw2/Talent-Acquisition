@@ -3,7 +3,8 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"]  AdminDashboard</title>
+    <title>@ViewData["Title"] | HR BackOffice</title>
+    <link rel="icon" href="~/images/st.png" />
 
     <link href="~/css/styles.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.snow.css"
@@ -23,19 +24,9 @@
     <script>
         disablePageUnloadEvents: ["unload"]
     </script>
-    @*  <script>
-        document.getElementById("searchBox").addEventListener("keyup", function () {
-            var filter = this.value.toLowerCase();
-            var rows = document.querySelectorAll("#applicationsTable tr");
 
-            rows.forEach(function (row) {
-                var name = row.cells[0].textContent.toLowerCase();
-                var email = row.cells[1].textContent.toLowerCase();
-                row.style.display = (name.includes(filter) || email.includes(filter)) ? "" : "none";
-            });
-        });
-</script> *@
     <style>
+
         /* Color Palette */
         .navbar-dark {
             background-color: #343a40; /* Dark color for the navbar */
@@ -122,12 +113,15 @@
     <header>
         <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
             <!-- Navbar Brand with Logo -->
-            <a class="navbar-brand ps-3" href="index.html">
-                <img src="~/images/Logo1.png" alt="Company Logo">
+            <a class="navbar-brand ps-3" href="#">
+                <img src="~/images/Logo1.png" alt="HR BackOffice Logo" height="40" class="me-2">
+                
             </a>
             <!-- Sidebar Toggle -->
+            <div class="sb-sidenav-menu-heading">HR Management</div>
             <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!">
                 <i class="fas fa-bars"></i>
+                
             </button>
             <!-- Navbar Search -->
             <div class="d-none d-md-inline-block form-inline ms-auto me-0 me-md-3 my-2 my-md-0">

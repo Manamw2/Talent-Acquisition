@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,7 +9,12 @@ namespace DataAccess.Data
 {
     public class FileStorageService
     {
-        public static string GetSharedCsvFolderPath()
+        private readonly IConfiguration _config;
+        public FileStorageService(IConfiguration configuration)
+        {
+            _config = configuration;
+        }
+        public string GetSharedCsvFolderPath()
         {
             // Get the solution directory (or a common root directory)
             string solutionDirectory = Directory.GetParent(Directory.GetCurrentDirectory()).FullName;

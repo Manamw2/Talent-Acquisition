@@ -20,13 +20,16 @@ namespace TalentAcquisitionModule.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IEmailSender _emailSender;
         private readonly IMemoryCache _memoryCache;
-        public ProfileController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, ApplicationDbContext context, IEmailSender emailSender, IMemoryCache memoryCache)
+        private readonly FileStorageService _fileStorage;
+
+        public ProfileController(FileStorageService fileStorage, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, ApplicationDbContext context, IEmailSender emailSender, IMemoryCache memoryCache)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _context = context;
             _memoryCache = memoryCache;
             _emailSender = emailSender;
+            _fileStorage = fileStorage;
         }
         [Authorize]
         public async Task<IActionResult> Index()
@@ -122,7 +125,7 @@ namespace TalentAcquisitionModule.Controllers
             if (profileInfoVM.CvFile != null)
             {
                 var fileName = Path.GetRandomFileName() + Path.GetExtension(profileInfoVM.CvFile.FileName); // Safer filename
-                string sharedFolderPath = FileStorageService.GetSharedCsvFolderPath();
+                string sharedFolderPath = _fileStorage.GetSharedCsvFolderPath();
                 string filePath = Path.Combine(sharedFolderPath, fileName);
 
                 using (var stream = new FileStream(filePath, FileMode.Create))

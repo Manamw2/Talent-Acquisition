@@ -27,8 +27,8 @@ namespace HrBackOffice.Controllers
         private readonly IEmailSend _emailSender;
         private readonly HttpClient _httpClient;
         private readonly IApplicantService _AppSevice;
-
-        public ApplicantController(IApplicantService applicantService,HttpClient httpClient,IEmailSend emailSender,IUnitOfWork unitOfWork, IMapper mapper, UserManager<AppUser> userManager)
+        private readonly IConfiguration _configuration;
+        public ApplicantController(IConfiguration configuration,IApplicantService applicantService,HttpClient httpClient,IEmailSend emailSender,IUnitOfWork unitOfWork, IMapper mapper, UserManager<AppUser> userManager)
         {
             _emailSender = emailSender;
             _userManager = userManager;
@@ -36,6 +36,7 @@ namespace HrBackOffice.Controllers
             _mapper = mapper;
             _httpClient = httpClient;
             _AppSevice= applicantService;
+            _configuration = configuration;
         }
       
         public async Task<IActionResult> Index(int? page, string searchQuery = null)
@@ -187,9 +188,9 @@ namespace HrBackOffice.Controllers
 
             var code = await _userManager.GeneratePasswordResetTokenAsync(user);
             code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-            
-            string careerBaseUrl = "https://localhost:7142";
-            
+
+            var careerBaseUrl = _configuration["CareerBaseUrl"]; // Read from appsettings.json
+
 
             var resetLink = $"{careerBaseUrl}/Identity/Account/ResetPassword?code={Uri.EscapeDataString(code)}";
 

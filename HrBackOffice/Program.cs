@@ -22,11 +22,17 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<IApplicantService, ApplicantService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddScoped<IEmailSend, EmailSender>();
 builder.Services.AddScoped(typeof(IRepository<Job>), typeof(Repository<Job>));
 builder.Services.AddScoped(typeof(IRepository<JobApplication>), typeof(Repository<JobApplication>));
 builder.Services.AddAutoMapper(typeof(MappingProfile));
+builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+// Load SmtpSettings from appsettings.json
+var smtpSettings = new SmtpSettings();
+builder.Configuration.GetSection("SmtpSettings").Bind(smtpSettings);
+builder.Services.AddSingleton(smtpSettings);
 
+// Register EmailSender from EmailSetting project
+builder.Services.AddSingleton<IEmailSend, EmailSender>();
 builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
 {
     options.Password.RequireDigit = true;

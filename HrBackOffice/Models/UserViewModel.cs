@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Models;
 using Models.ViewModels;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace HrBackOffice.Models
@@ -47,7 +48,7 @@ namespace HrBackOffice.Models
     public class UserViewModel
     {
         public string? Id { get; set; }
-        public string UserName { get; set; } = string.Empty;
+        public string? UserName { get; set; } = string.Empty;
         public string DisplayName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Phone { get; set; } = string.Empty;
@@ -72,6 +73,10 @@ namespace HrBackOffice.Models
         public string Password { get; set; } = "Temp@1234"; // Default password
 
         public IEnumerable<string> Roles { get; set; } = new List<string> { "Applicant" };
+        public List<SelectListItem> Roless { get; set; } = new();
+        public string? Role { get; set; } 
+
+
 
         public List<AppExperienceViewModel> ApplicantExperiences { get; set; } = new();
         public List<AppSkillViewModel> ApplicantSkills { get; set; } = new();

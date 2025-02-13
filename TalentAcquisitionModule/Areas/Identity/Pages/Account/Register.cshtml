@@ -95,19 +95,123 @@
                         </div>
 
                         <!-- University level -->
-                        <div class="mb-3">
+                        @* <div class="mb-3">
                             <label for="university" class="form-label fw-semibold">
                                 University: <span class="text-danger">*</span>
                             </label>
                             <div class="input-group">
-                                <span class="input-group-text bg-primary text-white"><i class="bi bi-book"></i></span>
-                                <select asp-for="Input.University" asp-items="Model.Input.Universities" class="form-control form-control-lg" id="university" required>
-                                    <option value="">Select University</option>
-                                </select>
+                                <span class="input-group-text bg-primary text-white">
+                                    <i class="bi bi-book"></i>
+                                </span>
+                                <div class="custom-select-container">
+                                    <input type="text"
+                                           id="universityInput"
+                                           class="form-control form-control-lg"
+                                           placeholder="Type or select university"
+                                           autocomplete="off"
+                                           required />
+                                    <input type="hidden" id="universityValue" name="Input.University" />
+                                    <div class="custom-select-dropdown" id="universityDropdown" style="display: none;">
+                                        @foreach (var university in Model.Input.Universities)
+                                        {
+                                            <div class="custom-select-option" data-value="@university.Text">
+                                                @university.Text
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
                             </div>
                             <span asp-validation-for="Input.University" class="text-danger"></span>
                         </div>
 
+                        <!-- Faculty level -->                      
+                        <div class="mb-3">
+                            <label for="faculty" class="form-label fw-semibold">
+                                Faculty: <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-primary text-white">
+                                    <i class="bi bi-book"></i>
+                                </span>
+                                <div class="custom-select-container">
+                                    <input type="text"
+                                           id="universityInput"
+                                           class="form-control form-control-lg"
+                                           placeholder="Type or select faculty"
+                                           autocomplete="off"
+                                           required />
+                                    <input type="hidden" id="universityValue" name="Input.Faculty" />
+                                    <div class="custom-select-dropdown" id="universityDropdown" style="display: none;">
+                                     @foreach (var faculty in Model.Input.Faculties)
+                                        {
+                                    <div class="custom-select-option" data-value="@faculty.Text">
+                                        @faculty.Text
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                                    <span asp-validation-for="Input.Faculty" class="text-danger"></span>
+                        </div> *@
+
+                        <div class="mb-3">
+                            <label for="universityInput" class="form-label fw-semibold">
+                                University: <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-primary text-white">
+                                    <i class="bi bi-book"></i>
+                                </span>
+                                <div class="custom-select-container">
+                                    <input type="text"
+                                           id="universityInput"
+                                           class="form-control form-control-lg"
+                                           placeholder="Type or select university"
+                                           autocomplete="off"
+                                           required />
+                                    <input type="hidden" id="universityValue" name="Input.University" />
+                                    <div class="custom-select-dropdown" id="universityDropdown" style="display: none;">
+                                        @foreach (var university in Model.Input.Universities)
+                                        {
+                                            <div class="custom-select-option" data-value="@university.Text">
+                                                @university.Text
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                            <span asp-validation-for="Input.University" class="text-danger"></span>
+                        </div>
+
+                        <!-- Faculty Dropdown -->
+                        <div class="mb-3">
+                            <label for="facultyInput" class="form-label fw-semibold">
+                                Faculty: <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-primary text-white">
+                                    <i class="bi bi-book"></i>
+                                </span>
+                                <div class="custom-select-container">
+                                    <input type="text"
+                                           id="facultyInput"
+                                           class="form-control form-control-lg"
+                                           placeholder="Type or select faculty"
+                                           autocomplete="off"
+                                           required />
+                                    <input type="hidden" id="facultyValue" name="Input.Faculty" />
+                                    <div class="custom-select-dropdown" id="facultyDropdown" style="display: none;">
+                                        @foreach (var faculty in Model.Input.Faculties)
+                                        {
+                                            <div class="custom-select-option" data-value="@faculty.Text">
+                                                @faculty.Text
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                            <span asp-validation-for="Input.Faculty" class="text-danger"></span>
+                        </div>
 
                         @* <!-- Faculty -->
                         <div class="mb-3">
@@ -120,21 +224,7 @@
                             </div>
                             <span asp-validation-for="Input.Faculty" class="text-danger"></span>
                         </div> *@
-
-                        <!-- Faculty level -->
-                            <div class="mb-3">
-                                <label for="faculty" class="form-label fw-semibold">
-                                    Faculty: <span class="text-danger">*</span>
-                                </label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-primary text-white"><i class="bi bi-book"></i></span>
-                                <select asp-for="Input.Faculty" asp-items="Model.Input.Faculties" class="form-control form-control-lg" id="faculty" required>
-                                    <option value="">Select Faculty</option>
-                                </select>
-                            </div>
-                            <span asp-validation-for="Input.Faculty" class="text-danger"></span>
-                        </div>
-
+                        
                         <!-- Date of Birth -->
                         <div class="mb-3">
                             <label for="dateOfBirth" class="form-label fw-semibold">
@@ -242,6 +332,47 @@
         border-radius: 0.25rem; /* Rounded corners for inputs */
     }
 </style>
+<style>
+    .custom-select-container {
+        position: relative;
+        flex: 1;
+    }
+
+    .custom-select-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        max-height: 250px;
+        overflow-y: auto;
+        z-index: 1000;
+    }
+
+    .custom-select-option {
+        padding: 8px 12px;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
+
+        .custom-select-option:hover {
+            background-color: royalblue;
+            color: white;
+        }
+
+    .input-group .form-control {
+        border-top-right-radius: 4px !important;
+        border-bottom-right-radius: 4px !important;
+    }
+
+    .input-group-text {
+        border-top-left-radius: 4px;
+        border-bottom-left-radius: 4px;
+    }
+</style>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
@@ -285,6 +416,60 @@
             this.disabled = true; // Disable the button
             this.innerText = "Registering..."; // Optionally change the button text
             this.form.submit(); // Submit the form
+        });
+    </script>
+    <script>
+                document.addEventListener('DOMContentLoaded', function() {
+            // Function to initialize a custom select
+            function initializeCustomSelect(inputId, dropdownId, hiddenInputId) {
+                const input = document.getElementById(inputId);
+                const dropdown = document.getElementById(dropdownId);
+                const hiddenInput = document.getElementById(hiddenInputId);
+                const options = dropdown.querySelectorAll('.custom-select-option');
+
+                // Show dropdown on input focus
+                input.addEventListener('focus', function() {
+                    dropdown.style.display = 'block';
+                    filterOptions(input.value, options);
+                });
+
+                // Filter options as user types
+                input.addEventListener('input', function() {
+                    filterOptions(this.value, options);
+                    dropdown.style.display = 'block';
+                });
+
+                // Handle option selection
+                options.forEach(option => {
+                    option.addEventListener('click', function() {
+                        input.value = this.textContent.trim();
+                        hiddenInput.value = this.dataset.value;
+                        dropdown.style.display = 'none';
+                    });
+                });
+
+                // Filter function
+                function filterOptions(searchTerm, options) {
+                    const term = searchTerm.toLowerCase();
+                    options.forEach(option => {
+                        const text = option.textContent.toLowerCase();
+                        option.style.display = text.includes(term) ? 'block' : 'none';
+                    });
+                }
+            }
+
+            // Hide all dropdowns when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.custom-select-container')) {
+                    document.querySelectorAll('.custom-select-dropdown').forEach(dropdown => {
+                        dropdown.style.display = 'none';
+                    });
+                }
+            });
+
+            // Initialize both dropdowns
+            initializeCustomSelect('universityInput', 'universityDropdown', 'universityValue');
+            initializeCustomSelect('facultyInput', 'facultyDropdown', 'facultyValue');
         });
     </script>
 }

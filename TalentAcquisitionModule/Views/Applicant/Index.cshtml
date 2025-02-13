@@ -11,46 +11,55 @@
         <!-- Left Sidebar -->
         <div class="col-md-3 border-end p-4">
             <h5 class="mb-4">Latest Jobs</h5>
-            <div class="list-group">
-                @foreach (var job in Model)
-                {
-                    <a href="#" class="list-group-item list-group-item-action job-card"
-                       data-job-id="@job.JobId"
-                       data-job-title="@job.Title"
-                       data-job-location="@job.DepartmentName"
-                       data-job-description="@job.Description"
-                       data-job-application-count="@job.ApplicationCount"
-                       data-job-type="@job.JobType">
-                        <h6 class="mb-1">@job.Title</h6>
-                        <div class="job-location">📍 SoftTrend Headquarter</div>
-                        <div class="mb-1">@job.DepartmentName</div>
-                        <div class="category-tag mt-1">Valid till:@job.EndDate</div>
-                    </a>
-                }
-            </div>
-            <br />
-            <!-- Pagination Controls -->
-            <nav aria-label="Page navigation">
-                <ul class="pagination custom-pagination">
-                    <!-- Previous Button -->
-                    <li class="page-item @(currentPage == 1 ? "disabled" : "")">
-                        <a class="page-link" href="@Url.Action("Index", new { page = currentPage - 1 })">Previous</a>
-                    </li>
-
-                    <!-- Page Numbers -->
-                    @for (int i = 1; i <= totalPages; i++)
+            @if (!Model.Any())
+            {
+                <div class="alert alert-info" role="alert">
+                    No jobs available at the moment. Please check back later.
+                </div>
+            }
+            else
+            {
+                <div class="list-group">
+                    @foreach (var job in Model)
                     {
-                        <li class="page-item @(i == currentPage ? "active" : "")">
-                            <a class="page-link" href="@Url.Action("Index", new { page = i })">@i</a>
-                        </li>
+                        <a href="#" class="list-group-item list-group-item-action job-card"
+                           data-job-id="@job.JobId"
+                           data-job-title="@job.Title"
+                           data-job-location="@job.DepartmentName"
+                           data-job-description="@job.Description"
+                           data-job-application-count="@job.ApplicationCount"
+                           data-job-type="@job.JobType">
+                            <h6 class="mb-1">@job.Title</h6>
+                            <div class="job-location">📍 SoftTrend Headquarter</div>
+                            <div class="mb-1">@job.DepartmentName</div>
+                            <div class="category-tag mt-1">Valid till: @job.EndDate</div>
+                        </a>
                     }
+                </div>
+                <br />
+                <!-- Pagination Controls -->
+                <nav aria-label="Page navigation">
+                    <ul class="pagination custom-pagination">
+                        <!-- Previous Button -->
+                        <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                            <a class="page-link" href="@Url.Action("Index", new { page = currentPage - 1 })">Previous</a>
+                        </li>
 
-                    <!-- Next Button -->
-                    <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
-                        <a class="page-link" href="@Url.Action("Index", new { page = currentPage + 1 })">Next</a>
-                    </li>
-                </ul>
-            </nav>
+                        <!-- Page Numbers -->
+                        @for (int i = 1; i <= totalPages; i++)
+                        {
+                            <li class="page-item @(i == currentPage ? "active" : "")">
+                                <a class="page-link" href="@Url.Action("Index", new { page = i })">@i</a>
+                            </li>
+                        }
+
+                        <!-- Next Button -->
+                        <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                            <a class="page-link" href="@Url.Action("Index", new { page = currentPage + 1 })">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+            }
         </div>
 
         <!-- Main Content -->
@@ -68,12 +77,22 @@
                     <div class="job-description" id="job-description">
                         <h5>Description:</h5>
                         <hr />
-                        @Html.Raw(firstJob.Description)
-
-                        <div class="mt-3">
-                            <span class="badge bg-info">@firstJob.ApplicationCount Applications</span>
-                            <span class="badge bg-secondary ms-2">@firstJob.JobType</span>
+                        <div id="description-content">
+                            @if (Model.Any())
+                            {
+                                @Html.Raw(Model.First().Description)
+                            }
                         </div>
+                    </div>
+                    <div class="mt-3">
+                        <span class="badge bg-info">@firstJob.ApplicationCount Applications</span>
+                        <span class="badge bg-secondary ms-2">@firstJob.JobType</span>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-info" role="alert">
+                        No jobs available at the moment. Please check back later.
                     </div>
                 }
             </div>
@@ -137,9 +156,7 @@
                     }
                 });
             });
-        });
-
-                $(document).ready(function () {
+ 
             console.log("Document is ready!"); // Check if jQuery is working
 
             // Handle click event on job cards
@@ -156,17 +173,58 @@
                 // Optional: Scroll the selected job card into view
                 this.scrollIntoView({ behavior: 'smooth', block: 'center' });
             });
+   
+            // Handle click event on job cards
+            $('.job-card').off('click').on('click', function (e) {
+                e.preventDefault();
+
+                // Remove the 'selected-job' class from all job cards
+                $('.job-card').removeClass('selected-job');
+                // Add the 'selected-job' class to the clicked job card
+                $(this).addClass('selected-job');
+
+                // Get job details from data attributes
+                const jobId = $(this).data('job-id');
+                const jobTitle = $(this).data('job-title');
+                const jobDescription = $(this).data('job-description');
+                const jobApplicationCount = $(this).data('job-application-count');
+                const jobType = $(this).data('job-type');
+
+                // Update the middle section with the clicked job's details
+                $('#job-title').text(jobTitle);
+
+                // Clear and update the job description content only
+                $('#description-content').empty().html(jobDescription);
+
+                // Update the badges
+                $('.badge.bg-info').text(`${jobApplicationCount} Applications`);
+                $('.badge.bg-secondary').text(jobType);
+
+                // Update the Apply button's data-job-id attribute
+                $('#applyButton').attr('data-job-id', jobId);
+
+                console.log('Updated job description for job:', jobId); // Debug log
+            });
+
+            // Handle job type filtering
+            $('#job-type-filter').off('change').on('change', function () {
+                const selectedJobType = $(this).val().toLowerCase();
+                $('.job-card').each(function () {
+                    const jobType = $(this).data('job-type').toLowerCase();
+                    $(this).toggle(selectedJobType === 'all' || jobType === selectedJobType);
+                });
+            });
         });
+
     </script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="~/js/job-board.js"></script>
-    }
-    <style>
+@*     <script src="~/js/job-board.js"></script> *@
+}
 
+<style>
     .selected-job {
         border: 3px solid #8f1412 !important;
         background-color: #ebeada;
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     }
-    </style>
-
+</style>

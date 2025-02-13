@@ -1,55 +1,42 @@
-﻿$(document).ready(function () {
-    // Handle click event on job cards
-    $('.job-card').on('click', function (e) {
-        e.preventDefault(); // Prevent default link behavior
+﻿//$(document).ready(function () {
+//    // Handle click event on job cards
+//    $('.job-card').off('click').on('click', function (e) {
+//        e.preventDefault();
 
-        // Get job details from data attributes
-        const jobId = $(this).data('job-id');
-        const jobTitle = $(this).data('job-title');
-        const jobLocation = $(this).data('job-location');
-        const jobDescription = $(this).data('job-description');
-        const jobApplicationCount = $(this).data('job-application-count');
-        const jobType = $(this).data('job-type');
+//        // Remove the 'selected-job' class from all job cards
+//        $('.job-card').removeClass('selected-job');
+//        // Add the 'selected-job' class to the clicked job card
+//        $(this).addClass('selected-job');
 
-        // Update the middle section with the clicked job's details
-        $('#job-title').text(jobTitle);
-        $('#job-location').text(`📍 ${jobLocation}`);
-        $('#job-description p').html(jobDescription);
-        $('#job-description .badge.bg-info').text(`${jobApplicationCount} Applications`);
-        $('#job-description .badge.bg-secondary').text(jobType);
+//        // Get job details from data attributes
+//        const jobId = $(this).data('job-id');
+//        const jobTitle = $(this).data('job-title');
+//        const jobDescription = $(this).data('job-description');
+//        const jobApplicationCount = $(this).data('job-application-count');
+//        const jobType = $(this).data('job-type');
 
-        // Update the Apply button's data-job-id attribute
-        $('#applyButton').attr('data-job-id', jobId);
-    });
+//        // Update the middle section with the clicked job's details
+//        $('#job-title').text(jobTitle);
 
-    // Handle job type filtering
-    $('#job-type-filter').on('change', function () {
-        const selectedJobType = $(this).val().toLowerCase(); // Get the selected job type
+//        // Clear and update the job description content only
+//        $('#description-content').empty().html(jobDescription);
 
-        // Loop through all job cards
-        $('.job-card').each(function () {
-            const jobType = $(this).data('job-type').toLowerCase(); // Get the job type of the card
+//        // Update the badges
+//        $('.badge.bg-info').text(`${jobApplicationCount} Applications`);
+//        $('.badge.bg-secondary').text(jobType);
 
-            // Show or hide the job card based on the selected filter
-            if (selectedJobType === 'all' || jobType === selectedJobType) {
-                $(this).show(); // Show the job card
-            } else {
-                $(this).hide(); // Hide the job card
-            }
-        });
-    });
-});
+//        // Update the Apply button's data-job-id attribute
+//        $('#applyButton').attr('data-job-id', jobId);
 
-window.addEventListener("scroll", function () {
-    let navbar = document.getElementById("navbar");
-    if (window.scrollY > 50) {
-        navbar.classList.add("bg-dark");
-    } else {
-    }
-}); 
+//        console.log('Updated job description for job:', jobId); // Debug log
+//    });
 
-
-
-
-
-
+//    // Handle job type filtering
+//    $('#job-type-filter').off('change').on('change', function () {
+//        const selectedJobType = $(this).val().toLowerCase();
+//        $('.job-card').each(function () {
+//            const jobType = $(this).data('job-type').toLowerCase();
+//            $(this).toggle(selectedJobType === 'all' || jobType === selectedJobType);
+//        });
+//    });
+//});

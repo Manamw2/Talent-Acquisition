@@ -43,7 +43,7 @@ namespace Models.ViewModels
             }).ToList();
         public int ApplicationCount { get; set; }
         public int MyProperty { get; set; }
-        public DateTime EndDate { get; set; }
+        public DateTime? EndDate { get; set; }
         public List<JobApplicationViewModel> JobApplications { get; set; } = new List<JobApplicationViewModel>();
 
     }

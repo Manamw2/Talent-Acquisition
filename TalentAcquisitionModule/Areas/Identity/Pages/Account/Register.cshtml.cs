@@ -181,7 +181,7 @@ namespace TalentAcquisitionModule.Areas.Identity.Pages.Account
         }
 
         [BindProperty]
-        public IFormFile CvFile { get; set; } // Add this property for file upload
+        public IFormFile? CvFile { get; set; } // Add this property for file upload
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
@@ -369,7 +369,8 @@ namespace TalentAcquisitionModule.Areas.Identity.Pages.Account
                 "October 6 University",
                 "Modern Sciences and Arts University (MSA)",
                 "Nahda University",
-                "Sinai University"
+                "Sinai University",
+                "Other"
                 ];
            IEnumerable<string> Faculties = [ "Faculty of Engineering",
                 "Faculty of Medicine",
@@ -390,7 +391,8 @@ namespace TalentAcquisitionModule.Areas.Identity.Pages.Account
                 "Faculty of Fine Arts",
                 "Faculty of Applied Arts",
                 "Faculty of Al-Alsun (Languages)",
-                "Faculty of Islamic Studies"
+                "Faculty of Islamic Studies",
+                "Other"
             ];
             IEnumerable<string> EducationLevels = ["Undergraduate", "Graduate"];
             IEnumerable<string> EnglishProficiencyLevels = ["Beginner", "Intermediate", "Advanced", "Fluent"];

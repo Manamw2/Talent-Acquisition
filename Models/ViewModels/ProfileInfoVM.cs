@@ -93,7 +93,8 @@ namespace Models.ViewModels
                 "October 6 University",
                 "Modern Sciences and Arts University (MSA)",
                 "Nahda University",
-                "Sinai University"
+                "Sinai University",
+                "Other"
 
             };
 
@@ -117,7 +118,8 @@ namespace Models.ViewModels
                 "Faculty of Fine Arts",
                 "Faculty of Applied Arts",
                 "Faculty of Al-Alsun (Languages)",
-                "Faculty of Islamic Studies"
+                "Faculty of Islamic Studies",
+                "Other"
             };
             var edus = new List<string> { "Undergraduate", "Graduate" };
             var engs = new List<string> { "Beginner", "Intermediate", "Advanced", "Fluent" };

@@ -80,8 +80,8 @@ if (!app.Environment.IsDevelopment())
 
 }
 
-app.ApplyMigrations();
-app.Seed();
+//app.ApplyMigrations();
+//app.Seed();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

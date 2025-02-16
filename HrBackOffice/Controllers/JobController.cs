@@ -18,12 +18,14 @@ namespace HrBackOffice.Controllers
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IConfiguration _config;
         private readonly UserManager<AppUser> _userManager;
-        public JobController(IUnitOfWork unitOfWork, IMapper mapper , UserManager<AppUser> userManager)
+        public JobController(IConfiguration configuration,IUnitOfWork unitOfWork, IMapper mapper , UserManager<AppUser> userManager)
         {
             _userManager = userManager;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _config = configuration;
         }
 
         public async Task<IActionResult> Index(int? page)
@@ -305,8 +307,24 @@ namespace HrBackOffice.Controllers
             return View(applicant);
         }
 
+        [HttpGet]
+        public IActionResult GetCv(string filePath, string fileName, bool download = false)
+        {
+            if (string.IsNullOrEmpty(filePath) || !System.IO.File.Exists(filePath))
+                return NotFound("File not found");
 
+            var fileBytes = System.IO.File.ReadAllBytes(filePath);
+            var contentType = "application/pdf";
+
+            // Set Content-Disposition: "inline" to display, "attachment" to force download
+            var contentDisposition = download ? "attachment" : "inline";
+
+            Response.Headers["Content-Disposition"] = $"{contentDisposition}; filename=\"{fileName}\"";
+
+            return File(fileBytes, contentType);
+        }
 
     }
+
 
 }

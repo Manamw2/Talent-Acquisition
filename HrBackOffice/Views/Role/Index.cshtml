@@ -46,10 +46,7 @@
                                                     <a class="btn btn-sm btn-primary" asp-action="Edit" asp-route-id="@role.Id">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
-                                                    <button type="button" class="btn btn-sm btn-danger"
-                                                            onclick="confirmDeleteRole('@role.Id', '@role.Name')">
-                                                        <i class="fas fa-trash-alt"></i>
-                                                    </button>
+                                                   
                                                 </div>
                                             </td>
                                         </tr>
@@ -71,25 +68,3 @@
     </div>
 </div>
 
-<!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteRoleModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Confirm Delete</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p>Are you sure you want to delete the role "<span id="roleNameToDelete"></span>"?</p>
-                <p class="text-danger">This action cannot be undone and may affect users assigned to this role.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form id="deleteRoleForm" method="post" asp-action="Delete">
-                    <input type="hidden" id="roleIdToDelete" name="id" />
-                    <button type="submit" class="btn btn-danger">Delete Role</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>

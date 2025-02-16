@@ -102,6 +102,13 @@ namespace TalentAcquisitionModule.Areas.Identity.Pages.Account
                 return RedirectToPage("./ResetPasswordConfirmation");
             }
 
+            var isTokenValid = await _userManager.VerifyUserTokenAsync(user, _userManager.Options.Tokens.PasswordResetTokenProvider, "ResetPassword", Input.Code);
+            if (!isTokenValid)
+            {
+                ModelState.AddModelError(string.Empty, "Invalid or expired token.");
+                return Page();
+            }
+
             var result = await _userManager.ResetPasswordAsync(user, Input.Code, Input.Password);
             if (result.Succeeded)
             {

@@ -26,6 +26,11 @@ builder.Services.AddScoped(typeof(IRepository<Job>), typeof(Repository<Job>));
 builder.Services.AddScoped(typeof(IRepository<JobApplication>), typeof(Repository<JobApplication>));
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+builder.Services.AddSingleton<FileStorageService>(provider =>
+{
+    var config = provider.GetRequiredService<IConfiguration>();
+    return new FileStorageService(config);
+});
 // Load SmtpSettings from appsettings.json
 var smtpSettings = new SmtpSettings();
 builder.Configuration.GetSection("SmtpSettings").Bind(smtpSettings);

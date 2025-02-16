@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using DataAccess.Data;
 using DataAccess.Repository.IRepository;
 using HrBackOffice.Helper.ApplicantService;
 using HrBackOffice.Helper.EmailSetting;
@@ -27,7 +28,8 @@ namespace HrBackOffice.Controllers
         private readonly HttpClient _httpClient;
         private readonly IApplicantService _AppSevice;
         private readonly IConfiguration _configuration;
-        public ApplicantController(IConfiguration configuration,IApplicantService applicantService,HttpClient httpClient,IEmailSend emailSender,IUnitOfWork unitOfWork, IMapper mapper, UserManager<AppUser> userManager)
+        private readonly FileStorageService _fileStorage;
+        public ApplicantController(FileStorageService fileStorage,IConfiguration configuration,IApplicantService applicantService,HttpClient httpClient,IEmailSend emailSender,IUnitOfWork unitOfWork, IMapper mapper, UserManager<AppUser> userManager)
         {
             _emailSender = emailSender;
             _userManager = userManager;
@@ -36,6 +38,7 @@ namespace HrBackOffice.Controllers
             _httpClient = httpClient;
             _AppSevice= applicantService;
             _configuration = configuration;
+            _fileStorage = fileStorage;
         }
       
         public async Task<IActionResult> Index(int? page, string searchQuery = null)
@@ -122,7 +125,26 @@ namespace HrBackOffice.Controllers
                 _AppSevice.PopulateDropdownLists(model);
                 return View(model);
             }
+            if (model.CvFile != null && model.CvFile.Length > 0)
+            {
+                try
+                {
+                    var fileName = Path.GetRandomFileName() + Path.GetExtension(model.CvFile.FileName); // Safer filename
+                    string sharedFolderPath = _fileStorage.GetSharedCsvFolderPath();
+                    string filePath = Path.Combine(sharedFolderPath, fileName);
 
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await model.CvFile.CopyToAsync(stream);
+                    }
+                    model.CvUrl = filePath;
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError(string.Empty, $"CV upload failed: {ex.Message}");
+                  
+                }
+            }
             var university = model.University == "Other" ? Request.Form["University"].ToString() : model.University;
             var faculty = model.Faculty == "Other" ? Request.Form["Faculty"].ToString() : model.Faculty;
 

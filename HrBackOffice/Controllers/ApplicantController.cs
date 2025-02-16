@@ -147,10 +147,10 @@ namespace HrBackOffice.Controllers
             }
             var university = model.University == "Other" ? Request.Form["University"].ToString() : model.University;
             var faculty = model.Faculty == "Other" ? Request.Form["Faculty"].ToString() : model.Faculty;
-
+            var username = model.Email.Split('@')[0];
             var user = new AppUser
             {
-                UserName = model.UserName,
+                UserName = username,
                 DisplayName = model.DisplayName,
                 Email = model.Email,
                 PhoneNumber = model.Phone,

@@ -13,7 +13,7 @@ namespace DataAccess.Data
         public static async Task Initialize(IServiceProvider serviceProvider, UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager)
         {
             // Initialize Roles
-            string[] roleNames = { "hr", "applicant" ,"Admin"};
+            string[] roleNames = { "HR", "applicant" ,"Admin"};
             foreach (var roleName in roleNames)
             {
                 if (!await roleManager.RoleExistsAsync(roleName))
@@ -43,7 +43,7 @@ namespace DataAccess.Data
                     UserName = "admin",
                     Email = "admin@gmail.com"
                 };
-                await userManager.CreateAsync(admin, "Admin@623145");
+                await userManager.CreateAsync(admin, "Admin@123");
                 await userManager.AddToRoleAsync(admin, "Admin");
             }
 

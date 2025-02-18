@@ -289,7 +289,54 @@ namespace HrBackOffice.Controllers
             return Ok(new { success = true, message = "Applicant deleted successfully!" });
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetAvailableJobs(string userId)
+        {
+            if (string.IsNullOrEmpty(userId))
+                return BadRequest("User ID is required");
+            // First, get all job applications for this user
+            var applications = await _unitOfWork.JobApplicationRepository
+                .GetAllAsync(ja => ja.UserId == userId);
+            // Then extract the JobIds
+            var appliedJobIds = applications.Select(ja => ja.JobId);
+            // Now get jobs that are not in the applied list
+            var availableJobs = await _unitOfWork.JobRepository
+                .GetAllAsync(j => !appliedJobIds.Contains(j.JobId));
+            return Json(availableJobs.Select(j => new { id = j.JobId, title = j.Title }));
+        }
+        // POST: Assign job to applicant
+        [HttpPost]
+        public async Task<IActionResult> AssignJob([FromBody] AssignJobViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
+            var applicant = await _userManager.FindByIdAsync(model.UserId);
+            if (applicant == null)
+                return NotFound("Applicant not found");
+            var job = await _unitOfWork.JobRepository.GetFirstOrDefaultAsync(j => j.JobId == model.JobId);
+            if (job == null)
+                return NotFound("Job not found");
+            // Check for duplicate application
+            var existingApplication = await _unitOfWork.JobApplicationRepository.GetFirstOrDefaultAsync(
+                a => a.UserId == model.UserId && a.JobId == model.JobId);
+            if (existingApplication != null)
+                return BadRequest("This applicant has already applied for this job");
+            // Create new job application
+            var jobApplication = new JobApplication
+            {
+                UserId = model.UserId,
+                JobId = model.JobId,
+                AppliedDate = DateTime.UtcNow,
+                Status = "HR Added",
+                Source = model.Reason,
+                SourceDetails = model.Reason == "Internal referral" ? $"Referred by: {model.ReferralName}" : null,
+                AddedBy = User.Identity.Name
+            };
+            await _unitOfWork.JobApplicationRepository.AddAsync(jobApplication);
+            await _unitOfWork.SaveAsync();
+            return Ok(new { message = "Job application successfully added" });
+        }
 
     }
 }

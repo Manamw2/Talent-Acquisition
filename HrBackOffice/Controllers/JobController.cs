@@ -34,7 +34,11 @@ namespace HrBackOffice.Controllers
             int pageNumber = page ?? 1; // Default to page 1 if no page is specified
 
             var jobs = await _unitOfWork.JobRepository
-                .GetAllAsync(includeProperties: "Batch,Department");
+                                        .GetAllAsync(
+                                            filter: job => job.Batch != null && job.Batch.EndDate > DateTime.UtcNow,
+                                            includeProperties: "Batch,Department"
+                                        );
+
 
             var jobViewModels = jobs.Select(job => new JobViewM
             {

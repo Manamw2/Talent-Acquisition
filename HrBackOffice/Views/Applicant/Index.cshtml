@@ -71,6 +71,9 @@
                                                     onclick="confirmDeleteUser('@user.Id', '@user.UserName')">
                                                 <i class="fas fa-trash-alt"></i>
                                             </button>
+                                            <button type="button" class="btn btn-primary assign-job-btn" data-applicant-id="@user.Id" data-applicant-name="@user.DisplayName">
+                                                Assign Job
+                                            </button>
                                         </td>
                                     </tr>
                                 }
@@ -102,7 +105,63 @@
         </div>
     </div>
 </div>
+<!-- Modal -->
+<div class="modal fade" id="assignJobModal" tabindex="-1" role="dialog" aria-labelledby="assignJobModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="assignJobModalLabel">Assign Job to <span id="applicantName"></span></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="assignJobForm">
+                    <input type="hidden" id="userId" name="userId" />
+                    <div class="form-group">
+                        <label for="jobId">Available Jobs</label>
+                        <select class="form-control" id="jobId" name="jobId" required>
+                            <option value="">-- Select a job --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="reason">Reason for Adding</label>
+                        <select class="form-control" id="reason" name="reason" required>
+                            <option value="">-- Select a reason --</option>
+                            <option value="Internal referral">Internal referral</option>
+                            <option value="Resume received offline">Resume received offline</option>
+                            <option value="Career fair candidate">Job fair candidate</option>
+                            <option value="Reapplication">Reapplication</option>
+                            <option value="HR initiative">HR initiative</option>
+                        </select>
+                    </div>
 
+                    <div class="form-group" id="referralNameGroup" style="display: none;">
+                        <label for="referralName">Referred by</label>
+                        <input type="text" class="form-control" id="referralName" name="referralName" placeholder="Enter employee name">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="submitAssignJob">Assign Job</button>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    .is-invalid {
+        border-color: #dc3545;
+    }
+
+    .invalid-feedback {
+        display: block;
+        width: 100%;
+        margin-top: 0.25rem;
+        font-size: 80%;
+        color: #dc3545;
+    }
+</style>
 @section Scripts {
     <script>
         let searchTimeout;
@@ -155,6 +214,232 @@
             const searchQuery = urlParams.get('searchQuery');
             if (searchQuery) {
                 document.getElementById('searchBox').value = searchQuery;
+            }
+        });
+    </script>
+    <script>
+        $(document).ready(function () {
+            // Show modal when the assign job button is clicked
+            $('.assign-job-btn').click(function () {
+                var applicantId = $(this).data('applicant-id');
+                var applicantName = $(this).data('applicant-name');
+
+                // Reset form state
+                resetFormState();
+
+                // Set form values
+                $('#userId').val(applicantId);
+                $('#applicantName').text(applicantName);
+
+                // Load available jobs for this applicant
+                loadAvailableJobs(applicantId);
+
+                // Show modal
+                $('#assignJobModal').modal('show');
+            });
+
+            // Reset form to initial state
+            function resetFormState() {
+                // Reset form fields
+                $('#assignJobForm')[0].reset();
+                $('#jobId').html('<option value="">-- Select a job --</option>');
+                $('#referralNameGroup').hide();
+
+                // Reset any validation styling
+                $('.is-invalid').removeClass('is-invalid');
+                $('.invalid-feedback').remove();
+            }
+
+            // Close modal handlers
+            $('#assignJobModal .close, #assignJobModal button.btn-secondary').on('click', function () {
+                $('#assignJobModal').modal('hide');
+            });
+
+            // Show/hide referral name field based on reason selection
+            $('#reason').change(function () {
+                if ($(this).val() === 'Internal referral') {
+                    $('#referralNameGroup').show();
+                    $('#referralName').attr('required', 'required');
+                } else {
+                    $('#referralNameGroup').hide();
+                    $('#referralName').removeAttr('required');
+                    $('#referralName').val('');
+                }
+            });
+
+            // Submit form
+            $('#submitAssignJob').click(function () {
+                // Clear previous validation errors
+                $('.is-invalid').removeClass('is-invalid');
+                $('.invalid-feedback').remove();
+
+                // Validate form
+                if (!validateForm()) {
+                    return;
+                }
+
+                // Show loading state
+                $('#submitAssignJob').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Processing...');
+
+                var formData = {
+                    userId: $('#userId').val(),
+                    jobId: $('#jobId').val(),
+                    reason: $('#reason').val(),
+                    referralName: $('#reason').val() === 'Internal referral' ? $('#referralName').val() : null
+                };
+
+                $.ajax({
+                    url: '/Applicant/AssignJob',
+                    type: 'POST',
+                    data: JSON.stringify(formData),
+                    contentType: 'application/json',
+                    success: function (response) {
+                        // Success handling
+                        $('#assignJobModal').modal('hide');
+
+                        // Show success message with sweetalert2 (or you can use toastr)
+                        Swal.fire({
+                            title: 'Success!',
+                            text: 'Job successfully assigned to applicant',
+                            icon: 'success',
+                            confirmButtonText: 'Great!'
+                        }).then((result) => {
+                            // Optional: reload data or update UI
+                            refreshApplicantList();
+                        });
+                    },
+                    error: function (xhr) {
+                        // Reset button state
+                        $('#submitAssignJob').prop('disabled', false).text('Assign Job');
+
+                        var errorMessage = 'An error occurred while assigning the job';
+
+                        // Try to get detailed error if available
+                        if (xhr.responseJSON) {
+                            if (xhr.responseJSON.message) {
+                                errorMessage = xhr.responseJSON.message;
+                            } else if (xhr.responseJSON.errors) {
+                                // Handle model validation errors
+                                handleValidationErrors(xhr.responseJSON.errors);
+                                return;
+                            }
+                        }
+
+                        // Show error message
+                        Swal.fire({
+                            title: 'Error!',
+                            text: errorMessage,
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                    },
+                    complete: function () {
+                        // Reset button state if not already done
+                        $('#submitAssignJob').prop('disabled', false).text('Assign Job');
+                    }
+                });
+            });
+
+            // Handle validation errors from server
+            function handleValidationErrors(errors) {
+                // Display each validation error next to its field
+                for (var field in errors) {
+                    var fieldId = field.charAt(0).toLowerCase() + field.slice(1);
+                    var $field = $('#' + fieldId);
+
+                    if ($field.length) {
+                        $field.addClass('is-invalid');
+                        $field.after('<div class="invalid-feedback">' + errors[field][0] + '</div>');
+                    } else {
+                        // If field not found, show as general error
+                        toastr.error(errors[field][0]);
+                    }
+                }
+            }
+
+            function loadAvailableJobs(applicantId) {
+                $('#jobId').html('<option value="">-- Loading jobs... --</option>').prop('disabled', true);
+
+                $.ajax({
+                    url: '/Applicant/GetAvailableJobs',
+                    type: 'GET',
+                    data: { userId: applicantId },
+                    success: function (jobs) {
+                        var options = '<option value="">-- Select a job --</option>';
+
+                        if (jobs && jobs.length > 0) {
+                            $.each(jobs, function (i, job) {
+                                options += '<option value="' + job.id + '">' + job.title + '</option>';
+                            });
+                        } else {
+                            options = '<option value="">No available jobs found</option>';
+                        }
+
+                        $('#jobId').html(options).prop('disabled', false);
+                    },
+                    error: function () {
+                        $('#jobId').html('<option value="">-- Error loading jobs --</option>').prop('disabled', false);
+                        toastr.error('Failed to load available jobs');
+                    }
+                });
+            }
+
+            function validateForm() {
+                var isValid = true;
+
+                // Job validation
+                if (!$('#jobId').val()) {
+                    $('#jobId').addClass('is-invalid');
+                    $('#jobId').after('<div class="invalid-feedback">Please select a job</div>');
+                    isValid = false;
+                }
+
+                // Reason validation
+                if (!$('#reason').val()) {
+                    $('#reason').addClass('is-invalid');
+                    $('#reason').after('<div class="invalid-feedback">Please select a reason</div>');
+                    isValid = false;
+                }
+
+                // Referral name validation (conditional)
+                if ($('#reason').val() === 'Internal referral' && !$('#referralName').val()) {
+                    $('#referralName').addClass('is-invalid');
+                    $('#referralName').after('<div class="invalid-feedback">Please enter the referral name</div>');
+                    isValid = false;
+                }
+
+                // If not valid, show general error
+                if (!isValid) {
+                    toastr.error('Please correct the errors and try again');
+                }
+
+                return isValid;
+            }
+
+            // Function to refresh the applicant list after successful assignment
+            function refreshApplicantList() {
+                // Option 1: Reload the page
+                // location.reload();
+
+                // Option 2: Update just the applicant list via AJAX (recommended)
+                $.ajax({
+                    url: '/Applicant/GetApplicantsList',
+                    type: 'GET',
+                    success: function (result) {
+                        // Replace the applicant list container with updated data
+                        $('#applicantListContainer').html(result);
+
+                        // Re-attach event handlers if needed
+                        reattachEventHandlers();
+                    }
+                });
+            }
+
+            function reattachEventHandlers() {
+                // Re-attach event handlers for newly loaded DOM elements if needed
+                $('.assign-job-btn').off('click').on('click', function () {
+                    // ... (same code as in the original event handler)
+                });
             }
         });
     </script>

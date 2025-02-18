@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] | HR BackOffice</title>
     <link rel="icon" href="~/images/st.png" />
-
     <link href="~/css/styles.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.snow.css"
           rel="stylesheet" />
@@ -18,40 +17,49 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.js"></script>
-
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Include Quill library -->
     <script src="https://use.fontawesome.com/releases/v6.1.0/js/all.js" crossorigin="anonymous"></script>
     <script>
         disablePageUnloadEvents: ["unload"]
     </script>
-
     <style>
-
-        /* Color Palette */
-        .navbar-dark {
-            background-color: #343a40; /* Dark color for the navbar */
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        .sb-sidenav-dark {
-            background: linear-gradient(135deg, #1e2a33, #2c3e50); /* Gradient background for the sidebar */
-        }
-
-        /* Font and Typography */
-        body {
+        html, body {
+            height: 100%;
+            width: 100%;
             font-family: 'Poppins', sans-serif;
             font-size: 16px;
             color: #333333;
             background-color: #E0E0E0;
         }
 
+        /* Color Palette */
+        .navbar-dark {
+            background-color: #343a40;
+        }
+
+        .sb-sidenav-dark {
+            background: linear-gradient(135deg, #1e2a33, #2c3e50);
+        }
+
         /* Navbar Customization */
         .navbar-brand img {
-            height: 40px; /* Adjust height as needed */
+            height: 40px;
             width: auto;
         }
 
-        .navbar {
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        .sb-topnav {
+            height: 56px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            z-index: 1030;
         }
 
         .nav-link:hover {
@@ -59,11 +67,35 @@
             color: #007bff;
         }
 
+        /* Layout Structure - IMPORTANT PART */
+        .wrapper {
+            display: flex;
+            width: 100%;
+            align-items: stretch;
+            height: calc(100vh - 56px); /* Subtract navbar height */
+        }
+
         /* Sidebar Customization */
+        #layoutSidenav_nav {
+            min-width: 250px;
+            max-width: 250px;
+            background: linear-gradient(135deg, #1e2a33, #2c3e50);
+            color: #fff;
+            transition: all 0.3s;
+            height: calc(100vh - 56px);
+            position: fixed;
+            top: 56px;
+            left: 0;
+            z-index: 1020;
+            overflow-y: auto;
+        }
+
         .sb-sidenav-menu-heading {
             font-size: 1.1rem;
             font-weight: 600;
             color: #ddd;
+            padding: 10px 15px;
+            text-transform: uppercase;
         }
 
         .sb-sidenav .nav-link {
@@ -72,6 +104,31 @@
             text-transform: uppercase;
             font-weight: 600;
         }
+
+        .sb-sidenav .nav-link:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Content Area */
+        #layoutSidenav_content {
+        width: calc(100% - 250px); /* Adjusted width accounting for sidebar */
+        min-height: calc(100vh - 56px);
+        margin-left: 250px; /* Same as sidebar width */
+        transition: all 0.3s;
+        background: #E0E0E0;
+        padding: 20px;
+    }
+
+    /* Update the Collapsed Sidebar State */
+    #layoutSidenav.sidebar-collapsed #layoutSidenav_nav {
+        margin-left: -250px;
+    }
+
+    #layoutSidenav.sidebar-collapsed #layoutSidenav_content {
+        margin-left: 0;
+        width: 100%; /* Full width when sidebar is collapsed */
+    }
 
         /* Card Style for Main Content */
         .card {
@@ -98,98 +155,212 @@
             color: #ddd;
         }
 
+        #layoutSidenav {
+        display: flex;
+        width: 100%;
+        height: calc(100vh - 56px); /* Subtract navbar height */
+        overflow: hidden; /* Prevent content overlap */
+    }
+
+    /* Sidebar Customization - Changed to use left instead of margin-left */
+    #layoutSidenav_nav {
+        min-width: 250px;
+        max-width: 250px;
+        background: linear-gradient(135deg, #1e2a33, #2c3e50);
+        color: #fff;
+        transition: all 0.3s;
+        height: calc(100vh - 56px);
+        position: fixed;
+        top: 56px;
+        left: 0;
+        z-index: 1020;
+        overflow-y: auto;
+    }
+
+    /* Content Area - Modified to use padding-left instead of margin-left */
+    #layoutSidenav_content {
+        flex: 1; /* Take up remaining space */
+        min-height: calc(100vh - 56px);
+        padding-left: 250px; /* Padding instead of margin to avoid content being underneath */
+        transition: padding 0.3s;
+        background: #E0E0E0;
+        overflow-x: hidden;
+        padding-top: 20px;
+        padding-right: 20px;
+        padding-bottom: 20px;
+    }
+
+    /* Collapsed Sidebar State - Updated for padding approach */
+    #layoutSidenav.sidebar-collapsed #layoutSidenav_nav {
+        left: -250px; /* Move off-screen */
+    }
+
+    #layoutSidenav.sidebar-collapsed #layoutSidenav_content {
+        padding-left: 20px; /* Just regular padding when sidebar is hidden */
+    }
+
+    /* Mobile responsiveness */
+    @@media (max-width: 768px) {
+        #layoutSidenav_nav {
+            left: -250px; /* Hidden by default on mobile */
+        }
+        
+        #layoutSidenav_content {
+            padding-left: 20px; /* Regular padding on mobile */
+        }
+        
+        #layoutSidenav.sidebar-active #layoutSidenav_nav {
+            left: 0; /* Show when active */
+        }
+        
+        #layoutSidenav.sidebar-active #layoutSidenav_content {
+            padding-left: 20px; /* Keep original padding on mobile when sidebar is active */
+        }
+        
+        /* Sidebar overlay only on mobile */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 56px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1010;
+        }
+        
+        #layoutSidenav.sidebar-active .sidebar-overlay {
+            display: block;
+        }
+    }
+
         /* Footer Customization */
         .footer {
             background-color: #343a40;
             color: #ddd;
+            padding: 15px 0;
         }
 
-            .footer a {
-                color: #007bff;
-            }
+        .footer a {
+            color: #007bff;
+        }
     </style>
 </head>
 <body>
-    <header>
-        <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
-            <!-- Navbar Brand with Logo -->
-            <a class="navbar-brand ps-3" href="#">
-                <img src="~/images/Logo1.png" alt="HR BackOffice Logo" height="40" class="me-2">
-                
-            </a>
-            <!-- Sidebar Toggle -->
-            <div class="sb-sidenav-menu-heading">HR Management</div>
-            <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!">
-                <i class="fas fa-bars"></i>
-                
-            </button>
-            <!-- Navbar Search -->
-            <div class="d-none d-md-inline-block form-inline ms-auto me-0 me-md-3 my-2 my-md-0">
-                <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-user fa-fw"></i>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                            <li><a class="dropdown-item" asp-controller="Admin" asp-action="Logout">Logout</a></li>
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-        </nav>
-    </header>
+    <!-- Top Navigation -->
+    <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
+        <a class="navbar-brand ps-3" href="#">
+            <img src="~/images/Logo1.png" alt="HR BackOffice Logo" height="40" class="me-2">
+        </a>
+        <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="d-none d-md-inline-block ms-auto me-3">
+            <ul class="navbar-nav">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-user fa-fw"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="Logout">Logout</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </nav>
 
+    <!-- Main Content Wrapper -->
     <div id="layoutSidenav">
+        <!-- Overlay for mobile -->
+        <div class="sidebar-overlay"></div>
+        
+        <!-- Sidebar Navigation -->
         <div id="layoutSidenav_nav">
-            <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+            <nav class="sb-sidenav accordion sb-sidenav-dark">
                 <div class="sb-sidenav-menu">
                     <div class="nav">
+                        <div class="sb-sidenav-menu-heading">HR Management</div>
                         @if (User.IsInRole("Admin"))
                         {
                             <div class="sb-sidenav-menu-heading">Security</div>
                             <a class="nav-link" asp-controller="Role" asp-action="Index">
-                                <div class="sb-nav-link-icon"><i class="fas fa-user"></i></div>
-                                Roles
+                                <i class="fas fa-user"></i> Roles
                             </a>
                             <a class="nav-link" asp-controller="User" asp-action="Index">
-                                <div class="sb-nav-link-icon"><i class="fas fa-users"></i></div>
-                                Users
+                                <i class="fas fa-users"></i> Users
                             </a>
                         }
-
                         <div class="sb-sidenav-menu-heading">Website</div>
                         <a class="nav-link" asp-controller="Job" asp-action="Index">
-                            <div class="sb-nav-link-icon"></div>
-                            Jobs
+                            <i class="fas fa-briefcase"></i> Jobs
                         </a>
                         <a class="nav-link" asp-controller="Applicant" asp-action="Index">
-                            <div class="sb-nav-link-icon"></div>
-                            Applicants
+                            <i class="fas fa-user-tie"></i> Applicants
                         </a>
                         <a class="nav-link" asp-controller="Batch" asp-action="Index">
-                            <div class="sb-nav-link-icon"></div>
-                            Batches
+                            <i class="fas fa-layer-group"></i> Batches
                         </a>
                     </div>
                 </div>
             </nav>
         </div>
+        
+        <!-- Main Content Area -->
         <div id="layoutSidenav_content">
-            <div class="container">
-                <main role="main" class="pb-3">
-                    @RenderBody()
-                </main>
-            </div>
+            <main>
+                @RenderBody()
+            </main>
         </div>
     </div>
 
-
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-    <script src="~/js/scripts.js"></script>
-    <script src="~/js/datatables-simple-demo.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const sidebarToggle = document.getElementById("sidebarToggle");
+            const layoutSidenav = document.getElementById("layoutSidenav");
+            const overlay = document.querySelector(".sidebar-overlay");
+            
+            // Check initial window width for mobile/desktop
+            if (window.innerWidth < 768) {
+                layoutSidenav.classList.add("sidebar-collapsed");
+            }
+            
+            // Toggle sidebar function
+            function toggleSidebar() {
+                if (window.innerWidth < 768) {
+                    layoutSidenav.classList.toggle("sidebar-active");
+                } else {
+                    layoutSidenav.classList.toggle("sidebar-collapsed");
+                }
+            }
+            
+            // Event listeners
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener("click", toggleSidebar);
+            }
+            
+            // Close sidebar when clicking on overlay (mobile)
+            if (overlay) {
+                overlay.addEventListener("click", function() {
+                    layoutSidenav.classList.remove("sidebar-active");
+                });
+            }
+            
+            // Handle window resize
+            window.addEventListener("resize", function() {
+                if (window.innerWidth >= 768) {
+                    layoutSidenav.classList.remove("sidebar-active");
+                } else if (!layoutSidenav.classList.contains("sidebar-active")) {
+                    layoutSidenav.classList.add("sidebar-collapsed");
+                }
+            });
+        });
+    </script>
 </body>
 </html>

@@ -22,7 +22,7 @@
                                 Confirmation Code: <span class="text-danger">*</span>
                             </label>
                             <div class="input-group">
-                                <span class="input-group-text bg-danger text-white"><i class="bi bi-shield-lock"></i></span>
+                                <span class="input-group-text bg-primary text-white"><i class="bi bi-shield-lock"></i></span>
                                 <input asp-for="Input.Code" class="form-control form-control-lg" id="code" placeholder="Enter your confirmation code" required>
                             </div>
                             <span asp-validation-for="Input.Code" class="text-danger"></span>
@@ -30,7 +30,7 @@
 
                         <!-- Submit Button -->
                         <div class="text-center">
-                            <button type="submit" class="btn btn-danger btn-lg w-100">Confirm</button>
+                            <button type="submit" class="btn btn-primary btn-lg w-100">Confirm</button>
                         </div>
                     </form>
                 </div>
@@ -38,7 +38,7 @@
                 <!-- Resend Code Section -->
                 <div class="text-center mt-3">
                     <h5 class="fw-bold">Didn't receive the code?</h5>
-                    <a href="#" class="text-danger fw-semibold text-decoration-none" onclick="resendCode()">Resend code</a>
+                    <a href="#" class="text-primary fw-semibold text-decoration-none" onclick="resendCode()">Resend code</a>
                     <span class="text-muted">to your email.</span>
                     <div id="resendMessage" class="mt-2 text-success" style="display: none;"></div>
                 </div>

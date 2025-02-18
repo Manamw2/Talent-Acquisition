@@ -45,7 +45,7 @@
                                 @foreach (var user in Model)
                                 {
                                     <tr ondblclick="viewApplicantProfile('@user.Id')" style="cursor: pointer;">
-                                        <td><span class="badge bg-primary">@user.UserName</span></td>
+                                        <td><span class="badge bg-primary">@user.DisplayName</span></td>
                                         <td>@user.Email</td>
                                         <td>
                                             @if (user.Roles.Any())

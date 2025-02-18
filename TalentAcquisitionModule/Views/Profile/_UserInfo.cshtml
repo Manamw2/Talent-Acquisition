@@ -57,7 +57,7 @@
                             </label>
                             <div class="input-group">
                                 <span class="input-group-text bg-danger text-white"><i class="bi bi-book"></i></span>
-                                <select asp-for="University" asp-items="Model.Input.Universities" class="form-control form-control-lg" id="educationLevel" required>
+                                <select asp-for="University" asp-items="ViewBag.Universities" class="form-control form-control-lg" id="educationLevel" required>
                                     <option value="">Select your university</option>
                                 </select>
                             </div>
@@ -71,7 +71,7 @@
                             </label>
                             <div class="input-group">
                                 <span class="input-group-text bg-danger text-white"><i class="bi bi-book"></i></span>
-                                <select asp-for="Faculty" asp-items="Model.Input.Faculties" class="form-control form-control-lg" id="educationLevel" required>
+                                <select asp-for="Faculty" asp-items="ViewBag.Faculties" class="form-control form-control-lg" id="educationLevel" required>
                                     <option value="">Select your faculty</option>
                                 </select>
                             </div>

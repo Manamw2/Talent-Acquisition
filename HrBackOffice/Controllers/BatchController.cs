@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Models;
+using Models.ViewModels;
+using System.Drawing.Printing;
 
 
 namespace HrBackOffice.Controllers
@@ -18,12 +20,23 @@ namespace HrBackOffice.Controllers
         {
             _unitOfWork = unitOfWork;
         }
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int page = 1)
 		{
+            int pageSize = 5;
 			var batches = await _unitOfWork.BatchRepository.GetAllAsync();
 
-			return View(batches);
-		}
+			
+            var paginatedJobs = batches.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+            // Calculate total pages
+            var totalJobs = batches.Count();
+            var totalPages = (int)Math.Ceiling(totalJobs / (double)pageSize);
+
+            // Pass data to the view
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            return View(paginatedJobs);
+        }
 
         public IActionResult Create()
         {

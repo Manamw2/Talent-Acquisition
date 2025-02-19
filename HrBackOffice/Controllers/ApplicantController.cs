@@ -41,10 +41,9 @@ namespace HrBackOffice.Controllers
             _fileStorage = fileStorage;
         }
       
-        public async Task<IActionResult> Index(int? page, string searchQuery = null)
+        public async Task<IActionResult> Index(int page =1, string searchQuery = null)
         {
             int pageSize = 5;
-            int pageNumber = page ?? 1;
             var applicants = new List<UserViewModel>();
 
             if (!string.IsNullOrEmpty(searchQuery))
@@ -68,6 +67,7 @@ namespace HrBackOffice.Controllers
                                 {
                                     Id = user.Id,
                                     UserName = user.UserName,
+                                    DisplayName = user.DisplayName,
                                     Email = user.Email,
                                     EducationLevel = user.EducationLevel,
                                     EnglishProficiencyLevel = user.EnglishLevel,
@@ -90,6 +90,7 @@ namespace HrBackOffice.Controllers
                         {
                             Id = user.Id,
                             UserName = user.UserName,
+                            DisplayName = user.DisplayName,
                             Email = user.Email,
                             EducationLevel = user.EducationLevel,
                             EnglishProficiencyLevel = user.EnglishLevel,
@@ -99,8 +100,18 @@ namespace HrBackOffice.Controllers
                 }
             }
 
-            var pagedApplicant = applicants.ToPagedList(pageNumber, pageSize);
-            return View(pagedApplicant);
+           // var pagedApplicant = applicants.ToPagedList(pageNumber, pageSize);
+           // return View(pagedApplicant);
+            var paginatedJobs = applicants.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+            // Calculate total pages
+            var totalJobs = applicants.Count();
+            var totalPages = (int)Math.Ceiling(totalJobs / (double)pageSize);
+
+            // Pass data to the view
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            return View(paginatedJobs);
         }
         
 

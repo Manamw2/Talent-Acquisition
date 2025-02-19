@@ -16,11 +16,11 @@ namespace Models.ViewModels
         [Required(ErrorMessage = "New password is required")]
         [StringLength(100, ErrorMessage = "The {0} must be at least {2} characters long.", MinimumLength = 8)]
         [DataType(DataType.Password)]
-        [RegularExpression(@"^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).{8,}$",
+       /* [RegularExpression(@"^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).{8,}$",
     ErrorMessage = "Password must contain at least one uppercase letter.<br />" +
                    "Password must contain at least one lowercase letter.<br />" +
                    "Password must contain at least one digit.<br />" +
-                   "Password must be at least 8 characters long.")]
+                   "Password must be at least 8 characters long.")]*/
 
         public string NewPassword { get; set; }
 

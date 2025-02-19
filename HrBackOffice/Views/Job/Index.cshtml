@@ -1,6 +1,9 @@
-﻿@model X.PagedList.IPagedList<JobViewM>
+﻿@model IEnumerable<JobViewM>
 @using X.PagedList.Mvc.Core
-
+@{
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int totalPages = ViewBag.TotalPages ?? 1;
+}
 <div class="container-fluid px-4">
     <h1 class="mt-4 mb-4">Job Management</h1>
 
@@ -69,9 +72,28 @@
                     </div>
 
                     <!-- Pagination Controls -->
-                    <div class="d-flex justify-content-center mt-4">
-                        @Html.PagedListPager(Model, page => Url.Action("Index", new { page }))
-                    </div>
+                    
+                    <nav aria-label="Page navigation" class="d-flex justify-content-center mt-4">
+                        <ul class="pagination">
+                            <!-- Previous -->
+                            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                                <a class="page-link" href="@Url.Action("Index", new { page = currentPage - 1 })">&laquo;</a>
+                            </li>
+
+                            <!-- Page Numbers -->
+                            @for (int i = 1; i <= totalPages; i++)
+                            {
+                                <li class="page-item @(i == currentPage ? "active" : "")">
+                                    <a class="page-link" href="@Url.Action("Index", new { page = i })">@i</a>
+                                </li>
+                            }
+
+                            <!-- Next -->
+                            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                                <a class="page-link" href="@Url.Action("Index", new { page = currentPage + 1 })">&raquo;</a>
+                            </li>
+                        </ul>
+                    </nav>
                 }
                 else
                 {

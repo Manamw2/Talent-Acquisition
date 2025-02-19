@@ -28,19 +28,64 @@ namespace TalentAcquisitionModule.Controllers
         //    var jobDTOs = _mapper.Map<IEnumerable<JobViewModel>>(jobs);
         //    return View(jobDTOs);
         //}
+        //[Route("Applicant/{page:int?}")]
+        //public async Task<IActionResult> Index(int page = 1)  // Add a default page parameter
+        //{
+        //    const int pageSize = 5; // Number of jobs per page
+
+        //    // Fetch all jobs
+        //    var jobs = await _unitOfWork.JobRepository.GetAllWithDetailsAsync() ?? new List<Job>();
+
+        //    foreach (var job in jobs)
+        //    {
+        //        Console.WriteLine($"Job ID: {job.JobId}, Batch ID: {job.BatchId}, Batch EndDate: {job.Batch?.EndDate}");
+        //        //var jobDTO = _mapper.Map<JobViewModel>(job);
+        //        //jobDTOs.Add(jobDTO);
+        //    }
+
+        //    var jobDTOs = jobs.Select(job => new JobViewModel
+        //    {
+        //        JobId = job.JobId,
+        //        Title = job.Title,
+        //        Description = job.Description,
+        //        JobType = job.JobType,
+        //        BatchId = job.BatchId,
+        //        EndDate = job.Batch.EndDate
+
+        //    }).ToList();
+        //    //var jobDTOs = _mapper.Map<JobViewModel>(jobs);
+
+
+
+        //    // Paginate the jobs
+        //    var paginatedJobs = jobDTOs.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+        //    // Calculate total pages
+        //    var totalJobs = jobDTOs.Count();
+        //    var totalPages = (int)Math.Ceiling(totalJobs / (double)pageSize);
+
+        //    // Pass data to the view
+        //    ViewBag.CurrentPage = page;
+        //    ViewBag.TotalPages = totalPages;
+
+        //    return View(paginatedJobs);
+        //}
+
         [Route("Applicant/{page:int?}")]
-        public async Task<IActionResult> Index(int page = 1)  // Add a default page parameter
+        public async Task<IActionResult> Index(int page = 1)
         {
             const int pageSize = 5; // Number of jobs per page
 
             // Fetch all jobs
             var jobs = await _unitOfWork.JobRepository.GetAllWithDetailsAsync() ?? new List<Job>();
 
+            // Filter for active batches (where batch end date is after today)
+            var today = DateTime.Today;
+            jobs = jobs.Where(job => job.Batch != null && job.Batch.EndDate > today).ToList();
+
             foreach (var job in jobs)
             {
                 Console.WriteLine($"Job ID: {job.JobId}, Batch ID: {job.BatchId}, Batch EndDate: {job.Batch?.EndDate}");
-                //var jobDTO = _mapper.Map<JobViewModel>(job);
-                //jobDTOs.Add(jobDTO);
             }
 
             var jobDTOs = jobs.Select(job => new JobViewModel
@@ -51,11 +96,7 @@ namespace TalentAcquisitionModule.Controllers
                 JobType = job.JobType,
                 BatchId = job.BatchId,
                 EndDate = job.Batch.EndDate
-                
             }).ToList();
-            //var jobDTOs = _mapper.Map<JobViewModel>(jobs);
-
-
 
             // Paginate the jobs
             var paginatedJobs = jobDTOs.Skip((page - 1) * pageSize).Take(pageSize).ToList();

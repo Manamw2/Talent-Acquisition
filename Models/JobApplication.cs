@@ -31,13 +31,10 @@ namespace Models
         [Required]
         [StringLength(20)]
         public string Status { get; set; } = "Pending"; // Default value
-        public string? Source { get; set; } // Reason for HR adding (Skills match, Internal referral, etc.)
 
-        public string? SourceDetails { get; set; } // Additional details (e.g., name of referrer)
-
-        public string? AddedBy { get; set; } // Who added this application
-
-       
+        public string? AddedBy { get; set; }
+        public string? SourceDetails { get; set; }
+        public string? Source { get; set; }
     }
     public enum Status
     {

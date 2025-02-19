@@ -1,6 +1,9 @@
-﻿@model X.PagedList.IPagedList<UserViewModel>
+﻿@model IEnumerable<UserViewModel>
 @using X.PagedList.Mvc.Core
-
+@{
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int totalPages = ViewBag.TotalPages ?? 1;
+}
 <div class="container-fluid px-4">
     <h1 class="mt-4 mb-4">Applicant Management</h1>
 
@@ -80,6 +83,7 @@
                             </tbody>
                         </table>
                     </div>
+
                 }
                 else
                 {
@@ -98,9 +102,27 @@
             <!-- Pagination Controls -->
             @if (Model.Any())
             {
-                <div class="d-flex justify-content-center mt-4">
-                    @Html.PagedListPager(Model, page => Url.Action("Index", new { page, searchQuery = Context.Request.Query["searchQuery"] }))
-                </div>
+                <nav aria-label="Page navigation" class="d-flex justify-content-center mt-4">
+                    <ul class="pagination">
+                        <!-- Previous -->
+                        <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                            <a class="page-link" href="@Url.Action("Index", new { page = currentPage - 1 })">&laquo;</a>
+                        </li>
+
+                        <!-- Page Numbers -->
+                        @for (int i = 1; i <= totalPages; i++)
+                        {
+                            <li class="page-item @(i == currentPage ? "active" : "")">
+                                <a class="page-link" href="@Url.Action("Index", new { page = i })">@i</a>
+                            </li>
+                        }
+
+                        <!-- Next -->
+                        <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                            <a class="page-link" href="@Url.Action("Index", new { page = currentPage + 1 })">&raquo;</a>
+                        </li>
+                    </ul>
+                </nav>
             }
         </div>
     </div>
@@ -132,7 +154,6 @@
                             <option value="Resume received offline">Resume received offline</option>
                             <option value="Career fair candidate">Job fair candidate</option>
                             <option value="Reapplication">Reapplication</option>
-                            <option value="HR initiative">HR initiative</option>
                         </select>
                     </div>
 
@@ -443,4 +464,7 @@
             }
         });
     </script>
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

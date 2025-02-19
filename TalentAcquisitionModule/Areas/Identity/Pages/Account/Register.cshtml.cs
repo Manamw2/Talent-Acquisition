@@ -192,6 +192,13 @@ namespace TalentAcquisitionModule.Areas.Identity.Pages.Account
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             if (ModelState.IsValid)
             {
+                if(CvFile == null)
+                {
+                    ModelState.AddModelError("CvFile", "CV file is required.");
+                    InitDropDowns();
+                    return Page();
+                }
+
                 var user = CreateUser();
 
                 await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);

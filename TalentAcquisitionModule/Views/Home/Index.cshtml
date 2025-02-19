@@ -24,7 +24,7 @@
 <header class="py-7 header vh-100">
     <style>
         .header {
-            min-height: 1000px;
+            min-height: 800px;
             background: linear-gradient(to bottom right, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url('@Url.Content("~/images/IntroAnimation.gif")') center center no-repeat;
             background-size: cover;
         }
@@ -50,9 +50,9 @@
 @*                     <a class="btn btn-primary text-uppercase" asp-area="" asp-controller="Applicant" asp-action="Index">Apply</a>
  *@
                 
-                <a class="btn btn-primary text-uppercase" asp-area="Identity" asp-page="/Account/Register">Register</a>
-                <a class="btn btn-outline-light text-uppercase" asp-area="Identity" asp-page="/Account/Login">Sign In</a>
-
+                <a class="btn btn-primary text-uppercase" asp-area="Identity" asp-page="/Account/Register">Apply Now</a>
+@*                 <a class="btn btn-outline-light text-uppercase" asp-area="Identity" asp-page="/Account/Login">Sign In</a>
+ *@
                 }
             </div>
         </div>
@@ -64,6 +64,11 @@
 <!--details 1-->
 <section id="discover" class="details py-6 bg-light">
     <div class="container">
+        <div class="row mb-5">
+            <div class="col-md-8 offset-md-2 text-center">
+                <h2>Our Services</h2>
+            </div>
+        </div>
         <div class="row">
             <div class="col-lg-6">
                 <img class="img-fluid rounded-5 mb-4" src="~/images/services.png">
@@ -188,7 +193,9 @@
             <p class="w-75">
                 If you search for a role in an international company, we Offers various opportunities related to <strong>Many Fields</strong>. hurry and Don't miss out on this opportunity to enhance your skills and broaden your horizons. Join us and be a part of this enriching experience!
             </p>
-            <a class="btn btn-primary text-uppercase" asp-area="Identity" asp-page="/Account/Register">Register</a>
-        </div>
+@*             <a class="btn btn-primary text-uppercase" asp-area="Identity" asp-page="/Account/Register">Register</a>
+ *@    
+                 <a class="btn btn-primary text-uppercase" asp-area="Identity" asp-page="/Account/Register">Apply Now</a>
+</div>
     </div>
 </section>

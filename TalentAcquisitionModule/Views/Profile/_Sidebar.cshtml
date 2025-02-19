@@ -1,133 +1,44 @@
-﻿<div class="sidebar">
-    <div class="logo-container">
-        <a href="/" class="logo-link">
-            <img src="~/Logo.png" alt="Company Logo" class="company-logo">
-        </a>
-        <div class="logo-divider"></div>
-    </div>
-    <div class="sidebar-header">
-        <h3>User Profile</h3>
-    </div>
-    <ul class="nav flex-column">
-        <li class="nav-item">
-            <a class="nav-link active" href="#" data-tab="user-info">
-                <i class="fas fa-user"></i>
-                <span>User Information</span>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="#" data-tab="user-applications">
-                <i class="fas fa-file-alt"></i>
-                <span>User Applications</span>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="#" data-tab="user-settings">
-                <i class="fas fa-cog"></i>
-                <span>User Settings</span>
-            </a>
-        </li>
-    </ul>
+﻿<div class="hamburger-menu">
+    <button class="navbar-toggler" type="button">
+        <span class="navbar-toggler-icon">☰</span>
+    </button>
 </div>
-
-<style>
-    /* Reset default margins and padding */
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
-
-    /* Sidebar styling */
-    .sidebar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 250px;
-        background-color: #2c3e50;
-        color: #ecf0f1;
-        height: 100vh;
-        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-    }
-
-    /* Logo container styling */
-    .logo-container {
-        padding: 20px;
-        background-color: #243444;
-        text-align: center;
-    }
-
-    .company-logo {
-        max-width: 80%;
-        height: auto;
-        margin: 0 auto;
-        display: block;
-        transition: transform 0.3s ease;
-    }
-
-        .company-logo:hover {
-            transform: scale(1.05);
-        }
-
-    .logo-divider {
-        height: 2px;
-        background: linear-gradient(to right, transparent, #8F1412, transparent);
-        margin: 15px 0 5px 0;
-    }
-
-    /* Sidebar content styling */
-    .sidebar-header {
-        padding: 20px;
-        text-align: center;
-    }
-
-        .sidebar-header h3 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: #ecf0f1;
-        }
-
-    .nav {
-        gap: 10px;
-        padding: 0 20px;
-    }
-
-    .nav-item {
-        margin-bottom: 10px;
-    }
-
-    .nav-link {
-        display: flex;
-        align-items: center;
-        padding: 10px 15px;
-        border-radius: 5px;
-        color: #ecf0f1;
-        text-decoration: none;
-        transition: all 0.3s ease;
-    }
-
-        .nav-link:hover {
-            transform: translateX(5px);
-        }
-
-        .nav-link.active {
-            background-color: #8F1412;
-            color: #fff;
-        }
-
-        .nav-link i {
-            margin-right: 10px;
-            font-size: 1.2rem;
-        }
-
-        .nav-link span {
-            font-size: 1rem;
-            font-weight: 500;
-        }
-
-    /* Adjust main content to accommodate sidebar */
-    .col-md-9 {
-        margin-left: 250px;
-        padding: 20px;
-    }
-</style>
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-content">
+        <div class="logo-container">
+            <a href="/" class="logo-link">
+                <img src="~/Logo.png" alt="Company Logo" class="company-logo">
+            </a>
+            <div class="logo-divider"></div>
+        </div>
+        <div class="sidebar-header">
+            <h3>User Profile</h3>
+        </div>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "UserInfo" ? "active" : "")"
+                   asp-controller="Profile"
+                   asp-action="UserInfo">
+                    <i class="fas fa-user"></i>
+                    <span>User Information</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "UserApplications" ? "active" : "")"
+                   asp-controller="Profile"
+                   asp-action="UserApplications">
+                    <i class="fas fa-file-alt"></i>
+                    <span>User Applications</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "UserSettings" ? "active" : "")"
+                   asp-controller="Profile"
+                   asp-action="UserSettings">
+                    <i class="fas fa-cog"></i>
+                    <span>User Settings</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>

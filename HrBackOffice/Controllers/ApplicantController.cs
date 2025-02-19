@@ -51,7 +51,8 @@ namespace HrBackOffice.Controllers
             {
                 using (var client = new HttpClient())
                 {
-                    var response = await client.GetAsync($"http://localhost:8000/search?query={Uri.EscapeDataString(searchQuery)}&max_results=5&exact_thresh=0.9&nonexact_thresh=0.5");
+                    var link = _configuration["Search"];
+                    var response = await client.GetAsync($"{link}query={Uri.EscapeDataString(searchQuery)}&max_results=5&exact_thresh=0.9&nonexact_thresh=0.5");
 
                     if (response.IsSuccessStatusCode)
                     {

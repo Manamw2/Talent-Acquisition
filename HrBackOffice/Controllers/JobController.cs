@@ -28,13 +28,17 @@ namespace HrBackOffice.Controllers
             _config = configuration;
         }
 
-        public async Task<IActionResult> Index(int? page)
+        public async Task<IActionResult> Index(int page = 1)
         {
             int pageSize = 5; // Number of items per page
-            int pageNumber = page ?? 1; // Default to page 1 if no page is specified
+            //int pageNumber = page ?? 1; // Default to page 1 if no page is specified
 
             var jobs = await _unitOfWork.JobRepository
-                .GetAllAsync(includeProperties: "Batch,Department");
+                                        .GetAllAsync(
+                                            filter: job => job.Batch != null && job.Batch.EndDate > DateTime.UtcNow,
+                                            includeProperties: "Batch,Department"
+                                        );
+
 
             var jobViewModels = jobs.Select(job => new JobViewM
             {
@@ -48,9 +52,18 @@ namespace HrBackOffice.Controllers
                 DepartmentName = job.Department?.Name
             }).ToList();
 
-            var pagedJobs = jobViewModels.ToPagedList(pageNumber, pageSize);
+            //var pagedJobs = jobViewModels.ToPagedList(pageNumber, pageSize);
+            // Paginate the jobs
+            var paginatedJobs = jobViewModels.Skip((page - 1) * pageSize).Take(pageSize).ToList();
 
-            return View(pagedJobs);
+            // Calculate total pages
+            var totalJobs = jobViewModels.Count();
+            var totalPages = (int)Math.Ceiling(totalJobs / (double)pageSize);
+
+            // Pass data to the view
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            return View(paginatedJobs);
         }
 
 
@@ -260,7 +273,7 @@ namespace HrBackOffice.Controllers
                 {
                     ApplicationId = app.ApplicationId,
                     UserId = app.UserId,
-                    ApplicantName = app.AppUser.UserName,
+                    ApplicantName = app.AppUser.DisplayName,
                     ApplicantEmail = app.AppUser.Email,
                     AppliedDate = app.AppliedDate,
                     Status = app.Status

@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Models;
+using Models.ViewModels;
+using System.Drawing.Printing;
 
 
 namespace HrBackOffice.Controllers
@@ -18,12 +20,23 @@ namespace HrBackOffice.Controllers
         {
             _unitOfWork = unitOfWork;
         }
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int page = 1)
 		{
+            int pageSize = 5;
 			var batches = await _unitOfWork.BatchRepository.GetAllAsync();
 
-			return View(batches);
-		}
+			
+            var paginatedJobs = batches.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+            // Calculate total pages
+            var totalJobs = batches.Count();
+            var totalPages = (int)Math.Ceiling(totalJobs / (double)pageSize);
+
+            // Pass data to the view
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            return View(paginatedJobs);
+        }
 
         public IActionResult Create()
         {
@@ -136,6 +149,43 @@ namespace HrBackOffice.Controllers
             }
             return View(batch);
         }
+        [HttpPost]
+        public async Task<IActionResult> CreateAjax([FromBody] BatchViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    // Create batch entity from model
+                    var batch = new Batch
+                    {
+                        BatchName = model.Name,
+                        StartDate = model.StartDate,
+                        EndDate = model.EndDate
+                        // Add any other necessary properties
+                    };
 
+                    // Add to database
+                    _unitOfWork.BatchRepository.AddAsync(batch);
+                    await _unitOfWork.SaveAsync();
+
+                    // Return success with the new batch ID
+                    return Json(new { success = true, batchId = batch.BatchId });
+                }
+                catch (Exception ex)
+                {
+                    // Log the exception
+                    return Json(new { success = false, message = "An error occurred: " + ex.Message });
+                }
+            }
+
+            // If model state is invalid, return validation errors
+            var errors = ModelState.Values
+                .SelectMany(v => v.Errors)
+                .Select(e => e.ErrorMessage)
+                .ToList();
+
+            return Json(new { success = false, message = string.Join(", ", errors) });
+        }
     }
 }

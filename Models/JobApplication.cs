@@ -32,6 +32,9 @@ namespace Models
         [StringLength(20)]
         public string Status { get; set; } = "Pending"; // Default value
 
+        public string? AddedBy { get; set; }
+        public string? SourceDetails { get; set; }
+        public string? Source { get; set; }
     }
     public enum Status
     {

@@ -10,7 +10,7 @@ namespace HrBackOffice.Models
         [Required]
         public int JobId { get; set; }
 
-        [Required]
+        
         public string Reason { get; set; }
 
         public string? ReferralName { get; set; }

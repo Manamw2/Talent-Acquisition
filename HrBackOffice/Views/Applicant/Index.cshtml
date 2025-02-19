@@ -74,8 +74,13 @@
                                                     onclick="confirmDeleteUser('@user.Id', '@user.UserName')">
                                                 <i class="fas fa-trash-alt"></i>
                                             </button>
-                                            <button type="button" class="btn btn-primary assign-job-btn" data-applicant-id="@user.Id" data-applicant-name="@user.DisplayName">
-                                                Assign Job
+                                            <button type="button" class="btn btn-sm btn-primary assign-job-btn" data-applicant-id="@user.Id" data-applicant-name="@user.DisplayName">
+                                                <i class="fas fa-file-signature"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-primary recommend-job-btn"
+                                                    data-applicant-id="@user.Id"
+                                                    data-applicant-name="@user.DisplayName">
+                                                <i class="fas fa-share"></i>
                                             </button>
                                         </td>
                                     </tr>
@@ -127,7 +132,7 @@
         </div>
     </div>
 </div>
-<!-- Modal -->
+<!-- assign job Modal -->
 <div class="modal fade" id="assignJobModal" tabindex="-1" role="dialog" aria-labelledby="assignJobModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -170,6 +175,9 @@
         </div>
     </div>
 </div>
+
+
+
 <style>
     .is-invalid {
         border-color: #dc3545;
@@ -464,6 +472,7 @@
             }
         });
     </script>
+    
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }

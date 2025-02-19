@@ -1,4 +1,5 @@
-﻿/* Reset default margins and padding */
+﻿
+/* Reset default margins and padding */
 * {
     margin: 0;
     padding: 0;
@@ -178,3 +179,14 @@
             display: block;
         }
 }
+.logout-container {
+    position: absolute;
+    bottom: 20px;
+    width: 100%;
+    padding: 10px;
+    text-align: center;
+}
+
+    .logout-container .btn {
+        width: 90%;
+    }

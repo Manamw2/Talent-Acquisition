@@ -1,4 +1,26 @@
 ﻿@model List<ApplicationVM>
+
+@{
+    ViewData["Title"] = "User Job Applications";
+    Layout = "_profileLayout";
+}
+
+@if (Model == null || !Model.Any())
+{
+    <div class="empty-state-container text-center py-5">
+        <div class="empty-state-icon mb-4">
+            <i class="bi bi-clipboard-x" style="font-size: 4rem; color: #6c757d;"></i>
+        </div>
+        <h3 class="empty-state-title mb-3">No Applications Yet</h3>
+        <p class="empty-state-description mb-4">
+            You haven't submitted any job applications yet. Start your career journey with SoftTrend by exploring our open positions.
+        </p>
+        <a asp-controller="Applicant" asp-action="Index" class="btn btn-danger btn-lg">
+            <i class="bi bi-search me-2"></i>Browse Open Positions
+        </a>
+    </div>
+}
+
 <div class="container">
     <div class="row">
         @foreach (var application in Model)
@@ -45,3 +67,27 @@
     </div>
 </div>
 
+@section Scripts{
+    <script>
+        // Function to determine the badge class based on status
+        function getStatusBadgeClass(Status) {
+            switch (Status) {
+                case "Applied":
+                    return "text-warning";
+                case "Approved":
+                    return "text-success";
+                case "Rejected":
+                    return "text-danger";
+                default:
+                    return "text-info";
+            }
+        }
+
+        // Get the status from the span element
+        const Status = document.getElementById('statusBadge').textContent;
+
+        // Apply the appropriate badge class
+        const badgeElement = document.getElementById('statusBadge');
+        badgeElement.classList.add(getStatusBadgeClass(Status));
+    </script>
+}

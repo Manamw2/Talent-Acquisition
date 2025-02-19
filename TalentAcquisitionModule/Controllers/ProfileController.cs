@@ -32,8 +32,9 @@ namespace TalentAcquisitionModule.Controllers
             _emailSender = emailSender;
             _fileStorage = fileStorage;
         }
+
         [Authorize]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> UserInfo()
         {
             var claimsIdentity = (ClaimsIdentity)User.Identity;
             var userId = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier).Value;
@@ -77,30 +78,19 @@ namespace TalentAcquisitionModule.Controllers
                 }).ToList()
             };
 
-            ProfilePageViewModel profilePageViewModel = new ProfilePageViewModel();
-            var jobApplicaions = await _context.JobApplications.Where(u => u.UserId == userId).Include(u => u.Job).ThenInclude(u => u.Department).ToListAsync();
-            profilePageViewModel.ApplicationVMs = jobApplicaions.Select(x => new ApplicationVM
-            {
-                Id = x.ApplicationId,
-                JobTitle = x.Job.Title,
-                JobDescription = x.Job.Description,
-                DepartmentName = x.Job.Department.Name,
-                JobType = x.Job.JobType.ToString(),
-                Status = x.Status,
-                ApplicationDate = x.AppliedDate
-            }).ToList();
-            profilePageViewModel.ProfileInfoVM = profileInfoVM;
             ViewBag.Universities = GetUniversities();
             ViewBag.Faculties = GetFaculties();
-            return View(profilePageViewModel);
+            return View(profileInfoVM);
         }
 
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> UpdateProfile(ProfileInfoVM profileInfoVM)
+        public async Task<IActionResult> UserInfo(ProfileInfoVM profileInfoVM)
         {
             if (!ModelState.IsValid)
             {
+                ViewBag.Universities = GetUniversities();
+                ViewBag.Faculties = GetFaculties();
                 return View(profileInfoVM);
             }
             var claimsIdentity = (ClaimsIdentity)User.Identity;
@@ -188,16 +178,44 @@ namespace TalentAcquisitionModule.Controllers
             }
             // Single database update
             await _userManager.UpdateAsync(appUser);
-            return RedirectToAction("Index");
+            return View(profileInfoVM);
         }
 
         [Authorize]
+        public async Task<IActionResult> UserApplications()
+        {
+            var claimsIdentity = (ClaimsIdentity)User.Identity;
+            var userId = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier).Value;
+
+            var jobApplicaions = await _context.JobApplications.Where(u => u.UserId == userId).Include(u => u.Job).ThenInclude(u => u.Department).ToListAsync();
+            List<ApplicationVM> ApplicationVMs = jobApplicaions.Select(x => new ApplicationVM
+            {
+                Id = x.ApplicationId,
+                JobTitle = x.Job.Title,
+                JobDescription = x.Job.Description,
+                DepartmentName = x.Job.Department.Name,
+                JobType = x.Job.JobType.ToString(),
+                Status = x.Status,
+                ApplicationDate = x.AppliedDate
+            }).ToList();
+            return View(ApplicationVMs);
+        }
+
+
+        [Authorize]
+        public IActionResult UserSettings()
+        {
+            return View();
+        }
+
+
+        [Authorize]
         [HttpPost]
-        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel changePasswordViewModel)
+        public async Task<IActionResult> UserSettings(ChangePasswordViewModel changePasswordViewModel)
         {
             if (!ModelState.IsValid)
             {
-                return RedirectToAction("Index");
+                return View(changePasswordViewModel);
             }
 
             var user = await _userManager.GetUserAsync(User);
@@ -213,12 +231,12 @@ namespace TalentAcquisitionModule.Controllers
                 {
                     ModelState.AddModelError(string.Empty, error.Description);
                 }
-                return RedirectToAction("Index");
+                return View(changePasswordViewModel);
             }
 
             await _signInManager.RefreshSignInAsync(user);
 
-            return RedirectToAction("Index");
+            return View(changePasswordViewModel);
         }
 
         [HttpGet]
@@ -239,6 +257,8 @@ namespace TalentAcquisitionModule.Controllers
         {
             if (!ModelState.IsValid)
             {
+                ViewBag.Universities = GetUniversities();
+                ViewBag.Faculties = GetFaculties();
                 return View(profileInfoVM);
             }
 

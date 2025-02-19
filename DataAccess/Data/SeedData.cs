@@ -21,44 +21,40 @@ namespace DataAccess.Data
                     await roleManager.CreateAsync(new IdentityRole(roleName));
                 }
             }
-
-            // Add HR user
-           /* var hrUser = await userManager.FindByEmailAsync("hr@gmail.com");
-            if (hrUser == null)
+            /*
+            // Add First Admin (Heidi)
+            var admin1 = await userManager.FindByEmailAsync("heidi.elshafei@soft-trend.com");
+            if (admin1 == null)
             {
-                hrUser = new AppUser
+                admin1 = new AppUser
                 {
-                    UserName = "HRManager",
-                    Email = "hr@gmail.com"
+                    UserName = "heidi.elshafei@soft-trend.com",
+                    Email = "heidi.elshafei@soft-trend.com",
+                    EmailConfirmed = true
                 };
-                await userManager.CreateAsync(hrUser, "Hr@623145");
-                await userManager.AddToRoleAsync(hrUser, "hr");
+                var result = await userManager.CreateAsync(admin1, "Admin1234@");
+                if (result.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(admin1, "Admin");
+                }
             }*/
-            // Add Admin 
-            var admin = await userManager.FindByEmailAsync("admin@gmail.com");
-            if (admin == null)
+
+            // Add Second Admin (Mahmoud)
+            var admin2 = await userManager.FindByEmailAsync("mahmoud.nabil@soft-trend.com");
+            if (admin2 == null)
             {
-                admin = new AppUser
+                admin2 = new AppUser
                 {
-                    UserName = "admin",
-                    Email = "admin@gmail.com"
+                    UserName = "mahmoud.nabil@soft-trend.com",
+                    Email = "mahmoud.nabil@soft-trend.com",
+                    EmailConfirmed = true
                 };
-                await userManager.CreateAsync(admin, "Admin@123");
-                await userManager.AddToRoleAsync(admin, "Admin");
+                var result = await userManager.CreateAsync(admin2, "Admin1234@");
+                if (result.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(admin2, "Admin");
+                }
             }
-
-            // Add Applicant user
-            /*var applicantUser = await userManager.FindByEmailAsync("applicant@gmail.com");
-            if (applicantUser == null)
-            {
-                applicantUser = new AppUser
-                {
-                    UserName = "Applicant1",
-                    Email = "applicant@gmail.com"
-                };
-                await userManager.CreateAsync(applicantUser, "Applicant@623145");
-                await userManager.AddToRoleAsync(applicantUser, "applicant");
-            }*/
         }
     }
 }

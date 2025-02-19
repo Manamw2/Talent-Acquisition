@@ -1,0 +1,47 @@
+﻿
+<div class="hamburger-menu">
+    <button class="navbar-toggler" type="button">
+        <span class="navbar-toggler-icon">☰</span>
+    </button>
+</div>
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-content">
+        <div class="logo-container">
+            <a href="#" class="logo-link">
+                <img src="~/images/Logo1.png" alt="Company Logo" class="company-logo">
+            </a>
+            <div class="logo-divider"></div>
+        </div>
+       
+        <ul class="nav flex-column">
+            @if (User.IsInRole("Admin"))
+            {
+                <li class="nav-item">
+                <a class="nav-link" asp-controller="Role" asp-action="Index">
+                    <i class="fas fa-user"></i> Roles
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="User" asp-action="Index">
+                    <i class="fas fa-users"></i> Users
+                </a>
+            </li>
+            }
+            
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="Job" asp-action="Index">
+                    <i class="fas fa-briefcase"></i> Jobs
+                </a>
+            </li><li class="nav-item">
+                <a class="nav-link" asp-controller="Applicant" asp-action="Index">
+                    <i class="fas fa-user-tie"></i> Applicants
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="Batch" asp-action="Index">
+                    <i class="fas fa-layer-group"></i> Batches
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>

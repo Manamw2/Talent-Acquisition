@@ -16,6 +16,8 @@
                 </div>
 
                 <form method="post">
+                    <div asp-validation-summary="All" class="text-danger"></div>
+
                     <!-- Work Experience Section -->
                     <div class="mb-4">
                         <h2 class="fw-bold mb-3">Work Experience</h2>
@@ -36,10 +38,10 @@
                                         <div class="collapsible-content show">
                                             <input type="hidden" asp-for="Experiences[i].Id" />
                                             <div class="mb-3">
-                                                <input type="text" class="form-control" asp-for="Experiences[i].Company" placeholder="Company" />
+                                                <input type="text" class="form-control" asp-for="Experiences[i].Company" placeholder="Company" required/>
                                             </div>
                                             <div class="mb-3">
-                                                <input type="text" class="form-control" asp-for="Experiences[i].Position" placeholder="Position" />
+                                                <input type="text" class="form-control" asp-for="Experiences[i].Position" placeholder="Position" required />
                                             </div>
                                             <div class="row mb-3">
                                                 <div class="col-md-6">
@@ -50,7 +52,7 @@
                                                 </div>
                                             </div>
                                             <div class="mb-3">
-                                                <textarea class="form-control" asp-for="Experiences[i].Description" rows="3" placeholder="Description"></textarea>
+                                                <textarea class="form-control" asp-for="Experiences[i].Description" rows="3" placeholder="Description" required></textarea>
                                             </div>
                                         </div>
                                     </div>
@@ -81,10 +83,10 @@
                                     <div class="collapsible-content show">
                                         <input type="hidden" name="Skills[{index}].Id" value="0" />
                                         <div class="col-md-8">
-                                            <input type="text" class="form-control" name="Skills[{index}].Name" placeholder="Skill name" />
+                                            <input type="text" class="form-control" name="Skills[{index}].Name" placeholder="Skill name" required />
                                         </div>
                                         <div class="col-md-4">
-                                            <select class="form-control" name="Skills[{index}].Level">
+                                            <select class="form-control" name="Skills[{index}].Level" required>
                                                 <option value="Beginner">Beginner</option>
                                                 <option value="Intermediate">Intermediate</option>
                                                 <option value="Advanced">Advanced</option>
@@ -119,10 +121,10 @@
                                         </div>
                                         <div class="collapsible-content show">
                                             <div class="mb-3">
-                                                <input type="text" class="form-control" asp-for="Projects[i].Name" placeholder="Project name" />
+                                                <input type="text" class="form-control" asp-for="Projects[i].Name" placeholder="Project name" required />
                                             </div>
                                             <div class="mb-3">
-                                                <textarea class="form-control" asp-for="Projects[i].Description" rows="3" placeholder="Project description"></textarea>
+                                                <textarea class="form-control" asp-for="Projects[i].Description" rows="3" placeholder="Project description" required></textarea>
                                             </div>
                                         </div>
                                     </div>

@@ -6,9 +6,10 @@
 <ul class="navbar-nav">
 @if (SignInManager.IsSignedIn(User))
 {
+    var appUser = await UserManager.GetUserAsync(User);
     <li class="nav-item">
-            <a id="manage" class="nav-link" asp-controller="Profile" asp-action="Index">
-                Hello @UserManager.GetUserName(User)!
+            <a id="manage" class="nav-link" asp-controller="Profile" asp-action="UserInfo">
+                Hello @(appUser?.DisplayName ?? "User")!
             </a>
     </li>
     <li class="nav-item">

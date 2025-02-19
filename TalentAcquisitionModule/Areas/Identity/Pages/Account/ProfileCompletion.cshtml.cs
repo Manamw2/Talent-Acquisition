@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.CodeAnalysis.Elfie.Diagnostics;
 using Models;
 using Models.ViewModels;
+using System.ComponentModel;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -90,20 +91,25 @@ namespace TalentAcquisitionModule.Areas.Identity.Pages.Account
         public string Position { get; set; }
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
+        [DisplayName("Experience Description")]
         public string Description { get; set; }
     }
 
     public class SkillViewModel
     {
         public int Id { get; set; }
+        [DisplayName("Skill Name")]
         public string Name { get; set; }
+        [DisplayName("Skill Level")]
         public string Level { get; set; }
     }
 
     public class ProjectViewModel
     {
         public int Id { get; set; }
+        [DisplayName("Project Name")]
         public string Name { get; set; }
+        [DisplayName("Project Description")]
         public string Description { get; set; }
     }
 }

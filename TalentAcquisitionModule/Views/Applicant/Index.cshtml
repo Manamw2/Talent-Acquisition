@@ -113,50 +113,59 @@
 </div>
 
 @section Scripts {
-    <script>
-        $(document).ready(function () {
-            $("#applyButton").click(function () {
-                var jobId = $(this).data("job-id");
-                console.log(jobId);
-                var baseUrl = window.location.origin + '/TalentAcquisition/Applicants/ApplyForJob';
-                console.log(baseUrl);
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+   <script>
+       $(document).ready(function () {
+    $("#applyButton").click(function () {
+        var jobId = $(this).data("job-id");
+        var baseUrl = window.location.origin + '/TalentAcquisition/Applicants/ApplyForJob';
 
-                $.ajax({
-                    url: baseUrl,
-                    type: 'GET',
-                    contentType: 'application/x-www-form-urlencoded',
-                    data: {
-                        jobId: parseInt(jobId),
-                    },
-                    success: function (response) {
-                        if (response.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Success!',
-                                text: response.message,
-                                confirmButtonText: 'OK'
-                            });
-                        } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Oops...',
-                                text: response.message,
-                                confirmButtonText: 'OK'
-                            });
+        $.ajax({
+            url: baseUrl,
+            type: 'GET',
+            contentType: 'application/x-www-form-urlencoded',
+            data: {
+                jobId: parseInt(jobId),
+            },
+            success: function (response) {
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: response.message,
+                        confirmButtonText: 'OK'
+                    });
+                } else {
+                    // For unauthenticated users
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Applicant not found. Please log in.',
+                        showCancelButton: true,
+                        confirmButtonText: 'Login',
+                        cancelButtonText: 'Cancel'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = '/Identity/Account/Login';
                         }
-                    },
-                    error: function (xhr, status, error) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error!',
-                            text: "An error occurred: " + xhr.responseText,
-                            confirmButtonText: 'OK'
-                        });
-                        console.log("XHR:", xhr);
-                    }
+                    });
+                }
+            },
+            error: function (xhr, status, error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: "An error occurred: " + xhr.responseText,
+                    confirmButtonText: 'OK'
                 });
-            });
- 
+                console.log("XHR:", xhr);
+            }
+        });
+    });
+});
+
+   </Script>
+ <script>
             console.log("Document is ready!"); // Check if jQuery is working
 
             // Handle click event on job cards
@@ -217,8 +226,6 @@
         });
 
     </script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-@*     <script src="~/js/job-board.js"></script> *@
 }
 
 <style>
@@ -227,4 +234,44 @@
         background-color: #ebeada;
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     }
+
+    .custom-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    .modal-content {
+        background: white;
+        padding: 20px;
+        border-radius: 5px;
+        text-align: center;
+    }
+
+        .modal-content .btn {
+            margin: 10px;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+    .btn-outline-light {
+        background: transparent;
+        border: 1px solid #666;
+        color: #666;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+        .btn-outline-light:hover {
+            background: #666;
+            color: white;
+        }
 </style>

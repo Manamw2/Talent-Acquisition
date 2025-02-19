@@ -19,17 +19,13 @@
                         </button>
                     </form>
                 </div>
-                <form asp-action="AddApplicant" method="post">
+                <form asp-action="AddApplicant" method="post" enctype="multipart/form-data">
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
                     <!-- Basic Information -->
                     <h2 class="fw-bold">Basic Information</h2>
                     <!-- Username & Display Name -->
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Username</label>
-                        <input asp-for="UserName" class="form-control" id="UserName" placeholder="Enter username">
-                        <span asp-validation-for="UserName" class="text-danger"></span>
-                    </div>
+                    
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Full Name</label>
                         <input asp-for="DisplayName" id="DisplayName" class="form-control" placeholder="Enter full name">
@@ -63,9 +59,7 @@
                         <label class="form-label fw-semibold">English Proficiency Level</label>
                         <select asp-for="EnglishProficiencyLevel" asp-items="Model.EnglishProficiencyLevels" id="EnglishProficiencyLevel" class="form-control">
                         </select>
-                        @* <option value="">Select proficiency</option>
-                            <option value="Other">Others</option>
-                        </select> *@
+                        
                         <span asp-validation-for="EnglishProficiencyLevel" class="text-danger"></span>
                     </div>
                     
@@ -74,8 +68,7 @@
                     <div class="mb-3">
                         <label class="form-label fw-semibold">University</label>
                         <select asp-for="University" asp-items="Model.Universities" id="universitySelect" class="form-control">
-                            @* <option value="">Select University</option>
-                            <option value="Other">Other (Enter Manually)</option> *@
+                           
                         </select>
                         <input type="text" asp-for="University" id="universityInput" class="form-control mt-2" placeholder="Enter university name" style="display:none;">
                         <span asp-validation-for="University" class="text-danger"></span>
@@ -83,8 +76,7 @@
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Faculty</label>
                         <select asp-for="Faculty" asp-items="Model.Faculties" id="facultySelect" class="form-control">
-                           @*  <option value="">Select Faculty</option>
-                            <option value="Other">Other (Enter Manually)</option> *@
+                           
                         </select>
                         <input type="text" asp-for="Faculty" id="facultyInput" class="form-control mt-2" placeholder="Enter faculty name" style="display:none;">
                         <span asp-validation-for="Faculty" class="text-danger"></span>
@@ -109,10 +101,19 @@
                     <!-- CV Upload -->
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Upload CV</label>
-                        <input asp-for="CvUrl" type="file" class="form-control">
-                        <span asp-validation-for="CvUrl" class="text-danger"></span>
+                        <input asp-for="CvFile" type="file" class="form-control form-control-lg" id="cvFile" >
+                        <span asp-validation-for="CvFile" class="text-danger"></span>
                     </div>
-
+                    @* <div class="mb-3">
+                        <label for="cvFile" class="form-label fw-semibold">
+                            Upload CV:
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-primary text-white"><i class="bi bi-file-earmark-arrow-up"></i></span>
+                            <input asp-for="CvFile" type="file" class="form-control form-control-lg" id="cvFile" required>
+                        </div>
+                        <span asp-validation-for="CvFile" class="text-danger"></span>
+                    </div> *@
                     <!-- Experience Section -->
                     <div class="mb-4">
                         <h2 class="fw-bold">Work Experience</h2>
@@ -342,7 +343,7 @@
                                 <input type="hidden" name="ApplicantSkills[{index}].Id" value="0" />
                             <div class="row">
                                 <div class="col-md-8">
-                                        <input type="text" class="form-control" name="SkiApplicantSkillslls[{index}].Name" placeholder="Skill name" />
+                                            <input type="text" class="form-control" name="ApplicantSkills[{index}].Name" placeholder="Skill name" />
                                 </div>
                                 <div class="col-md-4">
                                         <select class="form-control" name="ApplicantSkills[{index}].Level">

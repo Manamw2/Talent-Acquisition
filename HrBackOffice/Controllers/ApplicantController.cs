@@ -1,10 +1,10 @@
 ﻿using AutoMapper;
+using DataAccess.Data;
 using DataAccess.Repository.IRepository;
 using HrBackOffice.Helper.ApplicantService;
 using HrBackOffice.Helper.EmailSetting;
 using HrBackOffice.Models;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.WebUtilities;
@@ -28,7 +28,8 @@ namespace HrBackOffice.Controllers
         private readonly HttpClient _httpClient;
         private readonly IApplicantService _AppSevice;
         private readonly IConfiguration _configuration;
-        public ApplicantController(IConfiguration configuration,IApplicantService applicantService,HttpClient httpClient,IEmailSend emailSender,IUnitOfWork unitOfWork, IMapper mapper, UserManager<AppUser> userManager)
+        private readonly FileStorageService _fileStorage;
+        public ApplicantController(FileStorageService fileStorage,IConfiguration configuration,IApplicantService applicantService,HttpClient httpClient,IEmailSend emailSender,IUnitOfWork unitOfWork, IMapper mapper, UserManager<AppUser> userManager)
         {
             _emailSender = emailSender;
             _userManager = userManager;
@@ -37,6 +38,7 @@ namespace HrBackOffice.Controllers
             _httpClient = httpClient;
             _AppSevice= applicantService;
             _configuration = configuration;
+            _fileStorage = fileStorage;
         }
       
         public async Task<IActionResult> Index(int? page, string searchQuery = null)
@@ -123,13 +125,32 @@ namespace HrBackOffice.Controllers
                 _AppSevice.PopulateDropdownLists(model);
                 return View(model);
             }
+            if (model.CvFile != null && model.CvFile.Length > 0)
+            {
+                try
+                {
+                    var fileName = Path.GetRandomFileName() + Path.GetExtension(model.CvFile.FileName); // Safer filename
+                    string sharedFolderPath = _fileStorage.GetSharedCsvFolderPath();
+                    string filePath = Path.Combine(sharedFolderPath, fileName);
 
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await model.CvFile.CopyToAsync(stream);
+                    }
+                    model.CvUrl = filePath;
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError(string.Empty, $"CV upload failed: {ex.Message}");
+                  
+                }
+            }
             var university = model.University == "Other" ? Request.Form["University"].ToString() : model.University;
             var faculty = model.Faculty == "Other" ? Request.Form["Faculty"].ToString() : model.Faculty;
-
+            var username = model.Email.Split('@')[0];
             var user = new AppUser
             {
-                UserName = model.UserName,
+                UserName = username,
                 DisplayName = model.DisplayName,
                 Email = model.Email,
                 PhoneNumber = model.Phone,
@@ -268,7 +289,54 @@ namespace HrBackOffice.Controllers
             return Ok(new { success = true, message = "Applicant deleted successfully!" });
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetAvailableJobs(string userId)
+        {
+            if (string.IsNullOrEmpty(userId))
+                return BadRequest("User ID is required");
+            // First, get all job applications for this user
+            var applications = await _unitOfWork.JobApplicationRepository
+                .GetAllAsync(ja => ja.UserId == userId);
+            // Then extract the JobIds
+            var appliedJobIds = applications.Select(ja => ja.JobId);
+            // Now get jobs that are not in the applied list
+            var availableJobs = await _unitOfWork.JobRepository
+                .GetAllAsync(j => !appliedJobIds.Contains(j.JobId));
+            return Json(availableJobs.Select(j => new { id = j.JobId, title = j.Title }));
+        }
+        // POST: Assign job to applicant
+        [HttpPost]
+        public async Task<IActionResult> AssignJob([FromBody] AssignJobViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
+            var applicant = await _userManager.FindByIdAsync(model.UserId);
+            if (applicant == null)
+                return NotFound("Applicant not found");
+            var job = await _unitOfWork.JobRepository.GetFirstOrDefaultAsync(j => j.JobId == model.JobId);
+            if (job == null)
+                return NotFound("Job not found");
+            // Check for duplicate application
+            var existingApplication = await _unitOfWork.JobApplicationRepository.GetFirstOrDefaultAsync(
+                a => a.UserId == model.UserId && a.JobId == model.JobId);
+            if (existingApplication != null)
+                return BadRequest("This applicant has already applied for this job");
+            // Create new job application
+            var jobApplication = new JobApplication
+            {
+                UserId = model.UserId,
+                JobId = model.JobId,
+                AppliedDate = DateTime.UtcNow,
+                Status = "HR Added",
+                Source = model.Reason,
+                SourceDetails = model.Reason == "Internal referral" ? $"Referred by: {model.ReferralName}" : null,
+                AddedBy = User.Identity.Name
+            };
+            await _unitOfWork.JobApplicationRepository.AddAsync(jobApplication);
+            await _unitOfWork.SaveAsync();
+            return Ok(new { message = "Job application successfully added" });
+        }
 
     }
 }

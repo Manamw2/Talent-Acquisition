@@ -24,7 +24,8 @@ namespace Models.Mappers
                 Phone = source.Phone ?? string.Empty,
 
                 // Map hidden relationships
-                Faculty = source.Education?.FirstOrDefault()?.Institution ?? string.Empty,
+                Faculty = /*source.Education?.FirstOrDefault()?.Institution ??*/ string.Empty,
+                University = string.Empty,
 
                 // Set default values for fields that don't have a direct mapping
                 EnglishProficiencyLevel = string.Empty,

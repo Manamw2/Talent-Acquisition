@@ -50,17 +50,34 @@
                             <span asp-validation-for="Phone" class="text-danger"></span>
                         </div>
 
-                        <!-- Faculty -->
+                        <!-- university Dropdown -->
                         <div class="mb-3">
-                            <label for="faculty" class="form-label fw-semibold">
+                            <label for="universityInput" class="form-label fw-semibold">
+                                University: <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-danger text-white"><i class="bi bi-book"></i></span>
+                                <select asp-for="University" asp-items="ViewBag.Universities" class="form-control form-control-lg" id="educationLevel" required>
+                                    <option value="">Select your university</option>
+                                </select>
+                            </div>
+                            <span asp-validation-for="University" class="text-danger"></span>
+                        </div>
+
+                        <!-- Faculty Dropdown -->
+                        <div class="mb-3">
+                            <label for="facultyInput" class="form-label fw-semibold">
                                 Faculty: <span class="text-danger">*</span>
                             </label>
                             <div class="input-group">
-                                <span class="input-group-text bg-danger text-white"><i class="bi bi-mortarboard"></i></span>
-                                <input asp-for="Faculty" class="form-control form-control-lg" id="faculty" placeholder="Enter your Faculty Name" required>
+                                <span class="input-group-text bg-danger text-white"><i class="bi bi-book"></i></span>
+                                <select asp-for="Faculty" asp-items="ViewBag.Faculties" class="form-control form-control-lg" id="educationLevel" required>
+                                    <option value="">Select your faculty</option>
+                                </select>
                             </div>
                             <span asp-validation-for="Faculty" class="text-danger"></span>
                         </div>
+
 
                         <!-- Date of Birth -->
                         <div class="mb-3">

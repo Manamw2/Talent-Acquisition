@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Models;
@@ -89,6 +90,8 @@ namespace TalentAcquisitionModule.Controllers
                 ApplicationDate = x.AppliedDate
             }).ToList();
             profilePageViewModel.ProfileInfoVM = profileInfoVM;
+            ViewBag.Universities = GetUniversities();
+            ViewBag.Faculties = GetFaculties();
             return View(profilePageViewModel);
         }
 
@@ -121,9 +124,16 @@ namespace TalentAcquisitionModule.Controllers
             appUser.EnglishLevel = profileInfoVM.EnglishProficiencyLevel;
             appUser.MethodOfContact = profileInfoVM.MethodOfContact;
 
-            // Delete existing CV file if it exists
+            
+
             if (profileInfoVM.CvFile != null)
             {
+                // Delete existing CV file if it exists
+                if (!string.IsNullOrEmpty(appUser.CvUrl) && System.IO.File.Exists(appUser.CvUrl))
+                {
+                    System.IO.File.Delete(appUser.CvUrl);
+                }
+
                 var fileName = Path.GetRandomFileName() + Path.GetExtension(profileInfoVM.CvFile.FileName); // Safer filename
                 string sharedFolderPath = _fileStorage.GetSharedCsvFolderPath();
                 string filePath = Path.Combine(sharedFolderPath, fileName);
@@ -217,6 +227,8 @@ namespace TalentAcquisitionModule.Controllers
             if (TempData["ProfileInfo"] is string profileInfoJson)
             {
                 var profileInfoVM = JsonSerializer.Deserialize<ProfileInfoVM>(profileInfoJson);
+                ViewBag.Universities = GetUniversities();
+                ViewBag.Faculties = GetFaculties();
                 return View(profileInfoVM);
             }
             return View();
@@ -303,6 +315,72 @@ namespace TalentAcquisitionModule.Controllers
 
             var fileBytes = System.IO.File.ReadAllBytes(filePath);
             return File(fileBytes, "application/pdf", $"{fileName}");
+        }
+
+
+        private List<SelectListItem> GetUniversities()
+        {
+            return new List<string>
+            {
+                "Cairo University",
+                "Ain Shams University",
+                "Alexandria University",
+                "Helwan University",
+                "Mansoura University",
+                "Zagazig University",
+                "Assiut University",
+                "Tanta University",
+                "Benha University",
+                "Suez Canal University",
+                "Minia University",
+                "South Valley University",
+                "Fayoum University",
+                "Beni-Suef University",
+                "Sohag University",
+                "Kafr El Sheikh University",
+                "Damietta University",
+                "Port Said University",
+                "Menoufia University",
+                "Al-Azhar University",
+                "The British University in Egypt (BUE)",
+                "The American University in Cairo (AUC)",
+                "German University in Cairo (GUC)",
+                "Misr University for Science and Technology (MUST)",
+                "Future University in Egypt (FUE)",
+                "October 6 University",
+                "Modern Sciences and Arts University (MSA)",
+                "Nahda University",
+                "Sinai University",
+                "Other"
+            }.Select(u => new SelectListItem { Text = u, Value = u }).ToList();
+        }
+
+        private List<SelectListItem> GetFaculties()
+        {
+            return new List<string>
+            {
+                "Faculty of Engineering",
+                "Faculty of Medicine",
+                "Faculty of Pharmacy",
+                "Faculty of Science",
+                "Faculty of Commerce",
+                "Faculty of Law",
+                "Faculty of Arts",
+                "Faculty of Education",
+                "Faculty of Agriculture",
+                "Faculty of Dentistry",
+                "Faculty of Computer and Artificial Intelligence",
+                "Faculty of Veterinary Medicine",
+                "Faculty of Nursing",
+                "Faculty of Physical Therapy",
+                "Faculty of Tourism and Hotels",
+                "Faculty of Mass Communication",
+                "Faculty of Fine Arts",
+                "Faculty of Applied Arts",
+                "Faculty of Al-Alsun (Languages)",
+                "Faculty of Islamic Studies",
+                "Other"
+            }.Select(f => new SelectListItem { Text = f, Value = f }).ToList();
         }
     }
 }

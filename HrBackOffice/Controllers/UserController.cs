@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using System.Data;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -30,6 +31,7 @@ namespace HrBackOffice.Controllers
                 {
                     Id = u.Id,
                     UserName = u.UserName,
+                    DisplayName = u.DisplayName,
                     Email = u.Email,
                 })
                 .ToListAsync();
@@ -55,78 +57,79 @@ namespace HrBackOffice.Controllers
 
         public IActionResult Create()
         {
-            var viewModel = new UserViewModel
+            var viewModel = new HRUserViewModel
             {
-                Roless = _roleManager.Roles
+                Roles = _roleManager.Roles
                         .Where(r => r.Name == "HR" || r.Name == "Admin") // Filter HR and Admin roles
                         .Select(r => new SelectListItem
                         {
-                            Value = r.Name,  // Set role name as value
+                            Value = r.Name,  // Role name as value
                             Text = r.Name     // Display role name as text
                         })
-                        .ToList() // Convert to List<SelectListItem>
-                            };
+                        .ToList()
+            };
 
             return View(viewModel);
         }
-
         [HttpPost]
-        public async Task<IActionResult> Create(UserViewModel model)
+        public async Task<IActionResult> Create(HRUserViewModel model)
         {
             if (!ModelState.IsValid)
             {
-                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
-                Console.WriteLine("Validation Errors: " + string.Join(", ", errors)); // Debugging
+                model.Roles = _roleManager.Roles
+                    .Where(r => r.Name == "HR" || r.Name == "Admin")
+                    .Select(r => new SelectListItem
+                    {
+                        Value = r.Name,
+                        Text = r.Name
+                    })
+                    .ToList();
+
                 return View(model);
             }
-
-            // Extract username from email (before @ symbol)
             var username = model.Email.Split('@')[0];
-
             var user = new AppUser
             {
+                UserName = username,
                 DisplayName = model.DisplayName,
-                UserName = username, // Automatically set username
-                Email = model.Email,
+                Email = model.Email
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
             if (result.Succeeded)
             {
-                if (model.Role != null)
+                if (!string.IsNullOrEmpty(model.SelectedRole))
                 {
-                    if (model.Role == "HR" || model.Role == "Admin") // Ensure only HR and Admin roles are assigned
-                    {
-                        if (await _roleManager.RoleExistsAsync(model.Role))
-                        {
-                            await _userManager.AddToRoleAsync(user, model.Role);
-                        }
-                    }
+                    await _userManager.AddToRoleAsync(user, model.SelectedRole);
                 }
                 return RedirectToAction(nameof(Index));
             }
 
             foreach (var error in result.Errors)
             {
-                ModelState.AddModelError(string.Empty, error.Description);
+                ModelState.AddModelError("", error.Description);
             }
+
+            model.Roles = _roleManager.Roles
+                .Where(r => r.Name == "HR" || r.Name == "Admin")
+                .Select(r => new SelectListItem
+                {
+                    Value = r.Name,
+                    Text = r.Name
+                })
+                .ToList();
 
             return View(model);
         }
-
-
-
 
         public async Task<IActionResult> Edit(string id)
         {
             var user = await _userManager.FindByIdAsync(id);
             var allRoles = await _roleManager.Roles.ToListAsync();
-
             var viewModel = new UserRoleViewModel()
             {
                 DisplayName = user.DisplayName,
                 UserId = user.Id,
-                UserName = user.UserName,
                 Roles = allRoles.Select(r => new RoleViewModel()
                 {
                     Id = r.Id,
@@ -134,7 +137,7 @@ namespace HrBackOffice.Controllers
                     IsSelected = _userManager.IsInRoleAsync(user, r.Name).Result
                 }).ToList()
             };
-            return View(viewModel); 
+            return View(viewModel);
         }
 
         [HttpPost]
@@ -154,6 +157,7 @@ namespace HrBackOffice.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+
 
         [HttpPost]
         public async Task<IActionResult> DeleteUser(string id)

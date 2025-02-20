@@ -1,0 +1,64 @@
+﻿@model HRUserViewModel
+
+<form asp-action="@(Model.Id == null ? "Create" : "Edit")" method="post" class="card shadow-lg p-4">
+    <input type="hidden" asp-for="Id" />
+
+    <h3 class="text-center mb-4">@(Model.Id == null ? "Create New User" : "Edit User")</h3>
+
+   
+
+    <div class="mb-3">
+        <label asp-for="DisplayName" class="form-label fw-bold">Display Name</label>
+        <input asp-for="DisplayName" class="form-control" placeholder="Enter display name" />
+        <span asp-validation-for="DisplayName" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Email" class="form-label fw-bold">Email</label>
+        <input asp-for="Email" type="email" class="form-control" placeholder="Enter email address" />
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </div>
+
+    @if (Model.Id == null)
+    {
+        <div class="mb-3">
+            <label asp-for="Password" class="form-label fw-bold">Password</label>
+            <div class="input-group">
+                <input asp-for="Password" type="password" class="form-control" id="passwordField" placeholder="Enter password" />
+                
+            </div>
+            <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
+    }
+
+    <div class="mb-3">
+        <label asp-for="SelectedRole" class="form-label fw-bold">Assign Role</label>
+        <select asp-for="SelectedRole" asp-items="Model.Roles" class="form-control">
+            <option value="">Select Role</option>
+        </select>
+        <span asp-validation-for="SelectedRole" class="text-danger"></span>
+    </div>
+
+    <div class="d-flex justify-content-between">
+        <button type="submit" class="btn btn-primary px-4">Save</button>
+        <a asp-action="Index" class="btn btn-secondary px-4">Cancel</a>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        document.getElementById('togglePassword').addEventListener('click', function () {
+            var passwordField = document.getElementById('passwordField');
+            var icon = this.querySelector('i');
+            if (passwordField.type === "password") {
+                passwordField.type = "text";
+                icon.classList.remove("fa-eye");
+                icon.classList.add("fa-eye-slash");
+            } else {
+                passwordField.type = "password";
+                icon.classList.remove("fa-eye-slash");
+                icon.classList.add("fa-eye");
+            }
+        });
+    </script>
+}

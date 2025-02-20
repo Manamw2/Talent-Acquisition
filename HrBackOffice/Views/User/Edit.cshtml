@@ -19,7 +19,7 @@
 
                         <div class="mb-3">
                             <label for="DisplayName" class="form-label fw-semibold">Display Name</label>
-                            <input asp-for="DisplayName" id="DisplayName" class="form-control">
+                            <input asp-for="DisplayName" id="DisplayName" class="form-control" disabled>
                             <span asp-validation-for="DisplayName" class="text-danger"></span>
                         </div>
                        
@@ -30,6 +30,8 @@
                         {
                             <div class="form-check">
                                 <input asp-for="@Model.Roles[i].IsSelected" class="form-check-input" />
+                                <input type="hidden" asp-for="Roles[i].Id" />
+                                <input type="hidden" asp-for="Roles[i].Name" /> <!-- Ensure this field exists -->
                                 <label class="form-check-label">@Model.Roles[i].Name</label>
                             </div>
                         }

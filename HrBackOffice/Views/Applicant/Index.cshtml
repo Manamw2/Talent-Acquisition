@@ -20,12 +20,22 @@
         <div class="card-body">
             <div class="row mb-3">
                 <div class="col-md-6">
-                    <div class="input-group">
-                        <span class="input-group-text bg-light">
-                            <i class="fas fa-search"></i>
-                        </span>
-                        <input type="text" id="searchBox" class="form-control" placeholder="Search applicants...">
-                    </div>
+                    <form id="searchForm" class="mb-4">
+                        <div class="input-group">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search"></i></button>
+                            <input type="text"
+                                   id="searchBox"
+                                   class="form-control"
+                                   placeholder="Search applicants..."
+                                   minlength="4"
+                                   required>
+                            
+                            <button type="button" id="resetSearch" class="btn btn-secondary">
+                                <i class="fas fa-close"></i>
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
 
@@ -210,21 +220,44 @@
 </style>
 @section Scripts {
     <script>
-        let searchTimeout;
+        // Wait for DOM to be fully loaded
+        document.addEventListener('DOMContentLoaded', function () {
+            // Get form and search input elements
+            const searchForm = document.getElementById('searchForm');
+            const searchBox = document.getElementById('searchBox');
 
-        document.getElementById('searchBox').addEventListener('input', function (e) {
-            clearTimeout(searchTimeout);
-            const query = e.target.value;
+            // Set search box value from URL parameter on page load
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchQuery = urlParams.get('searchQuery');
+            if (searchQuery) {
+                searchBox.value = searchQuery;
+            }
 
-            searchTimeout = setTimeout(() => {
-                if (query.length > 0) {
+            // Handle form submission
+            searchForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                const query = searchBox.value.trim();
+
+                if (query.length > 3) {
                     window.location.href = `/Applicant/Index?searchQuery=${encodeURIComponent(query)}`;
-                } else {
+                } else if (query.length === 0) {
                     window.location.href = '/Applicant/Index';
+                } else {
+                    alert('Please enter at least 4 characters for search');
                 }
-            }, 500); // Debounce for 500ms
+            });
+
+            // Optional: Clear search with a reset button if needed
+            const resetButton = document.getElementById('resetSearch');
+            if (resetButton) {
+                resetButton.addEventListener('click', function () {
+                    searchBox.value = '';
+                    window.location.href = '/Applicant/Index';
+                });
+            }
         });
 
+        // User deletion confirmation and handling
         function confirmDeleteUser(id, name) {
             if (confirm(`Are you sure you want to delete ${name}?`)) {
                 fetch(`/Applicant/DeleteApplicant`, {
@@ -235,33 +268,33 @@
                     },
                     body: `id=${id}`
                 })
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
                     .then(data => {
                         if (data.success) {
                             alert(data.message);
-                            location.reload(); // Refresh page after deletion
+                            location.reload();
                         } else {
-                            alert("Error deleting applicant.");
+                            alert(data.message || "Error deleting applicant.");
                         }
                     })
-                    .catch(error => console.error("Error:", error));
+                    .catch(error => {
+                        console.error("Error:", error);
+                        alert("An error occurred while deleting the applicant.");
+                    });
             }
         }
 
+        // Profile viewing function
         function viewApplicantProfile(id) {
             if (id) {
                 window.location.href = `/Job/ApplicantProfile?userId=${id}`;
             }
         }
-
-        // Set search box value from URL parameter on page load
-        document.addEventListener('DOMContentLoaded', function () {
-            const urlParams = new URLSearchParams(window.location.search);
-            const searchQuery = urlParams.get('searchQuery');
-            if (searchQuery) {
-                document.getElementById('searchBox').value = searchQuery;
-            }
-        });
     </script>
     <script>
         $(document).ready(function () {
@@ -374,7 +407,7 @@
                         // Show error message
                         Swal.fire({
                             title: 'Error!',
-                            text: errorMessage,
+                            text: responseText || errorMessage,
                             icon: 'error',
                             confirmButtonText: 'OK'
                         });

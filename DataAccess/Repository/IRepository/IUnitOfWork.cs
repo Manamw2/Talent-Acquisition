@@ -14,6 +14,7 @@ namespace DataAccess.Repository.IRepository
         IRepository<Batch> BatchRepository { get; }
         IRepository<Department> DepartmentRepository { get; }
         IRepository<JobApplication> JobApplicationRepository { get; }
+        IRepository<JobRecommend> JobRecommendRepository { get; }
         IRepository<Department> DepRepository { get; }
         IRepository<ApplicantExperience> AppExpRepository { get;  }
         IRepository<ApplicantSkill> AppSkillRepository { get;}

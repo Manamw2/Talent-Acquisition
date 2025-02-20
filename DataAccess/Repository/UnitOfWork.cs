@@ -25,6 +25,8 @@ namespace DataAccess.Repository
         public IRepository<Department> DepartmentRepository { get; private set; }
         public IRepository<Department> DepRepository { get; private set; }
 
+        public IRepository<JobRecommend> JobRecommendRepository { get; private set; }
+
         public UnitOfWork(ApplicationDbContext context)
         {
             _context = context;
@@ -37,7 +39,7 @@ namespace DataAccess.Repository
             AppExpRepository = new Repository<ApplicantExperience>(_context);
             AppSkillRepository = new Repository<ApplicantSkill>(_context);
             AppProjRepository = new Repository<ApplicantProject>(_context);
-            
+            JobRecommendRepository = new Repository<JobRecommend>(_context);
         }
 
         public async Task SaveAsync()

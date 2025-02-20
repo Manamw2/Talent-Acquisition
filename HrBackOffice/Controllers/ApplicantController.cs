@@ -313,7 +313,8 @@ namespace HrBackOffice.Controllers
             var appliedJobIds = applications.Select(ja => ja.JobId);
             // Now get jobs that are not in the applied list
             var availableJobs = await _unitOfWork.JobRepository
-                .GetAllAsync(j => !appliedJobIds.Contains(j.JobId));
+                .GetAllAsync(filter: 
+                job => job.Batch != null && job.Batch.EndDate > DateTime.UtcNow &&!appliedJobIds.Contains(job.JobId));
             return Json(availableJobs.Select(j => new { id = j.JobId, title = j.Title }));
         }
         // POST: Assign job to applicant
@@ -350,7 +351,73 @@ namespace HrBackOffice.Controllers
             return Ok(new { message = "Job application successfully added" });
         }
 
-        
+        [HttpPost]
+        public async Task<IActionResult> RecommendJobToApplicant([FromBody] AssignJobViewModel model)
+        {
+            if (string.IsNullOrEmpty(model.UserId) || model.JobId == null)
+                return BadRequest("Invalid data");
+
+            var job = await _unitOfWork.JobRepository.GetFirstOrDefaultAsync(j => j.JobId == model.JobId);
+            if (job == null)
+                return NotFound("Job not found");
+
+            var applicant = await _userManager.FindByIdAsync(model.UserId);
+            if (applicant == null)
+                return NotFound("applicant not found");
+
+            var existingRecommendation = await _unitOfWork.JobRecommendRepository.GetFirstOrDefaultAsync(
+                a => a.UserId == model.UserId && a.JobId == model.JobId);
+            if (existingRecommendation != null)
+                return BadRequest("This applicant has already Recommended for this job");
+            var JobRecommendation = new JobRecommend
+            {
+                UserId = model.UserId,
+                JobId = model.JobId,
+                Date = DateTime.UtcNow,
+                
+            };
+            await _unitOfWork.JobRecommendRepository.AddAsync(JobRecommendation);
+            await _unitOfWork.SaveAsync();
+            // Construct job application link
+            string applyLink = _configuration["JobsLink"];
+
+            // Send Email
+            // Simple HTML email message
+            await _emailSender.SendEmailAsync(
+                applicant.Email,
+                "Job Recommendation",
+                $@"<div style='font-family: Arial, sans-serif; line-height: 1.6; padding: 20px;'>
+        <p>Dear {applicant.DisplayName},</p>
+
+        <p>Here is the most suitable job based on your profile.</p>
+
+        <p>If you feel that is not relevant, please update your preferences to send you better jobs in my next email.</p>
+
+        <div style='margin: 20px 0;'>
+            <h2 style='color: #2c5282; margin: 0;'>{job.Title}</h2>
+            <div style='color: #666; margin: 5px 0;'>{job.JobType}</div>
+        </div>
+
+        <div style='margin: 20px 0; white-space: pre-line;'>
+            {job.Description}
+        </div>
+
+        <p>If you're interested, click below to apply:</p>
+
+        <p style='margin: 20px 0;'>
+            <a href='{applyLink}' style='background-color: #4299e1; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;'>
+                Apply Now
+            </a>
+        </p>
+
+        <p style='margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;'>
+            Best of luck with your job hunt,<br>
+            Soft-trend HR Team
+        </p>
+    </div>");
+
+            return Ok("Job recommendation sent successfully.");
+        }
 
 
     }

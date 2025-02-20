@@ -176,7 +176,24 @@
     </div>
 </div>
 
-
+<!-- recommend Modal Dialog -->
+<div class="modal fade" id="jobDialog" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Recommend a Job for <span id="applicantName"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <ul id="jobList" class="list-group"></ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-success" id="recommendJobBtn">Send Recommendation</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <style>
     .is-invalid {
@@ -472,7 +489,152 @@
             }
         });
     </script>
-    
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const state = {
+                selectedJobId: null,
+                selectedUserId: null
+            };
+
+            const modal = new bootstrap.Modal(document.getElementById('jobDialog'));
+            const jobList = document.getElementById("jobList");
+
+            function handleJobSelection(jobId) {
+                state.selectedJobId = jobId;
+                console.log('Selected Job ID:', state.selectedJobId);
+            }
+
+            document.querySelectorAll(".recommend-job-btn").forEach(button => {
+                button.addEventListener("click", function () {
+                    state.selectedUserId = this.getAttribute("data-applicant-id");
+                    state.selectedJobId = null;
+
+                    document.getElementById("applicantName").textContent =
+                        this.getAttribute("data-applicant-name");
+
+                    Swal.fire({
+                        title: 'Loading Jobs',
+                        didOpen: () => Swal.showLoading()
+                    });
+
+                    fetch(`/applicant/GetAvailableJobs?userId=${state.selectedUserId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            Swal.close();
+
+                            if (!data.length) {
+                                jobList.innerHTML = "<p class='p-3'>No available jobs</p>";
+                            } else {
+                                jobList.innerHTML = data.map(job => `
+                                    <li class="list-group-item">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio"
+                                                   name="jobSelection"
+                                                   id="job${job.id}"
+                                                   value="${job.id}">
+                                            <label class="form-check-label" for="job${job.id}">
+                                                ${job.title}
+                                            </label>
+                                        </div>
+                                    </li>
+                                `).join('');
+
+                                jobList.querySelectorAll('input[name="jobSelection"]').forEach(radio => {
+                                    radio.addEventListener('change', function () {
+                                        handleJobSelection(this.value);
+                                    });
+                                });
+                            }
+                            modal.show();
+                        })
+                        .catch((error) => {
+                            console.error('Error loading jobs:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Failed to load available jobs',
+                                confirmButtonText: 'OK'
+                            });
+                        });
+                });
+            });
+
+            document.getElementById("recommendJobBtn").addEventListener("click", function () {
+                console.log('Current selected job:', state.selectedJobId);
+
+                if (!state.selectedJobId) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Selection Required',
+                        text: 'Please select a job to recommend',
+                        confirmButtonText: 'OK'
+                    });
+                    return;
+                }
+
+                Swal.fire({
+                    title: 'Confirm Recommendation',
+                    text: 'Are you sure you want to send this job recommendation?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, Send it!',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: 'Sending Recommendation',
+                            didOpen: () => Swal.showLoading()
+                        });
+
+                        const requestData = {
+                            userId: state.selectedUserId,
+                            jobId: state.selectedJobId
+                        };
+
+                        console.log('Sending recommendation data:', requestData);
+
+                        fetch('/applicant/RecommendJobToApplicant', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(requestData)
+                        })
+                            .then(async response => {
+                                const responseText = await response.text();
+
+                                if (response.ok) {
+                                    modal.hide();
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Success!',
+                                        text: responseText || 'Job recommendation sent successfully',
+                                        timer: 1500,
+                                        showConfirmButton: false
+                                    }).then(() => {
+                                        location.reload();
+                                    });
+                                } else {
+                                    throw new Error(responseText || 'Failed to send recommendation');
+                                }
+                            })
+                            .catch((error) => {
+                                console.error('Error sending recommendation:', error);
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: error.message || 'Failed to send recommendation',
+                                    confirmButtonText: 'OK'
+                                });
+                            });
+                    }
+                });
+            });
+
+            document.getElementById('jobDialog').addEventListener('hidden.bs.modal', function () {
+                state.selectedJobId = null;
+                console.log('Modal closed, reset selection');
+            });
+        });
+    </script>
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }

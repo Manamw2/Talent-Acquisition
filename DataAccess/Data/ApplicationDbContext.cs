@@ -13,6 +13,7 @@ namespace DataAccess.Data
 
         public DbSet<Job> Jobs { get; set; }
         public DbSet<JobApplication> JobApplications { get; set; }
+        public DbSet<JobRecommend> JobRecommend { get; set; }
         public DbSet<ApplicantExperience> ApplicantExperiences { get; set; }
         public DbSet<ApplicantSkill> ApplicantSkills { get; set; }
         public DbSet<ApplicantProject> ApplicantProjects { get; set; }

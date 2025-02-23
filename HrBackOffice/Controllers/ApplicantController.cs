@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Models;
 using Models.Mappers;
 using Models.ViewModels;
+using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -29,6 +30,7 @@ namespace HrBackOffice.Controllers
         private readonly IApplicantService _AppSevice;
         private readonly IConfiguration _configuration;
         private readonly FileStorageService _fileStorage;
+        private readonly ApplicationDbContext _context;
         private readonly ILogger<ApplicantController> _logger;
 
         public ApplicantController(FileStorageService fileStorage,
@@ -36,6 +38,7 @@ namespace HrBackOffice.Controllers
             IApplicantService applicantService,
             HttpClient httpClient,IEmailSend emailSender,
             IUnitOfWork unitOfWork, IMapper mapper,
+            ApplicationDbContext context,
             UserManager<AppUser> userManager, ILogger<ApplicantController> logger)
         {
             _emailSender = emailSender;
@@ -47,6 +50,7 @@ namespace HrBackOffice.Controllers
             _configuration = configuration;
             _fileStorage = fileStorage;
             _logger = logger;
+            _context = context;
         }
 
         public async Task<IActionResult> Index(int page = 1, string searchQuery = null)
@@ -170,8 +174,6 @@ namespace HrBackOffice.Controllers
                 throw; // Re-throw to be handled by the calling method
             }
         }
-
-
         public IActionResult AddApplicant()
         {
             var model = new UserViewModel
@@ -474,7 +476,29 @@ namespace HrBackOffice.Controllers
 
             return Ok("Job recommendation sent successfully.");
         }
+        [HttpGet]
+        public async Task<IActionResult> GetApplicationCount(string id)
+        {
+            var count = await _context.JobApplications
+                .Where(ja => ja.UserId == id)
+                .CountAsync();
+            return Json(count);
+        }
 
-
+        [HttpGet]
+        public async Task<IActionResult> GetApplicationDetails(string id)
+        {
+            var applications = await _context.JobApplications
+                .Where(ja => ja.UserId == id)
+                .Include(ja => ja.Job)
+                .Select(ja => new
+                {
+                    jobTitle = ja.Job.Title,
+                    applicationDate = ja.AppliedDate,
+                    status = ja.Status
+                })
+                .ToListAsync();
+            return Json(applications);
+        }
     }
 }

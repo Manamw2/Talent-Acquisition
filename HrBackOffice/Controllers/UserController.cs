@@ -68,31 +68,55 @@ namespace HrBackOffice.Controllers
                         })
                         .ToList()
             };
-
             return View(viewModel);
         }
+
         [HttpPost]
         public async Task<IActionResult> Create(HRUserViewModel model)
         {
+            // Initialize roles for the model in case we need to return to the view
+            model.Roles = _roleManager.Roles
+                .Where(r => r.Name == "HR" || r.Name == "Admin")
+                .Select(r => new SelectListItem
+                {
+                    Value = r.Name,
+                    Text = r.Name
+                })
+                .ToList();
+
             if (!ModelState.IsValid)
             {
-                model.Roles = _roleManager.Roles
-                    .Where(r => r.Name == "HR" || r.Name == "Admin")
-                    .Select(r => new SelectListItem
-                    {
-                        Value = r.Name,
-                        Text = r.Name
-                    })
-                    .ToList();
-
                 return View(model);
             }
+
+            // Check if user already exists by email
+            var existingUserByEmail = await _userManager.FindByEmailAsync(model.Email);
+            if (existingUserByEmail != null)
+            {
+                ModelState.AddModelError("Email", "A user with this email already exists.");
+                TempData["AlertMessage"] = "A user with this email already exists.";
+                TempData["AlertType"] = "danger";
+                return View(model);
+            }
+
+            // Check if username already exists
             var username = model.Email.Split('@')[0];
+            var existingUserByUsername = await _userManager.FindByNameAsync(username);
+            if (existingUserByUsername != null)
+            {
+                ModelState.AddModelError("Email", "A user with this username already exists.");
+                TempData["AlertMessage"] = "A user with this username already exists.";
+                TempData["AlertType"] = "danger";
+                return View(model);
+            }
+
+            // Create the user if validation passes
             var user = new AppUser
             {
                 UserName = username,
                 DisplayName = model.DisplayName,
-                Email = model.Email
+                Email = model.Email,
+                EmailConfirmed = true // Optional: set email as confirmed
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
@@ -102,6 +126,9 @@ namespace HrBackOffice.Controllers
                 {
                     await _userManager.AddToRoleAsync(user, model.SelectedRole);
                 }
+
+                TempData["AlertMessage"] = "User created successfully!";
+                TempData["AlertType"] = "success";
                 return RedirectToAction(nameof(Index));
             }
 
@@ -109,15 +136,6 @@ namespace HrBackOffice.Controllers
             {
                 ModelState.AddModelError("", error.Description);
             }
-
-            model.Roles = _roleManager.Roles
-                .Where(r => r.Name == "HR" || r.Name == "Admin")
-                .Select(r => new SelectListItem
-                {
-                    Value = r.Name,
-                    Text = r.Name
-                })
-                .ToList();
 
             return View(model);
         }

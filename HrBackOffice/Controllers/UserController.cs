@@ -144,39 +144,65 @@ namespace HrBackOffice.Controllers
         {
             var user = await _userManager.FindByIdAsync(id);
             var allRoles = await _roleManager.Roles.ToListAsync();
+
+            // Get the user's current role (if any)
+            var userRoles = await _userManager.GetRolesAsync(user);
+            var currentRoleName = userRoles.FirstOrDefault();
+
             var viewModel = new UserRoleViewModel()
             {
                 DisplayName = user.DisplayName,
                 UserId = user.Id,
+                UserName = user.UserName,
                 Roles = allRoles.Select(r => new RoleViewModel()
                 {
                     Id = r.Id,
                     Name = r.Name,
-                    IsSelected = _userManager.IsInRoleAsync(user, r.Name).Result
+                    IsSelected = r.Name == currentRoleName
                 }).ToList()
             };
+
+            // Set the selected role ID if the user has a role
+            if (!string.IsNullOrEmpty(currentRoleName))
+            {
+                var currentRole = allRoles.FirstOrDefault(r => r.Name == currentRoleName);
+                if (currentRole != null)
+                {
+                    viewModel.SelectedRoleId = currentRole.Id;
+                }
+            }
+
             return View(viewModel);
         }
 
+        // Modified POST action for single role assignment
         [HttpPost]
         public async Task<IActionResult> Edit(string id, UserRoleViewModel model)
         {
             var user = await _userManager.FindByIdAsync(model.UserId);
+
+            // Get current user roles
             var userRoles = await _userManager.GetRolesAsync(user);
 
-            foreach (var role in model.Roles)
+            // Remove all existing roles
+            if (userRoles.Any())
             {
-                if (userRoles.Any(r => r == role.Name) && !role.IsSelected)
-                    await _userManager.RemoveFromRoleAsync(user, role.Name);
+                await _userManager.RemoveFromRolesAsync(user, userRoles);
+            }
 
-                if (!userRoles.Any(r => r == role.Name) && role.IsSelected)
-                    await _userManager.AddToRoleAsync(user, role.Name);
+            // Add the selected role
+            if (!string.IsNullOrEmpty(model.SelectedRoleId))
+            {
+                // Find the role name based on the selected ID
+                var selectedRole = await _roleManager.FindByIdAsync(model.SelectedRoleId);
+                if (selectedRole != null)
+                {
+                    await _userManager.AddToRoleAsync(user, selectedRole.Name);
+                }
             }
 
             return RedirectToAction(nameof(Index));
         }
-
-
         [HttpPost]
         public async Task<IActionResult> DeleteUser(string id)
         {

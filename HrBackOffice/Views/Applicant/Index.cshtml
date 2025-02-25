@@ -410,7 +410,7 @@
                             confirmButtonText: 'Great!'
                         }).then((result) => {
                             // Optional: reload data or update UI
-                            refreshApplicantList();
+                            location.reload();
                         });
                     },
                     error: function (xhr) {
@@ -521,24 +521,7 @@
                 return isValid;
             }
 
-            // Function to refresh the applicant list after successful assignment
-            function refreshApplicantList() {
-                // Option 1: Reload the page
-                // location.reload();
-
-                // Option 2: Update just the applicant list via AJAX (recommended)
-                $.ajax({
-                    url: '/Applicant/GetApplicantsList',
-                    type: 'GET',
-                    success: function (result) {
-                        // Replace the applicant list container with updated data
-                        $('#applicantListContainer').html(result);
-
-                        // Re-attach event handlers if needed
-                        reattachEventHandlers();
-                    }
-                });
-            }
+           
 
             function reattachEventHandlers() {
                 // Re-attach event handlers for newly loaded DOM elements if needed

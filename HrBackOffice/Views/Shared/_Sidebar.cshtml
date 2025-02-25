@@ -1,9 +1,9 @@
-﻿
-<div class="hamburger-menu">
-    <button class="navbar-toggler" type="button">
-        <span class="navbar-toggler-icon">☰</span>
+﻿<div class="hamburger-menu">
+    <button class="navbar-toggler" type="button" id="sidebar-toggle">
+        <span class="navbar-toggler-icon"><i class="fas fa-bars" style="color: white;"></i></span>
     </button>
 </div>
+
 <div class="sidebar" id="sidebar">
     <div class="sidebar-content">
         <div class="logo-container">
@@ -12,45 +12,40 @@
             </a>
             <div class="logo-divider"></div>
         </div>
-       
+
         <ul class="nav flex-column">
             @if (User.IsInRole("Admin"))
             {
                 <li class="nav-item">
-                <a class="nav-link" asp-controller="Role" asp-action="Index">
-                    <i class="fas fa-user"></i> Roles
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" asp-controller="User" asp-action="Index">
-                    <i class="fas fa-users"></i> Users
-                </a>
-            </li>
+                    <a class="nav-link" asp-controller="Role" asp-action="Index">
+                        <i class="fas fa-user"></i> <span>Roles</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="User" asp-action="Index">
+                        <i class="fas fa-users"></i> <span>Users</span>
+                    </a>
+                </li>
             }
-            
+
             <li class="nav-item">
                 <a class="nav-link" asp-controller="Job" asp-action="Index">
-                    <i class="fas fa-briefcase"></i> Jobs
+                    <i class="fas fa-briefcase"></i> <span>Jobs</span>
                 </a>
-            </li><li class="nav-item">
+            </li>
+            <li class="nav-item">
                 <a class="nav-link" asp-controller="Applicant" asp-action="Index">
-                    <i class="fas fa-user-tie"></i> Applicants
+                    <i class="fas fa-user-tie"></i> <span>Applicants</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" asp-controller="Batch" asp-action="Index">
-                    <i class="fas fa-layer-group"></i> Batches
+                    <i class="fas fa-layer-group"></i> <span>Batches</span>
                 </a>
             </li>
         </ul>
-
-        @* <!-- Logout Button -->
-        <div class="logout-container">
-            <form asp-controller="Admin" asp-action="Logout" method="post">
-                <button type="submit" class="btn btn-danger w-100">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </button>
-            </form>
-        </div> *@
     </div>
 </div>
+
+<!-- Backdrop for mobile -->
+<div class="sidebar-backdrop" id="sidebar-backdrop"></div>

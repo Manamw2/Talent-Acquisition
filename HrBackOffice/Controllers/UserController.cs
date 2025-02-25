@@ -44,7 +44,7 @@ namespace HrBackOffice.Controllers
                 var userEntity = await _userManager.FindByIdAsync(user.Id);
                 var roles = await _userManager.GetRolesAsync(userEntity);
 
-                if (roles.Contains("HR")) // Check if the user has "HR Admin" role
+                if (roles.Contains("HR") || roles.Contains("Admin")) // Check if the user has "HR Admin" role
                 {
                     user.Roles = roles;
                     filteredUsers.Add(user);

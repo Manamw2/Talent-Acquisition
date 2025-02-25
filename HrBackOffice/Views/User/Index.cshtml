@@ -27,6 +27,7 @@
                                     <tr>
                                         <th><i class="fas fa-user me-1"></i> User Name</th>
                                         <th><i class="fas fa-envelope me-1"></i> Email</th>
+                                        <th><i class="fas fa-id-badge me-1"></i> Roles</th>
                                         <th class="text-center">Actions</th>
                                     </tr>
                                 </thead>
@@ -38,7 +39,19 @@
                                                 @user.DisplayName
                                             </td>
                                             <td class="align-middle">@user.Email</td>
-                                            
+                                            <td class="align-middle">
+                                                @if (user.Roles.Any())
+                                                {
+                                                    @foreach (var role in user.Roles)
+                                                    {
+                                                        <span class="badge bg-secondary">@role</span>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-warning">No Roles Assigned</span>
+                                                }
+                                            </td>
                                             <td class="text-center">
                                                 <div class="btn-group" role="group">
                                                     <a class="btn btn-sm btn-primary" asp-action="Edit" asp-route-id="@user.Id">

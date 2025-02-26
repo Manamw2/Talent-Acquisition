@@ -6,16 +6,11 @@ using HrBackOffice.Helper.EmailSetting;
 using HrBackOffice.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Models;
-using Models.Mappers;
-using Models.ViewModels;
-using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
-using System.Text.Json;
 using X.PagedList.Extensions;
 
 namespace HrBackOffice.Controllers
@@ -229,7 +224,10 @@ namespace HrBackOffice.Controllers
                 Faculty = model.Faculty,
                 MethodOfContact = model.MethodOfContact,
                 BirthDate = model.BirthDate,
-                CvUrl = model.CvUrl
+                CvUrl = model.CvUrl,
+                EmailConfirmed = true
+
+
             };
             
             var result = await _userManager.CreateAsync(user, "Temp@1234"); // Default password

@@ -122,6 +122,7 @@ namespace TalentAcquisitionModule.Areas.Identity.Pages.Account
 
             [Required]
             [DisplayName("Name")]
+            [RegularExpression(@"^[a-zA-Z\u0600-\u06FF\s-']+$", ErrorMessage = "Name can only contain English letters, Arabic letters, spaces, hyphens, and apostrophes.")]
             public string Name { get; set; } = string.Empty;
 
             [Required]

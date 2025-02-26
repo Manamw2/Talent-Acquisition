@@ -91,16 +91,17 @@
                     return "text-success";
                 case "Rejected":
                     return "text-danger";
-                default:
+                case "Pending":
                     return "text-info";
             }
         }
 
         // Get the status from the span element
-        const Status = document.getElementById('statusBadge').textContent;
 
         // Apply the appropriate badge class
-        const badgeElement = document.getElementById('statusBadge');
-        badgeElement.classList.add(getStatusBadgeClass(Status));
+            document.querySelectorAll('.badge').forEach(badgeElement => {
+            const status = badgeElement.textContent.trim(); // Get the text and trim spaces
+            badgeElement.classList.add(getStatusBadgeClass(status)); // Apply class
+        });
     </script>
 }

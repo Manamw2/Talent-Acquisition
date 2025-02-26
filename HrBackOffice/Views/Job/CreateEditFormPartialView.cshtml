@@ -106,6 +106,8 @@
                         <label for="endDate" class="form-label">End Date</label>
                         <input type="date" class="form-control" id="endDate" required>
                     </div>
+                    <div id="validationErrors"></div>
+
                 </form>
             </div>
             <div class="modal-footer">
@@ -135,26 +137,40 @@
 
 </script>
 <script>
-    // Make sure you have Bootstrap JS and Font Awesome included in your project
-    // Add this after your existing scripts
-
-    // Initialize Bootstrap modal
     document.addEventListener("DOMContentLoaded", function () {
-        // Add Batch Button Click Event
-        document.getElementById('addBatchBtn').addEventListener('click', function () {
-            // Get the bootstrap modal
-            var batchModal = new bootstrap.Modal(document.getElementById('addBatchModal'));
+        const addBatchBtn = document.getElementById('addBatchBtn');
+        const saveBatchBtn = document.getElementById('saveBatchBtn');
+        const batchModal = new bootstrap.Modal(document.getElementById('addBatchModal'));
+
+        addBatchBtn.addEventListener('click', function () {
             batchModal.show();
         });
 
-        // Save Batch Button Click Event
-        document.getElementById('saveBatchBtn').addEventListener('click', function () {
-            const batchName = document.getElementById('batchName').value;
+        saveBatchBtn.addEventListener('click', function () {
+            const batchName = document.getElementById('batchName').value.trim();
             const startDate = document.getElementById('startDate').value;
             const endDate = document.getElementById('endDate').value;
+            const errorContainer = document.getElementById('validationErrors');
+
+            errorContainer.innerHTML = ""; // Clear previous errors
+            let errors = [];
 
             if (!batchName || !startDate || !endDate) {
-                alert('Please fill all fields!');
+                errors.push("Please fill in all fields.");
+            }
+
+            const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
+
+            if (endDate < today) {
+                errors.push("End date cannot be before the current date");
+            }
+
+            if (startDate >= endDate) {
+                errors.push("End date must be after the start date.");
+            }
+
+            if (errors.length > 0) {
+                errorContainer.innerHTML = errors.map(error => `<p class="text-danger">${error}</p>`).join("");
                 return;
             }
 
@@ -165,11 +181,7 @@
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('input[name="__RequestVerificationToken"]').value
                 },
-                body: JSON.stringify({
-                    Name: batchName,
-                    StartDate: startDate,
-                    EndDate: endDate
-                })
+                body: JSON.stringify({ Name: batchName, StartDate: startDate, EndDate: endDate })
             })
                 .then(response => {
                     if (!response.ok) {
@@ -179,31 +191,23 @@
                 })
                 .then(data => {
                     if (data.success) {
-                        // Add the new batch to dropdown
                         const batchDropdown = document.getElementById('BatchDropdown');
                         const option = document.createElement('option');
                         option.value = data.batchId;
                         option.text = batchName;
                         batchDropdown.appendChild(option);
-
-                        // Select the newly created batch
                         batchDropdown.value = data.batchId;
 
-                        // Close the modal
-                        bootstrap.Modal.getInstance(document.getElementById('addBatchModal')).hide();
-
-                        // Reset form
+                        batchModal.hide();
                         document.getElementById('addBatchForm').reset();
-
-                        // Show success message
                         alert('Batch created successfully!');
                     } else {
-                        alert('Failed to create batch: ' + data.message);
+                        errorContainer.innerHTML = `<p class="text-danger">Failed to create batch: ${data.message}</p>`;
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('An error occurred while creating the batch.');
+                    errorContainer.innerHTML = `<p class="text-danger">An error occurred while creating the batch.</p>`;
                 });
         });
     });

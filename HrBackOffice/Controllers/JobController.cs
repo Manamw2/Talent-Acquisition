@@ -30,6 +30,8 @@ namespace HrBackOffice.Controllers
 
         public async Task<IActionResult> Index(int page = 1)
         {
+
+
             int pageSize = 5; // Number of items per page
             //int pageNumber = page ?? 1; // Default to page 1 if no page is specified
 

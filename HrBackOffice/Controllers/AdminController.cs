@@ -1,4 +1,5 @@
 ﻿using HrBackOffice.Models;
+using HrBackOffice.Services.ProfileServices;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Models;
@@ -9,11 +10,15 @@ namespace HrBackOffice.Controllers
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
+        private readonly IProfileService _profileService;
 
-        public AdminController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager)
+        public AdminController(UserManager<AppUser> userManager
+                            , SignInManager<AppUser> signInManager
+                            , IProfileService profileService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _profileService = profileService;
         }
         public IActionResult Login()
         {
@@ -51,6 +56,8 @@ namespace HrBackOffice.Controllers
             }
 
             await _signInManager.SignInAsync(user, isPersistent: false);
+            ViewData["UserProfileImage"] = user.ImageUrl ?? "/images/Logo1.png";
+
             return RedirectToAction("Index", "Job");
         }
 
@@ -62,35 +69,75 @@ namespace HrBackOffice.Controllers
         }
 
         [HttpGet]
-        public IActionResult ResetPassword(string token, string email)
+        public async Task<IActionResult> ProfileIndex()
         {
-            if (token == null || email == null)
-                return BadRequest("Invalid password reset token.");
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return NotFound();
 
-            var model = new ResetPasswordViewModel { Token = token, Email = email };
-            return View(model);
+            var userProfile = await _profileService.GetUserProfileAsync(user.Id);
+            var roles = await _userManager.GetRolesAsync(user);
+            var viewModel = new ProfileViewModel
+            {
+                Id = user.Id,
+                Email = user.Email,
+                DisplayName = user.DisplayName,
+                ImageUrl = user.ImageUrl,
+                Role = roles.FirstOrDefault()
+            };
+
+            return View(viewModel);
         }
 
         [HttpPost]
-        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+        public async Task<IActionResult> UpdateProfile(ProfileViewModel model)
         {
             if (!ModelState.IsValid)
-                return View(model);
+                return View("ProfileIndex", model);
 
-            var user = await _userManager.FindByEmailAsync(model.Email);
-            if (user == null)
-                return BadRequest("User not found.");
+            var success = await _profileService.UpdateProfileAsync(
+                model.Id,
+                model.DisplayName,
+                model.Email);
 
-            var resetPassResult = await _userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
-            if (!resetPassResult.Succeeded)
+            if (success)
             {
-                foreach (var error in resetPassResult.Errors)
-                    ModelState.AddModelError("", error.Description);
+                if (model.ImageFile != null)
+                {
+                    await _profileService.UpdateProfileImageAsync(model.Id, model.ImageFile);
+                }
 
-                return View(model);
+                TempData["Success"] = "Profile updated successfully";
+                return RedirectToAction(nameof(ProfileIndex));
             }
 
-            return RedirectToAction("Login");
+            ModelState.AddModelError("", "Failed to update profile");
+            return View("ProfileIndex", model);
+        }
+        [HttpGet]
+        public async Task<IActionResult> ChangePassword()
+        {
+            return View();
+        }
+        [HttpPost]
+        public async Task<IActionResult> ChangePassword(ChangePassViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return RedirectToAction(nameof(ProfileIndex));
+
+            var user = await _userManager.GetUserAsync(User);
+            var success = await _profileService.ChangePasswordAsync(
+                user.Id,
+                model.CurrentPassword,
+                model.NewPassword);
+
+            if (success)
+            {
+                TempData["Success"] = "Password changed successfully";
+                return RedirectToAction(nameof(ProfileIndex));
+            }
+
+            ModelState.AddModelError("", "Failed to change password");
+            return RedirectToAction(nameof(ProfileIndex));
         }
 
     }

@@ -6,15 +6,11 @@ using HrBackOffice.Helper.EmailSetting;
 using HrBackOffice.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Models;
-using Models.Mappers;
-using Models.ViewModels;
 using System.Text;
 using System.Text.Encodings.Web;
-using System.Text.Json;
 using X.PagedList.Extensions;
 
 namespace HrBackOffice.Controllers
@@ -29,59 +25,126 @@ namespace HrBackOffice.Controllers
         private readonly IApplicantService _AppSevice;
         private readonly IConfiguration _configuration;
         private readonly FileStorageService _fileStorage;
-        public ApplicantController(FileStorageService fileStorage,IConfiguration configuration,IApplicantService applicantService,HttpClient httpClient,IEmailSend emailSender,IUnitOfWork unitOfWork, IMapper mapper, UserManager<AppUser> userManager)
+        private readonly ApplicationDbContext _context;
+        private readonly ILogger<ApplicantController> _logger;
+
+        public ApplicantController(FileStorageService fileStorage,
+            IConfiguration configuration,
+            IApplicantService applicantService,
+            HttpClient httpClient,IEmailSend emailSender,
+            IUnitOfWork unitOfWork, IMapper mapper,
+            ApplicationDbContext context,
+            UserManager<AppUser> userManager, ILogger<ApplicantController> logger)
         {
             _emailSender = emailSender;
             _userManager = userManager;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _httpClient = httpClient;
-            _AppSevice= applicantService;
+            _AppSevice = applicantService;
             _configuration = configuration;
             _fileStorage = fileStorage;
+            _logger = logger;
+            _context = context;
         }
-      
-        public async Task<IActionResult> Index(int page =1, string searchQuery = null)
+
+        public async Task<IActionResult> Index(int page = 1, string searchQuery = null)
         {
-            int pageSize = 5;
-            var applicants = new List<UserViewModel>();
-
-            if (!string.IsNullOrEmpty(searchQuery))
+            try
             {
-                using (var client = new HttpClient())
+                int pageSize = 5;
+                var applicants = new List<UserViewModel>();
+
+                if (!string.IsNullOrEmpty(searchQuery))
                 {
-                    var link = _configuration["Search"];
-                    var response = await client.GetAsync($"{link}query={Uri.EscapeDataString(searchQuery)}&max_results=5&exact_thresh=0.9&nonexact_thresh=0.5");
-
-                    if (response.IsSuccessStatusCode)
+                    try
                     {
-                        var searchResult = await response.Content.ReadFromJsonAsync<SearchResult>();
-                        var matchedUserIds = searchResult.Results.Select(r => r.Id).ToList();
-
-                        // Get only the users that match the IDs from the search results
-                        foreach (var userId in matchedUserIds)
+                        using (var client = new HttpClient())
                         {
-                            var user = await _userManager.FindByIdAsync(userId);
-                            if (user != null && await _userManager.IsInRoleAsync(user, "Applicant"))
+                            var link = _configuration["Search"];
+                            if (string.IsNullOrEmpty(link))
                             {
-                                applicants.Add(new UserViewModel
+                                throw new InvalidOperationException("Search API URL is not configured");
+                            }
+
+                            var response = await client.GetAsync($"{link}query={Uri.EscapeDataString(searchQuery)}&max_results=5&exact_thresh=0.9&nonexact_thresh=0.5");
+
+                            if (response.IsSuccessStatusCode)
+                            {
+                                var searchResult = await response.Content.ReadFromJsonAsync<SearchResult>();
+                                if (searchResult?.Results == null)
                                 {
-                                    Id = user.Id,
-                                    UserName = user.UserName,
-                                    DisplayName = user.DisplayName,
-                                    Email = user.Email,
-                                    EducationLevel = user.EducationLevel,
-                                    EnglishProficiencyLevel = user.EnglishLevel,
-                                    Roles = (await _userManager.GetRolesAsync(user)).ToList()
-                                });
+                                    throw new InvalidOperationException("Invalid search result format");
+                                }
+
+                                var matchedUserIds = searchResult.Results.Select(r => r.Id).ToList();
+
+                                foreach (var userId in matchedUserIds)
+                                {
+                                    try
+                                    {
+                                        var user = await _userManager.FindByIdAsync(userId);
+                                        if (user != null && await _userManager.IsInRoleAsync(user, "Applicant"))
+                                        {
+                                            applicants.Add(new UserViewModel
+                                            {
+                                                Id = user.Id,
+                                                UserName = user.UserName,
+                                                DisplayName = user.DisplayName,
+                                                Email = user.Email,
+                                                EducationLevel = user.EducationLevel,
+                                                EnglishProficiencyLevel = user.EnglishLevel,
+                                                Roles = (await _userManager.GetRolesAsync(user)).ToList()
+                                            });
+                                        }
+                                    }
+                                    catch (Exception ex) when (ex is ArgumentNullException || ex is InvalidOperationException)
+                                    {
+                                        // Log the error but continue processing other users
+                                        _logger.LogError($"Error processing user {userId}: {ex.Message}");
+                                        continue;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                throw new HttpRequestException($"Search API returned status code: {response.StatusCode}");
                             }
                         }
                     }
+                    catch (HttpRequestException ex)
+                    {
+                        _logger.LogError($"Error calling search API: {ex.Message}");
+                        // Fallback to non-search behavior
+                        await LoadAllApplicants(applicants);
+                    }
                 }
+                else
+                {
+                    await LoadAllApplicants(applicants);
+                }
+
+                var paginatedJobs = applicants.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+                var totalJobs = applicants.Count();
+                var totalPages = (int)Math.Ceiling(totalJobs / (double)pageSize);
+
+                ViewBag.CurrentPage = page;
+                ViewBag.TotalPages = totalPages;
+                return View(paginatedJobs);
             }
-            else
+            catch (Exception ex)
             {
-                // Default behavior when no search query
+                _logger.LogError($"Unhandled error in Index action: {ex.Message}");
+                // You might want to show a user-friendly error page
+                return View("Error");
+            }
+        }
+
+        // Helper method to load all applicants
+        private async Task LoadAllApplicants(List<UserViewModel> applicants)
+        {
+            try
+            {
                 var users = await _userManager.Users.ToListAsync();
                 foreach (var user in users)
                 {
@@ -100,22 +163,12 @@ namespace HrBackOffice.Controllers
                     }
                 }
             }
-
-           // var pagedApplicant = applicants.ToPagedList(pageNumber, pageSize);
-           // return View(pagedApplicant);
-            var paginatedJobs = applicants.Skip((page - 1) * pageSize).Take(pageSize).ToList();
-
-            // Calculate total pages
-            var totalJobs = applicants.Count();
-            var totalPages = (int)Math.Ceiling(totalJobs / (double)pageSize);
-
-            // Pass data to the view
-            ViewBag.CurrentPage = page;
-            ViewBag.TotalPages = totalPages;
-            return View(paginatedJobs);
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error loading all applicants: {ex.Message}");
+                throw; // Re-throw to be handled by the calling method
+            }
         }
-        
-
         public IActionResult AddApplicant()
         {
             var model = new UserViewModel
@@ -172,7 +225,10 @@ namespace HrBackOffice.Controllers
                 Faculty = model.Faculty,
                 MethodOfContact = model.MethodOfContact,
                 BirthDate = model.BirthDate,
-                CvUrl = model.CvUrl
+                CvUrl = model.CvUrl,
+                EmailConfirmed = true
+
+
             };
             
             var result = await _userManager.CreateAsync(user, "Temp@1234"); // Default password
@@ -419,7 +475,29 @@ namespace HrBackOffice.Controllers
 
             return Ok("Job recommendation sent successfully.");
         }
+        [HttpGet]
+        public async Task<IActionResult> GetApplicationCount(string id)
+        {
+            var count = await _context.JobApplications
+                .Where(ja => ja.UserId == id)
+                .CountAsync();
+            return Json(count);
+        }
 
-
+        [HttpGet]
+        public async Task<IActionResult> GetApplicationDetails(string id)
+        {
+            var applications = await _context.JobApplications
+                .Where(ja => ja.UserId == id)
+                .Include(ja => ja.Job)
+                .Select(ja => new
+                {
+                    jobTitle = ja.Job.Title,
+                    applicationDate = ja.AppliedDate,
+                    status = ja.Status
+                })
+                .ToListAsync();
+            return Json(applications);
+        }
     }
 }

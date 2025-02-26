@@ -13,7 +13,7 @@ namespace Models
     {
         FullTime,
         PartTime,
-        Freelance
+        Internship
     }
     public class Job
     {

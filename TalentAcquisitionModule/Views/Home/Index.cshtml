@@ -195,7 +195,36 @@
             </p>
 @*             <a class="btn btn-primary text-uppercase" asp-area="Identity" asp-page="/Account/Register">Register</a>
  *@    
-                 <a class="btn btn-primary text-uppercase" asp-area="Identity" asp-page="/Account/Register">Apply Now</a>
+                 <a class="btn btn-primary text-uppercase" asp-area="" asp-controller="Applicant" asp-action="Index">Apply Now</a>
 </div>
     </div>
 </section>
+@section scripts{
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+                const menu = document.querySelector('.navbar-collapse');
+        const hamburgerButton = document.querySelector('.navbar-toggler');
+
+        // Handle hamburger button click
+        hamburgerButton.addEventListener('click', function(event) {
+            event.stopPropagation();
+
+        // Remove the if condition - we want it to close regardless
+        menu.classList.remove('show');
+        $(menu).collapse('hide');
+                });
+
+        // Handle clicks outside
+        document.addEventListener('click', function(event) {
+                    if (menu && menu.classList.contains('show')) {
+                        if (!menu.contains(event.target) && !hamburgerButton.contains(event.target)) {
+            menu.classList.remove('show');
+        $(menu).collapse('hide');
+                        }
+                    }
+                });
+            });
+    </script>
+
+}

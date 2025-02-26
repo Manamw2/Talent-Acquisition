@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using System.Data;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -30,6 +31,7 @@ namespace HrBackOffice.Controllers
                 {
                     Id = u.Id,
                     UserName = u.UserName,
+                    DisplayName = u.DisplayName,
                     Email = u.Email,
                 })
                 .ToListAsync();
@@ -42,7 +44,7 @@ namespace HrBackOffice.Controllers
                 var userEntity = await _userManager.FindByIdAsync(user.Id);
                 var roles = await _userManager.GetRolesAsync(userEntity);
 
-                if (roles.Contains("HR")) // Check if the user has "HR Admin" role
+                if (roles.Contains("HR") || roles.Contains("Admin")) // Check if the user has "HR Admin" role
                 {
                     user.Roles = roles;
                     filteredUsers.Add(user);
@@ -55,72 +57,97 @@ namespace HrBackOffice.Controllers
 
         public IActionResult Create()
         {
-            var viewModel = new UserViewModel
+            var viewModel = new HRUserViewModel
             {
-                Roless = _roleManager.Roles
+                Roles = _roleManager.Roles
                         .Where(r => r.Name == "HR" || r.Name == "Admin") // Filter HR and Admin roles
                         .Select(r => new SelectListItem
                         {
-                            Value = r.Name,  // Set role name as value
+                            Value = r.Name,  // Role name as value
                             Text = r.Name     // Display role name as text
                         })
-                        .ToList() // Convert to List<SelectListItem>
-                            };
-
+                        .ToList()
+            };
             return View(viewModel);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(UserViewModel model)
+        public async Task<IActionResult> Create(HRUserViewModel model)
         {
+            // Initialize roles for the model in case we need to return to the view
+            model.Roles = _roleManager.Roles
+                .Where(r => r.Name == "HR" || r.Name == "Admin")
+                .Select(r => new SelectListItem
+                {
+                    Value = r.Name,
+                    Text = r.Name
+                })
+                .ToList();
+
             if (!ModelState.IsValid)
             {
-                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
-                Console.WriteLine("Validation Errors: " + string.Join(", ", errors)); // Debugging
                 return View(model);
             }
 
-            // Extract username from email (before @ symbol)
-            var username = model.Email.Split('@')[0];
+            // Check if user already exists by email
+            var existingUserByEmail = await _userManager.FindByEmailAsync(model.Email);
+            if (existingUserByEmail != null)
+            {
+                ModelState.AddModelError("Email", "A user with this email already exists.");
+                TempData["AlertMessage"] = "A user with this email already exists.";
+                TempData["AlertType"] = "danger";
+                return View(model);
+            }
 
+            // Check if username already exists
+            var username = model.Email.Split('@')[0];
+            var existingUserByUsername = await _userManager.FindByNameAsync(username);
+            if (existingUserByUsername != null)
+            {
+                ModelState.AddModelError("Email", "A user with this username already exists.");
+                TempData["AlertMessage"] = "A user with this username already exists.";
+                TempData["AlertType"] = "danger";
+                return View(model);
+            }
+
+            // Create the user if validation passes
             var user = new AppUser
             {
+                UserName = username,
                 DisplayName = model.DisplayName,
-                UserName = username, // Automatically set username
                 Email = model.Email,
+                EmailConfirmed = true // Optional: set email as confirmed
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
             if (result.Succeeded)
             {
-                if (model.Role != null)
+                if (!string.IsNullOrEmpty(model.SelectedRole))
                 {
-                    if (model.Role == "HR" || model.Role == "Admin") // Ensure only HR and Admin roles are assigned
-                    {
-                        if (await _roleManager.RoleExistsAsync(model.Role))
-                        {
-                            await _userManager.AddToRoleAsync(user, model.Role);
-                        }
-                    }
+                    await _userManager.AddToRoleAsync(user, model.SelectedRole);
                 }
+
+                TempData["AlertMessage"] = "User created successfully!";
+                TempData["AlertType"] = "success";
                 return RedirectToAction(nameof(Index));
             }
 
             foreach (var error in result.Errors)
             {
-                ModelState.AddModelError(string.Empty, error.Description);
+                ModelState.AddModelError("", error.Description);
             }
 
             return View(model);
         }
 
-
-
-
         public async Task<IActionResult> Edit(string id)
         {
             var user = await _userManager.FindByIdAsync(id);
             var allRoles = await _roleManager.Roles.ToListAsync();
+
+            // Get the user's current role (if any)
+            var userRoles = await _userManager.GetRolesAsync(user);
+            var currentRoleName = userRoles.FirstOrDefault();
 
             var viewModel = new UserRoleViewModel()
             {
@@ -131,30 +158,51 @@ namespace HrBackOffice.Controllers
                 {
                     Id = r.Id,
                     Name = r.Name,
-                    IsSelected = _userManager.IsInRoleAsync(user, r.Name).Result
+                    IsSelected = r.Name == currentRoleName
                 }).ToList()
             };
-            return View(viewModel); 
+
+            // Set the selected role ID if the user has a role
+            if (!string.IsNullOrEmpty(currentRoleName))
+            {
+                var currentRole = allRoles.FirstOrDefault(r => r.Name == currentRoleName);
+                if (currentRole != null)
+                {
+                    viewModel.SelectedRoleId = currentRole.Id;
+                }
+            }
+
+            return View(viewModel);
         }
 
+        // Modified POST action for single role assignment
         [HttpPost]
         public async Task<IActionResult> Edit(string id, UserRoleViewModel model)
         {
             var user = await _userManager.FindByIdAsync(model.UserId);
+
+            // Get current user roles
             var userRoles = await _userManager.GetRolesAsync(user);
 
-            foreach (var role in model.Roles)
+            // Remove all existing roles
+            if (userRoles.Any())
             {
-                if (userRoles.Any(r => r == role.Name) && !role.IsSelected)
-                    await _userManager.RemoveFromRoleAsync(user, role.Name);
+                await _userManager.RemoveFromRolesAsync(user, userRoles);
+            }
 
-                if (!userRoles.Any(r => r == role.Name) && role.IsSelected)
-                    await _userManager.AddToRoleAsync(user, role.Name);
+            // Add the selected role
+            if (!string.IsNullOrEmpty(model.SelectedRoleId))
+            {
+                // Find the role name based on the selected ID
+                var selectedRole = await _roleManager.FindByIdAsync(model.SelectedRoleId);
+                if (selectedRole != null)
+                {
+                    await _userManager.AddToRoleAsync(user, selectedRole.Name);
+                }
             }
 
             return RedirectToAction(nameof(Index));
         }
-
         [HttpPost]
         public async Task<IActionResult> DeleteUser(string id)
         {

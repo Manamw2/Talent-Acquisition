@@ -1,0 +1,101 @@
+﻿@model ProfileViewModel
+
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Profile Management</h3>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Success"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            @TempData["Success"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            @TempData["Error"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <!-- Profile Information Form -->
+                    <form asp-action="UpdateProfile" method="post" enctype="multipart/form-data">
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="Role" />
+
+                        <div class="row mb-4">
+                            <!-- Profile Image Section -->
+                            <div class="col-md-4 text-center">
+                                <div class="mb-3">
+                                    @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                                    {
+                                        <img src="@Model.ImageUrl" alt="Profile Image" class="img-thumbnail rounded-circle" style="width: 150px; height: 150px; object-fit: cover;" />
+                                    }
+                                    else
+                                    {
+                                        <div class="bg-light rounded-circle d-flex align-items-center justify-content-center" style="width: 150px; height: 150px; margin: 0 auto;">
+                                            <i class="bi bi-person-circle" style="font-size: 4rem;"></i>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="mb-3">
+                                    <label class="btn btn-outline-primary btn-sm">
+                                        Change Photo
+                                        <input type="file" asp-for="ImageFile" class="d-none" accept="image/*" onchange="displayFileName(this)" />
+                                    </label>
+                                    <div id="selectedFileName" class="small text-muted mt-1"></div>
+                                </div>
+                            </div>
+
+                            <!-- Profile Details Section -->
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label asp-for="Email" class="form-label">Email Address</label>
+                                    <input asp-for="Email" class="form-control" />
+                                    <span asp-validation-for="Email" class="text-danger"></span>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="DisplayName" class="form-label">Display Name</label>
+                                    <input asp-for="DisplayName" class="form-control" />
+                                    <span asp-validation-for="DisplayName" class="text-danger"></span>
+                                </div>
+
+                                @* @if (User.IsInRole("Admin"))
+                                {
+                                    <div class="mb-3">
+                                        <label class="form-label">Role</label>
+                                        <select id="userRole" class="form-select" onchange="updateUserRole()">
+                                            @foreach (var role in Model.AvailableRoles)
+                                            {
+                                                <option value="@role" selected="@(role == Model.Role)">@role</option>
+                                            }
+                                        </select>
+                                    </div>
+                                }
+                                else
+                                { *@
+                                    <div class="mb-3">
+                                        <label class="form-label">Role</label>
+                                        <input type="text" value="@Model.Role" class="form-control" readonly />
+                                    </div>
+                                @* } *@
+                                
+                            </div>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Update Profile</button>
+                        </div>
+                    </form>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

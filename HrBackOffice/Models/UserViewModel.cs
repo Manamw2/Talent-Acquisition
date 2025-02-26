@@ -17,7 +17,7 @@ namespace HrBackOffice.Models
         [Display(Name = "Display Name")]
         public string DisplayName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
-        [Required(ErrorMessage = "Phone number is required")]
+        
         [RegularExpression(@"^[0-9]{11}$", ErrorMessage = "Phone number must be exactly 11 digits")]
         [Display(Name = "Phone Number")]
         public string Phone { get; set; } = string.Empty;
@@ -42,10 +42,6 @@ namespace HrBackOffice.Models
         public string Password { get; set; } = "Temp@1234"; // Default password
 
         public IEnumerable<string> Roles { get; set; } = new List<string> { "Applicant" };
-        public List<SelectListItem> Roless { get; set; } = new();
-        public string? Role { get; set; } 
-
-
 
         public List<AppExperienceViewModel> ApplicantExperiences { get; set; } = new();
         public List<AppSkillViewModel> ApplicantSkills { get; set; } = new();

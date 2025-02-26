@@ -20,12 +20,22 @@
         <div class="card-body">
             <div class="row mb-3">
                 <div class="col-md-6">
-                    <div class="input-group">
-                        <span class="input-group-text bg-light">
-                            <i class="fas fa-search"></i>
-                        </span>
-                        <input type="text" id="searchBox" class="form-control" placeholder="Search applicants...">
-                    </div>
+                    <form id="searchForm" class="mb-4">
+                        <div class="input-group">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search"></i></button>
+                            <input type="text"
+                                   id="searchBox"
+                                   class="form-control"
+                                   placeholder="Search applicants..."
+                                   minlength="4"
+                                   required>
+                            
+                            <button type="button" id="resetSearch" class="btn btn-secondary">
+                                <i class="fas fa-close"></i>
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
 
@@ -38,9 +48,9 @@
                                 <tr>
                                     <th>User Name</th>
                                     <th>Email</th>
-                                    <th>Roles</th>
                                     <th>Education Level</th>
                                     <th>English Level</th>
+                                    <th>Applications</th>
                                     <th></th>
                                 </tr>
                             </thead>
@@ -48,34 +58,38 @@
                                 @foreach (var user in Model)
                                 {
                                     <tr ondblclick="viewApplicantProfile('@user.Id')" style="cursor: pointer;">
-                                        <td><span class="badge bg-primary">@user.DisplayName</span></td>
+                                        <td>@user.DisplayName</td>
                                         <td>@user.Email</td>
-                                        <td>
-                                            @if (user.Roles.Any())
-                                            {
-                                                @foreach (var role in user.Roles)
-                                                {
-                                                    <span class="badge bg-secondary">@role</span>
-                                                }
-                                            }
-                                            else
-                                            {
-                                                <span class="badge bg-warning">No Roles</span>
-                                            }
-                                        </td>
                                         <td>@user.EducationLevel</td>
                                         <td>@user.EnglishProficiencyLevel</td>
+                                        <td>
+                                            <button 
+                                                    class="btn btn-link application-count"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#applicationsModal"
+                                                    data-applicant-id="@user.Id"
+                                                    data-applicant-name="@user.DisplayName">
+                                                <i class="fas fa-list-alt me-1"></i>
+                                                <span id="count-@user.Id">Loading...</span>
+                                            </button>
+                                        </td>
                                         <td>
                                             <form asp-action="DeleteApplicant" method="post" id="deleteForm">
                                                 @Html.AntiForgeryToken()
                                             </form>
 
-                                            <button type="button" class="btn btn-sm btn-danger"
+                                            <button type="button" title="Delete this applicant" class="btn btn-sm btn-danger"
                                                     onclick="confirmDeleteUser('@user.Id', '@user.UserName')">
                                                 <i class="fas fa-trash-alt"></i>
                                             </button>
-                                            <button type="button" class="btn btn-primary assign-job-btn" data-applicant-id="@user.Id" data-applicant-name="@user.DisplayName">
-                                                Assign Job
+                                            <button type="button" title="Apply Job to this applicant" class="btn btn-sm btn-primary assign-job-btn" data-applicant-id="@user.Id" data-applicant-name="@user.DisplayName">
+                                                <i class="fas fa-file-signature"></i>
+                                            </button>
+                                            <button type="button" title="Recommend Job to this applicant"
+                                                    class="btn btn-sm btn-primary recommend-job-btn"
+                                                    data-applicant-id="@user.Id"
+                                                    data-applicant-name="@user.DisplayName">
+                                                <i class="fas fa-share"></i>
                                             </button>
                                         </td>
                                     </tr>
@@ -110,12 +124,10 @@
                         </li>
 
                         <!-- Page Numbers -->
-                        @for (int i = 1; i <= totalPages; i++)
-                        {
-                            <li class="page-item @(i == currentPage ? "active" : "")">
-                                <a class="page-link" href="@Url.Action("Index", new { page = i })">@i</a>
-                            </li>
-                        }
+                        <li class="page-item @(currentPage)">
+                            <a class="page-link" href="@Url.Action("Index", new { page = currentPage })">@currentPage</a>
+                        </li>
+                        
 
                         <!-- Next -->
                         <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
@@ -127,12 +139,12 @@
         </div>
     </div>
 </div>
-<!-- Modal -->
+<!-- assign job Modal -->
 <div class="modal fade" id="assignJobModal" tabindex="-1" role="dialog" aria-labelledby="assignJobModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="assignJobModalLabel">Assign Job to <span id="applicantName"></span></h5>
+                <h5 class="modal-title" id="assignJobModalLabel">Apply Job to <span id="applicantName"></span></h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -170,6 +182,55 @@
         </div>
     </div>
 </div>
+
+<!-- recommend Modal Dialog -->
+<div class="modal fade" id="jobDialog" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Recommend a Job for <span id="applicantName"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <ul id="jobList" class="list-group"></ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-success" id="recommendJobBtn">Send Recommendation</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Applications Modal -->
+<div class="modal fade" id="applicationsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Job Applications</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Job Title</th>
+                                <th>Application Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="applicationsTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 <style>
     .is-invalid {
         border-color: #dc3545;
@@ -185,21 +246,44 @@
 </style>
 @section Scripts {
     <script>
-        let searchTimeout;
+        // Wait for DOM to be fully loaded
+        document.addEventListener('DOMContentLoaded', function () {
+            // Get form and search input elements
+            const searchForm = document.getElementById('searchForm');
+            const searchBox = document.getElementById('searchBox');
 
-        document.getElementById('searchBox').addEventListener('input', function (e) {
-            clearTimeout(searchTimeout);
-            const query = e.target.value;
+            // Set search box value from URL parameter on page load
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchQuery = urlParams.get('searchQuery');
+            if (searchQuery) {
+                searchBox.value = searchQuery;
+            }
 
-            searchTimeout = setTimeout(() => {
-                if (query.length > 0) {
+            // Handle form submission
+            searchForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                const query = searchBox.value.trim();
+
+                if (query.length > 3) {
                     window.location.href = `/Applicant/Index?searchQuery=${encodeURIComponent(query)}`;
-                } else {
+                } else if (query.length === 0) {
                     window.location.href = '/Applicant/Index';
+                } else {
+                    alert('Please enter at least 4 characters for search');
                 }
-            }, 500); // Debounce for 500ms
+            });
+
+            // Optional: Clear search with a reset button if needed
+            const resetButton = document.getElementById('resetSearch');
+            if (resetButton) {
+                resetButton.addEventListener('click', function () {
+                    searchBox.value = '';
+                    window.location.href = '/Applicant/Index';
+                });
+            }
         });
 
+        // User deletion confirmation and handling
         function confirmDeleteUser(id, name) {
             if (confirm(`Are you sure you want to delete ${name}?`)) {
                 fetch(`/Applicant/DeleteApplicant`, {
@@ -210,33 +294,33 @@
                     },
                     body: `id=${id}`
                 })
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
                     .then(data => {
                         if (data.success) {
                             alert(data.message);
-                            location.reload(); // Refresh page after deletion
+                            location.reload();
                         } else {
-                            alert("Error deleting applicant.");
+                            alert(data.message || "Error deleting applicant.");
                         }
                     })
-                    .catch(error => console.error("Error:", error));
+                    .catch(error => {
+                        console.error("Error:", error);
+                        alert("An error occurred while deleting the applicant.");
+                    });
             }
         }
 
+        // Profile viewing function
         function viewApplicantProfile(id) {
             if (id) {
                 window.location.href = `/Job/ApplicantProfile?userId=${id}`;
             }
         }
-
-        // Set search box value from URL parameter on page load
-        document.addEventListener('DOMContentLoaded', function () {
-            const urlParams = new URLSearchParams(window.location.search);
-            const searchQuery = urlParams.get('searchQuery');
-            if (searchQuery) {
-                document.getElementById('searchBox').value = searchQuery;
-            }
-        });
     </script>
     <script>
         $(document).ready(function () {
@@ -326,7 +410,7 @@
                             confirmButtonText: 'Great!'
                         }).then((result) => {
                             // Optional: reload data or update UI
-                            refreshApplicantList();
+                            location.reload();
                         });
                     },
                     error: function (xhr) {
@@ -349,7 +433,7 @@
                         // Show error message
                         Swal.fire({
                             title: 'Error!',
-                            text: errorMessage,
+                            text: responseText || errorMessage,
                             icon: 'error',
                             confirmButtonText: 'OK'
                         });
@@ -437,24 +521,7 @@
                 return isValid;
             }
 
-            // Function to refresh the applicant list after successful assignment
-            function refreshApplicantList() {
-                // Option 1: Reload the page
-                // location.reload();
-
-                // Option 2: Update just the applicant list via AJAX (recommended)
-                $.ajax({
-                    url: '/Applicant/GetApplicantsList',
-                    type: 'GET',
-                    success: function (result) {
-                        // Replace the applicant list container with updated data
-                        $('#applicantListContainer').html(result);
-
-                        // Re-attach event handlers if needed
-                        reattachEventHandlers();
-                    }
-                });
-            }
+           
 
             function reattachEventHandlers() {
                 // Re-attach event handlers for newly loaded DOM elements if needed
@@ -463,6 +530,218 @@
                 });
             }
         });
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const state = {
+                selectedJobId: null,
+                selectedUserId: null
+            };
+
+            const modal = new bootstrap.Modal(document.getElementById('jobDialog'));
+            const jobList = document.getElementById("jobList");
+
+            function handleJobSelection(jobId) {
+                state.selectedJobId = jobId;
+                console.log('Selected Job ID:', state.selectedJobId);
+            }
+
+            document.querySelectorAll(".recommend-job-btn").forEach(button => {
+                button.addEventListener("click", function () {
+                    state.selectedUserId = this.getAttribute("data-applicant-id");
+                    state.selectedJobId = null;
+
+                    document.getElementById("applicantName").textContent =
+                        this.getAttribute("data-applicant-name");
+
+                    Swal.fire({
+                        title: 'Loading Jobs',
+                        didOpen: () => Swal.showLoading()
+                    });
+
+                    fetch(`/applicant/GetAvailableJobs?userId=${state.selectedUserId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            Swal.close();
+
+                            if (!data.length) {
+                                jobList.innerHTML = "<p class='p-3'>No available jobs</p>";
+                            } else {
+                                jobList.innerHTML = data.map(job => `
+                                    <li class="list-group-item">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio"
+                                                   name="jobSelection"
+                                                   id="job${job.id}"
+                                                   value="${job.id}">
+                                            <label class="form-check-label" for="job${job.id}">
+                                                ${job.title}
+                                            </label>
+                                        </div>
+                                    </li>
+                                `).join('');
+
+                                jobList.querySelectorAll('input[name="jobSelection"]').forEach(radio => {
+                                    radio.addEventListener('change', function () {
+                                        handleJobSelection(this.value);
+                                    });
+                                });
+                            }
+                            modal.show();
+                        })
+                        .catch((error) => {
+                            console.error('Error loading jobs:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Failed to load available jobs',
+                                confirmButtonText: 'OK'
+                            });
+                        });
+                });
+            });
+
+            document.getElementById("recommendJobBtn").addEventListener("click", function () {
+                console.log('Current selected job:', state.selectedJobId);
+
+                if (!state.selectedJobId) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Selection Required',
+                        text: 'Please select a job to recommend',
+                        confirmButtonText: 'OK'
+                    });
+                    return;
+                }
+
+                Swal.fire({
+                    title: 'Confirm Recommendation',
+                    text: 'Are you sure you want to send this job recommendation?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, Send it!',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: 'Sending Recommendation',
+                            didOpen: () => Swal.showLoading()
+                        });
+
+                        const requestData = {
+                            userId: state.selectedUserId,
+                            jobId: state.selectedJobId
+                        };
+
+                        console.log('Sending recommendation data:', requestData);
+
+                        fetch('/applicant/RecommendJobToApplicant', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(requestData)
+                        })
+                            .then(async response => {
+                                const responseText = await response.text();
+
+                                if (response.ok) {
+                                    modal.hide();
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Success!',
+                                        text: responseText || 'Job recommendation sent successfully',
+                                        timer: 1500,
+                                        showConfirmButton: false
+                                    }).then(() => {
+                                        location.reload();
+                                    });
+                                } else {
+                                    throw new Error(responseText || 'Failed to send recommendation');
+                                }
+                            })
+                            .catch((error) => {
+                                console.error('Error sending recommendation:', error);
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: error.message || 'Failed to send recommendation',
+                                    confirmButtonText: 'OK'
+                                });
+                            });
+                    }
+                });
+            });
+
+            document.getElementById('jobDialog').addEventListener('hidden.bs.modal', function () {
+                state.selectedJobId = null;
+                console.log('Modal closed, reset selection');
+            });
+        });
+    </script>
+    <script>
+        // Load application counts when page loads
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.application-count').forEach(button => {
+                const applicantId = button.getAttribute('data-applicant-id');
+                loadApplicationCount(applicantId);
+            });
+
+            // Handle application count button clicks
+            document.querySelectorAll('.application-count').forEach(button => {
+                button.addEventListener('click', function () {
+                    const applicantId = this.getAttribute('data-applicant-id');
+                    const applicantName = this.getAttribute('data-applicant-name');
+                    loadApplicationDetails(applicantId, applicantName);
+                });
+            });
+        });
+
+        function loadApplicationCount(applicantId) {
+            fetch(`/Applicant/GetApplicationCount/${applicantId}`)
+                .then(response => response.json())
+                .then(count => {
+                    document.getElementById(`count-${applicantId}`).textContent =
+                        `${count} ${count === 1 ? 'Application' : 'Applications'}`;
+                })
+                .catch(error => {
+                    console.error('Error loading application count:', error);
+                    document.getElementById(`count-${applicantId}`).textContent = 'Error';
+                });
+        }
+
+        function loadApplicationDetails(applicantId, applicantName) {
+            const tbody = document.getElementById('applicationsTableBody');
+            tbody.innerHTML = '<tr><td colspan="3" class="text-center">Loading...</td></tr>';
+
+            fetch(`/Applicant/GetApplicationDetails/${applicantId}`)
+                .then(response => response.json())
+                .then(applications => {
+                    document.querySelector('#applicationsModal .modal-title').textContent =
+                        `Job Applications - ${applicantName}`;
+
+                    tbody.innerHTML = '';
+                    applications.forEach(app => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                                    <td>${app.jobTitle}</td>
+                                    <td>${new Date(app.applicationDate).toLocaleDateString()}</td>
+                                    <td>
+                                        <span class="badge bg-${app.status === 'Pending' ? 'warning' :
+                                app.status === 'Accepted' ? 'success' : 'danger'
+                            }">${app.status}</span>
+                                    </td>
+                                `;
+                        tbody.appendChild(row);
+                    });
+
+                    if (applications.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="3" class="text-center">No applications found</td></tr>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading applications:', error);
+                    tbody.innerHTML = '<tr><td colspan="3" class="text-center text-danger">Error loading applications</td></tr>';
+                });
+        }
     </script>
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");

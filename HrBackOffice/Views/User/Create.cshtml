@@ -1,20 +1,28 @@
-﻿@model UserViewModel
-
+﻿@model HRUserViewModel
 <div class="container-fluid px-4">
     <h1 class="mt-4 mb-4">Add HR User</h1>
-
-    <div class="row">
-        <div class="col-xl-6">
+    
+    @if (TempData["AlertMessage"] != null)
+    {
+        <div class="alert alert-@TempData["AlertType"] alert-dismissible fade show" role="alert">
+            @TempData["AlertMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    
+    <div class="container-fluid px-4">
             <div class="card">
                 <div class="card-header">
                     <i class="fas fa-user-plus me-2"></i>
                     <span class="font-weight-bold">User Details</span>
                 </div>
                 <div class="card-body">
-                    <form asp-action="Create" method="post">
+                    <form asp-action="Create" method="post" id="userForm">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        
                         <div class="mb-3">
-                            <label for="DisplayName" class="form-label">Display Name</label>
-                            <input asp-for="DisplayName" id="DisplayName" class="form-control">
+                            <label asp-for="DisplayName" class="form-label"></label>
+                            <input asp-for="DisplayName" class="form-control">
                             <span asp-validation-for="DisplayName" class="text-danger"></span>
                         </div>
                         
@@ -23,7 +31,7 @@
                             <input asp-for="Email" class="form-control" />
                             <span asp-validation-for="Email" class="text-danger"></span>
                         </div>
-
+                        
                         <div class="mb-3">
                             <label asp-for="Password" class="form-label"></label>
                             <div class="input-group">
@@ -33,42 +41,130 @@
                                 </button>
                             </div>
                             <span asp-validation-for="Password" class="text-danger"></span>
+                            <div class="mt-1" id="passwordStrength"></div>
                         </div>
-
-
+                        
                         <div class="mb-3">
-                            <label asp-for="Role" class="form-label">Assign Role</label>
-                            <select asp-for="Role" asp-items="Model.Roless" class="form-control">
+                            <label asp-for="SelectedRole" class="form-label"></label>
+                            <select asp-for="SelectedRole" asp-items="Model.Roles" class="form-control">
                                 <option value="">Select Role</option>
                             </select>
-                            <span asp-validation-for="Role" class="text-danger"></span>
+                            <span asp-validation-for="SelectedRole" class="text-danger"></span>
                         </div>
-
-
+                        
                         <button type="submit" class="btn btn-primary">Create User</button>
                         <a asp-action="Index" class="btn btn-secondary">Back to List</a>
                     </form>
                 </div>
             </div>
-        </div>
+       
     </div>
 </div>
-<script>
-    function togglePassword() {
-        var passwordInput = document.getElementById("passwordInput");
-        var eyeIcon = document.getElementById("eyeIcon");
 
-        if (passwordInput.type === "password") {
-            passwordInput.type = "text";
-            eyeIcon.classList.remove("fa-eye");
-            eyeIcon.classList.add("fa-eye-slash");
-        } else {
-            passwordInput.type = "password";
-            eyeIcon.classList.remove("fa-eye-slash");
-            eyeIcon.classList.add("fa-eye");
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+    
+    <script>
+        // Toggle password visibility
+        function togglePassword() {
+            var passwordInput = document.getElementById("passwordInput");
+            var eyeIcon = document.getElementById("eyeIcon");
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";
+                eyeIcon.classList.remove("fa-eye");
+                eyeIcon.classList.add("fa-eye-slash");
+            } else {
+                passwordInput.type = "password";
+                eyeIcon.classList.remove("fa-eye-slash");
+                eyeIcon.classList.add("fa-eye");
+            }
         }
-    }
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
-</script>
+        
+        // Password strength indicator
+        document.getElementById('passwordInput').addEventListener('input', function() {
+            var password = this.value;
+            var strength = 0;
+            var strengthDiv = document.getElementById('passwordStrength');
+            
+            // Clear previous content
+            strengthDiv.innerHTML = '';
+            
+            if (password.length === 0) {
+                return;
+            }
+            
+            // Check password length
+            if (password.length >= 8) {
+                strength += 1;
+            }
+            
+            // Check for numbers
+            if (/\d/.test(password)) {
+                strength += 1;
+            }
+            
+            // Check for uppercase letters
+            if (/[A-Z]/.test(password)) {
+                strength += 1;
+            }
+            
+            // Check for special characters
+            if (/[^A-Za-z0-9]/.test(password)) {
+                strength += 1;
+            }
+            
+            // Display strength
+            var strengthText = '';
+            var strengthClass = '';
+            
+            switch(strength) {
+                case 0:
+                case 1:
+                    strengthText = 'Weak';
+                    strengthClass = 'text-danger';
+                    break;
+                case 2:
+                    strengthText = 'Medium';
+                    strengthClass = 'text-warning';
+                    break;
+                case 3:
+                    strengthText = 'Strong';
+                    strengthClass = 'text-info';
+                    break;
+                case 4:
+                    strengthText = 'Very Strong';
+                    strengthClass = 'text-success';
+                    break;
+            }
+            
+            strengthDiv.innerHTML = '<small class="' + strengthClass + '">Password strength: ' + strengthText + '</small>';
+        });
+        
+        // Form validation on client side
+        document.getElementById('userForm').addEventListener('submit', function(event) {
+            var isValid = true;
+            var email = document.getElementById('Email').value;
+            var password = document.getElementById('passwordInput').value;
+            var role = document.getElementById('SelectedRole').value;
+            var displayName = document.getElementById('DisplayName').value;
+            
+            // Basic validation
+            if (!displayName) {
+                isValid = false;
+            }
+            
+            if (!password || password.length < 6) {
+                isValid = false;
+            }
+            
+            if (!role) {
+                isValid = false;
+            }
+            
+            // Allow the form to submit if all validations pass
+            if (!isValid) {
+                // Let the default validation handle showing messages
+            }
+        });
+    </script>
+}

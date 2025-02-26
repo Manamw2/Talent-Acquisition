@@ -81,10 +81,10 @@ if (!app.Environment.IsDevelopment())
 }
 
 //app.ApplyMigrations();
-app.Seed();
+//app.Seed();
 
 app.UseHttpsRedirection();
-app.UseStaticFiles();
+app.UseStaticFiles(); 
 
 app.UseRouting();
 

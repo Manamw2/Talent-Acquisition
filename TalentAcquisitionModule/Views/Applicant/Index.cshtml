@@ -38,6 +38,7 @@
                 </div>
                 <br />
                 <!-- Pagination Controls -->
+                <!-- Pagination Controls -->
                 <nav aria-label="Page navigation">
                     <ul class="pagination custom-pagination">
                         <!-- Previous Button -->
@@ -45,13 +46,10 @@
                             <a class="page-link" href="@Url.Action("Index", new { page = currentPage - 1 })">Previous</a>
                         </li>
 
-                        <!-- Page Numbers -->
-                        @for (int i = 1; i <= totalPages; i++)
-                        {
-                            <li class="page-item @(i == currentPage ? "active" : "")">
-                                <a class="page-link" href="@Url.Action("Index", new { page = i })">@i</a>
-                            </li>
-                        }
+                        <!-- Current Page Number -->
+                        <li class="page-item active">
+                            <a class="page-link" href="#">@currentPage</a>
+                        </li>
 
                         <!-- Next Button -->
                         <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
@@ -59,6 +57,7 @@
                         </li>
                     </ul>
                 </nav>
+               
             }
         </div>
 
@@ -114,117 +113,240 @@
 
 @section Scripts {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-   <script>
-       $(document).ready(function () {
-    $("#applyButton").click(function () {
-        var jobId = $(this).data("job-id");
-        var baseUrl = window.location.origin + '/TalentAcquisition/Applicants/ApplyForJob';
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-        $.ajax({
-            url: baseUrl,
-            type: 'GET',
-            contentType: 'application/x-www-form-urlencoded',
-            data: {
-                jobId: parseInt(jobId),
-            },
-            success: function (response) {
-                if (response.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success!',
-                        text: response.message,
-                        confirmButtonText: 'OK'
-                    });
-                } else {
-                    // For unauthenticated users
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Oops...',
-                        text: 'Applicant not found. Please log in.',
-                        showCancelButton: true,
-                        confirmButtonText: 'Login',
-                        cancelButtonText: 'Cancel'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            window.location.href = '/Identity/Account/Login';
-                        }
-                    });
-                }
-            },
-            error: function (xhr, status, error) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: "An error occurred: " + xhr.responseText,
-                    confirmButtonText: 'OK'
+    <script>
+
+                $(document).ready(function () {
+            console.log("Document ready fired");
+
+            // Check if jQuery is loaded
+            if (typeof jQuery == 'undefined') {
+                console.error("jQuery is not loaded!");
+            } else {
+                console.log("jQuery version:", $.fn.jquery);
+            }
+
+            // Global error handler
+            window.onerror = function(message, source, lineno, colno, error) {
+                console.error("JavaScript error:", message, "at", source, "line:", lineno);
+                return false;
+            };
+
+            // Check if jobs exist
+            console.log("Number of job cards:", $('.job-card').length);
+
+            // Log all job cards and their data
+            $('.job-card').each(function(index) {
+                console.log("Job card", index, ":", {
+                    id: $(this).data('job-id'),
+                    title: $(this).data('job-title'),
+                    description: $(this).data('job-description') ? $(this).data('job-description').substring(0, 50) + "..." : "No description"
                 });
-                console.log("XHR:", xhr);
+            });
+
+            // Select the first job by default
+            if ($('.job-card').length > 0) {
+                console.log("Selecting first job");
+                const firstJobCard = $('.job-card').first();
+                firstJobCard.addClass('selected-job');
+                console.log("First job selected:", firstJobCard.data('job-id'));
+
+                // Update the UI with first job details
+                updateJobDetails(firstJobCard);
+            }
+
+            // Job card click event with event delegation
+            $(document).on('click', '.job-card', function(e) {
+                e.preventDefault();
+                console.log("Job card clicked:", $(this).data('job-id'));
+
+                // Remove selection from all jobs
+                $('.job-card').removeClass('selected-job');
+
+                // Add selection to clicked job
+                $(this).addClass('selected-job');
+
+                // Update job details
+                updateJobDetails($(this));
+            });
+
+            // Apply button click handler
+            $(document).on('click', '#applyButton', function(e) {
+                e.preventDefault(); // Prevent any default action
+                console.log("Apply button clicked");
+
+                var jobId;
+                if ($('.selected-job').length > 0) {
+                    jobId = parseInt($('.selected-job').data('job-id'));
+                    console.log("Selected job ID from class:", jobId);
+                } else {
+                    jobId = parseInt($(this).data('job-id'));
+                    console.log("Selected job ID from button:", jobId);
+                }
+
+                if (!jobId || isNaN(jobId)) {
+                    console.error("No valid job ID found");
+                    alert("Please select a job first");
+                    return;
+                }
+
+                // Make AJAX call
+                var baseUrl = window.location.origin + '/TalentAcquisition/Applicants/ApplyForJob';
+                console.log("Making AJAX call to:", baseUrl);
+
+                $.ajax({
+                    url: baseUrl,
+                    type: 'GET',
+                    contentType: 'application/x-www-form-urlencoded',
+                    data: { jobId: jobId },
+                    success: function (response) {
+                        console.log("AJAX success:", response);
+                        if (response.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success!',
+                                text: response.message,
+                                confirmButtonText: 'OK'
+                            });
+                        } else {
+                            let alertOptions = {
+                                icon: 'error',
+                                title: 'Oops...',
+                                text: response.message,
+                                confirmButtonText: 'OK'
+                            };
+
+                            if (response.message === "Applicant not found. Please log in.") {
+                                alertOptions.showCancelButton = true;
+                                alertOptions.confirmButtonText = 'Login';
+                                alertOptions.cancelButtonText = 'Cancel';
+                            } else if (response.message === "You have already applied to this job") {
+                                alertOptions.icon = 'warning';
+                            } else if (response.requiresProfileCompletion) {
+                                alertOptions.icon = 'warning';
+                                alertOptions.showCancelButton = true;
+                                alertOptions.confirmButtonText = 'Complete Profile';
+                                alertOptions.cancelButtonText = 'Cancel';
+
+                                // Build missing sections message
+                                let missingMessage = "Please complete the following sections:\n";
+                                if (response.missingData) {
+                                    if (response.missingData.experience) missingMessage += "• Experience\n";
+                                    if (response.missingData.skills) missingMessage += "• Skills\n";
+                                    if (response.missingData.projects) missingMessage += "• Projects\n";
+                                }
+                                alertOptions.text = missingMessage;
+                                alertOptions.html = missingMessage.replace(/\n/g, '<br>');
+                            }
+
+                            Swal.fire(alertOptions).then((result) => {
+                                if (result.isConfirmed) {
+                                    if (response.message === "Applicant not found. Please log in.") {
+                                        window.location.href = '/Identity/Account/Login';
+                                    } else if (response.requiresProfileCompletion) {
+                                        window.location.href = "https://" + window.location.host + '/Profile/UserInfo';
+                                    }
+                                }
+                            });
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("AJAX error:", error);
+                        console.log("XHR:", xhr);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: "An error occurred: " + xhr.responseText,
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                });
+            });
+
+            // Job type filter handler
+                   // Job type filter handler
+        $('#job-type-filter').on('change', function () {
+            const selectedJobType = $(this).val().toLowerCase();
+            let visibleJobFound = false;
+
+            // First, toggle visibility of job cards based on the filter
+            $('.job-card').each(function () {
+                const jobType = $(this).data('job-type').toLowerCase();
+                const shouldShow = selectedJobType === 'all' || jobType === selectedJobType;
+                $(this).toggle(shouldShow);
+
+                // If this job should be shown and we haven't found a visible job yet,
+                // select this one to display in the main content area
+                if (shouldShow && !visibleJobFound) {
+                    // Remove selection from all jobs
+                    $('.job-card').removeClass('selected-job');
+
+                    // Add selection to this job
+                    $(this).addClass('selected-job');
+
+                    // Update job details in the main content area
+                    updateJobDetails($(this));
+
+                    visibleJobFound = true;
+                }
+            });
+
+            // If no matching jobs found, display a message
+            if (!visibleJobFound) {
+                // Clear the job details and show a "no jobs found" message
+                $('#job-title').text("No matching jobs");
+                $('#description-content').html("<p>No jobs match the selected filter criteria.</p>");
+                $('.badge.bg-info').text("0 Applications");
+                $('.badge.bg-secondary').text("");
             }
         });
-    });
-});
-
-   </Script>
- <script>
-            console.log("Document is ready!"); // Check if jQuery is working
-
-            // Handle click event on job cards
-            $('.job-card').on('click', function (e) {
-                e.preventDefault(); // Prevent default link behavior
-                console.log("Job card clicked!"); // Check if the click event is firing
-
-                // Remove the 'selected-job' class from all job cards
-                $('.job-card').removeClass('selected-job');
-
-                // Add the 'selected-job' class to the clicked job card
-                $(this).addClass('selected-job');
-
-                // Optional: Scroll the selected job card into view
-                this.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            });
-   
-            // Handle click event on job cards
-            $('.job-card').off('click').on('click', function (e) {
-                e.preventDefault();
-
-                // Remove the 'selected-job' class from all job cards
-                $('.job-card').removeClass('selected-job');
-                // Add the 'selected-job' class to the clicked job card
-                $(this).addClass('selected-job');
-
-                // Get job details from data attributes
-                const jobId = $(this).data('job-id');
-                const jobTitle = $(this).data('job-title');
-                const jobDescription = $(this).data('job-description');
-                const jobApplicationCount = $(this).data('job-application-count');
-                const jobType = $(this).data('job-type');
-
-                // Update the middle section with the clicked job's details
-                $('#job-title').text(jobTitle);
-
-                // Clear and update the job description content only
-                $('#description-content').empty().html(jobDescription);
-
-                // Update the badges
-                $('.badge.bg-info').text(`${jobApplicationCount} Applications`);
-                $('.badge.bg-secondary').text(jobType);
-
-                // Update the Apply button's data-job-id attribute
-                $('#applyButton').attr('data-job-id', jobId);
-
-                console.log('Updated job description for job:', jobId); // Debug log
-            });
-
-            // Handle job type filtering
-            $('#job-type-filter').off('change').on('change', function () {
-                const selectedJobType = $(this).val().toLowerCase();
-                $('.job-card').each(function () {
-                    const jobType = $(this).data('job-type').toLowerCase();
-                    $(this).toggle(selectedJobType === 'all' || jobType === selectedJobType);
-                });
-            });
         });
 
+        // Helper function to update job details in the UI
+        function updateJobDetails(jobCard) {
+            const jobId = jobCard.data('job-id');
+            const jobTitle = jobCard.data('job-title');
+            const jobDescription = jobCard.data('job-description');
+            const jobApplicationCount = jobCard.data('job-application-count') || 0;
+            const jobType = jobCard.data('job-type');
+
+            console.log("Updating job details:", {
+                jobId, jobTitle, jobApplicationCount, jobType
+            });
+
+            $('#job-title').text(jobTitle);
+            $('#description-content').html(jobDescription);
+            $('.badge.bg-info').text(`${jobApplicationCount} Applications`);
+            $('.badge.bg-secondary').text(jobType);
+            $('#applyButton').attr('data-job-id', jobId);
+        }
+
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+                const menu = document.querySelector('.navbar-collapse');
+        const hamburgerButton = document.querySelector('.navbar-toggler');
+
+        // Handle hamburger button click
+        hamburgerButton.addEventListener('click', function(event) {
+            event.stopPropagation();
+
+        // Remove the if condition - we want it to close regardless
+        menu.classList.remove('show');
+        $(menu).collapse('hide');
+                });
+
+        // Handle clicks outside
+        document.addEventListener('click', function(event) {
+                    if (menu && menu.classList.contains('show')) {
+                        if (!menu.contains(event.target) && !hamburgerButton.contains(event.target)) {
+            menu.classList.remove('show');
+        $(menu).collapse('hide');
+                        }
+                    }
+                });
+            });
     </script>
 }
 
@@ -235,43 +357,4 @@
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     }
 
-    .custom-modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-    }
-
-    .modal-content {
-        background: white;
-        padding: 20px;
-        border-radius: 5px;
-        text-align: center;
-    }
-
-        .modal-content .btn {
-            margin: 10px;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-    .btn-outline-light {
-        background: transparent;
-        border: 1px solid #666;
-        color: #666;
-        text-decoration: none;
-        display: inline-block;
-    }
-
-        .btn-outline-light:hover {
-            background: #666;
-            color: white;
-        }
 </style>

@@ -1,24 +1,25 @@
 ﻿using Hangfire;
 using Hangfire.Storage;
 using HrBackOffice.Helper.FileProcessingService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HrBackOffice.Controllers
 {
-    public class SyncCvsController : Controller
+    [Authorize(Roles = "hr, Admin")]
+    public class CvsBulkUploadController : Controller
     {
         private readonly IBackgroundJobClient _backgroundJobClient;
         private readonly PdfProcessingJob _processingJob;
         private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public SyncCvsController(IBackgroundJobClient backgroundJobClient, PdfProcessingJob pdfProcessingJob, IWebHostEnvironment webHostEnvironment)
+        public CvsBulkUploadController(IBackgroundJobClient backgroundJobClient, PdfProcessingJob pdfProcessingJob, IWebHostEnvironment webHostEnvironment)
         {
             _backgroundJobClient = backgroundJobClient;
             _processingJob = pdfProcessingJob;
             _webHostEnvironment = webHostEnvironment;
         }
-
         public IActionResult Index()
         {
             var monitoringApi = JobStorage.Current.GetMonitoringApi();

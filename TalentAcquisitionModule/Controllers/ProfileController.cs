@@ -178,6 +178,8 @@ namespace TalentAcquisitionModule.Controllers
             }
             // Single database update
             await _userManager.UpdateAsync(appUser);
+            ViewBag.Universities = GetUniversities();
+            ViewBag.Faculties = GetFaculties();
             return View(profileInfoVM);
         }
 

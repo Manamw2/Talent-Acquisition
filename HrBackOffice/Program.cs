@@ -67,6 +67,7 @@ builder.Services.AddSingleton(smtpSettings);
 builder.Services.AddSingleton<IEmailSend, EmailSender>();
 builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
 {
+    options.User.RequireUniqueEmail = true;
     options.Password.RequireDigit = false;
     options.Password.RequireLowercase = false;
     options.Password.RequireNonAlphanumeric = false;

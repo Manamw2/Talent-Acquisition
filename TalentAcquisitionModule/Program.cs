@@ -79,7 +79,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-//app.ApplyMigrations();
+app.ApplyMigrations();
 //app.Seed();
 
 app.UseHttpsRedirection();

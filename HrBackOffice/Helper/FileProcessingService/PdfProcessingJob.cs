@@ -148,7 +148,7 @@ namespace HrBackOffice.Helper.FileProcessingService
 
                     appUser.UserName = model.Email;
                     appUser.Email = model.Email;
-                    appUser.EmailConfirmed = false;
+                    appUser.EmailConfirmed = true;
                     // Single database update
                     var result = await _userManager.CreateAsync(appUser, GenerateRandomPassword(8));
                     if (result.Succeeded)

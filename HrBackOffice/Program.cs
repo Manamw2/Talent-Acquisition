@@ -8,9 +8,30 @@ using HrBackOffice.Helper;
 using HrBackOffice.Helper.EmailSetting;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using HrBackOffice.Helper.ApplicantService;
+using HrBackOffice.Hubs;
+using Hangfire;
+using HrBackOffice.Helper.FileProcessingService;
 using HrBackOffice.Services.ProfileServices;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add Hangfire services
+builder.Services.AddHangfire(configuration => configuration
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UseSqlServerStorage(builder.Configuration.GetConnectionString("HangfireConnection"),
+        new Hangfire.SqlServer.SqlServerStorageOptions
+        {
+            PrepareSchemaIfNecessary = true, // Ensure schema is created
+            EnableHeavyMigrations = true // Ensures database schema migrations run correctly
+        }));
+
+// Add the Hangfire server
+builder.Services.AddHangfireServer();
+
+// Add SignalR
+builder.Services.AddSignalR();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -33,6 +54,10 @@ builder.Services.AddSingleton<FileStorageService>(provider =>
     var config = provider.GetRequiredService<IConfiguration>();
     return new FileStorageService(config);
 });
+
+builder.Services.AddScoped<IBackgroundJobClient, BackgroundJobClient>();
+builder.Services.AddScoped<PdfProcessingJob>();
+
 // Load SmtpSettings from appsettings.json
 var smtpSettings = new SmtpSettings();
 builder.Configuration.GetSection("SmtpSettings").Bind(smtpSettings);
@@ -42,7 +67,8 @@ builder.Services.AddSingleton(smtpSettings);
 builder.Services.AddSingleton<IEmailSend, EmailSender>();
 builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
 {
-    options.Password.RequireDigit = true;
+    options.User.RequireUniqueEmail = true;
+    options.Password.RequireDigit = false;
     options.Password.RequireLowercase = false;
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequireUppercase = false;
@@ -60,6 +86,9 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+// Configure Hangfire Dashboard
+app.UseHangfireDashboard("/hangfire");
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
@@ -71,5 +100,7 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Admin}/{action=Login}/{id?}");
+
+app.MapHub<ProcessingHub>("/processingHub");
 
 app.Run();

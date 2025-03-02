@@ -181,6 +181,7 @@ namespace HrBackOffice.Controllers
             _AppSevice.PopulateDropdownLists(model);
             return View(model);
         }
+
         [HttpPost]
         public async Task<IActionResult> AddApplicant(UserViewModel model)
         {

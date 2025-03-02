@@ -1,4 +1,5 @@
 ﻿using HrBackOffice.Models;
+using Microsoft.IdentityModel.Tokens;
 using Models.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -39,7 +40,7 @@ namespace Models.Mappers
                 {
                     Company = e.Company ?? string.Empty,
                     Position = e.Position ?? string.Empty,
-                    Description = e.Responsibilities[0] ?? string.Empty,
+                    Description = e.Responsibilities.IsNullOrEmpty() ? string.Empty : e.Responsibilities[0],
                     StartDate = null, // Default value since ResumeViewModel doesn't provide this
                     EndDate = null,    // Default value since ResumeViewModel doesn't provide this
                 }).ToList() ?? new List<AppExperienceViewModel>(),

@@ -54,7 +54,7 @@ namespace HrBackOffice.Controllers
             {
                 int pageSize = 5;
                 var applicants = new List<UserViewModel>();
-
+                 
                 if (!string.IsNullOrEmpty(searchQuery))
                 {
                     try
@@ -67,7 +67,7 @@ namespace HrBackOffice.Controllers
                                 throw new InvalidOperationException("Search API URL is not configured");
                             }
 
-                            var response = await client.GetAsync($"{link}query={Uri.EscapeDataString(searchQuery)}&max_results=10&exact_thresh=0.9&nonexact_thresh=0.5");
+                            var response = await client.GetAsync($"{link}query={Uri.EscapeDataString(searchQuery)}&max_results=20&exact_thresh=0.9&nonexact_thresh=0.5");
 
                             if (response.IsSuccessStatusCode)
                             {
@@ -124,13 +124,14 @@ namespace HrBackOffice.Controllers
                     await LoadAllApplicants(applicants);
                 }
 
-                var paginatedJobs = applicants.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+                var paginatedapplicant = applicants.Skip((page - 1) * pageSize).Take(pageSize).ToList();
                 var totalJobs = applicants.Count();
                 var totalPages = (int)Math.Ceiling(totalJobs / (double)pageSize);
 
+                ViewBag.SearchQuery = searchQuery;
                 ViewBag.CurrentPage = page;
                 ViewBag.TotalPages = totalPages;
-                return View(paginatedJobs);
+                return View(paginatedapplicant);
             }
             catch (Exception ex)
             {

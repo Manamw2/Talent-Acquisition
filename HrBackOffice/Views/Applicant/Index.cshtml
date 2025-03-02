@@ -120,18 +120,17 @@
                     <ul class="pagination">
                         <!-- Previous -->
                         <li class="page-item @(currentPage == 1 ? "disabled" : "")">
-                            <a class="page-link" href="@Url.Action("Index", new { page = currentPage - 1 })">&laquo;</a>
+                            <a class="page-link" href="@Url.Action("Index", new { page = currentPage - 1, searchQuery = ViewBag.SearchQuery })">&laquo;</a>
                         </li>
 
                         <!-- Page Numbers -->
                         <li class="page-item @(currentPage)">
-                            <a class="page-link" href="@Url.Action("Index", new { page = currentPage })">@currentPage</a>
+                            <a class="page-link" href="@Url.Action("Index", new { page = currentPage, searchQuery = ViewBag.SearchQuery })">@currentPage</a>
                         </li>
-                        
 
                         <!-- Next -->
                         <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
-                            <a class="page-link" href="@Url.Action("Index", new { page = currentPage + 1 })">&raquo;</a>
+                            <a class="page-link" href="@Url.Action("Index", new { page = currentPage + 1, searchQuery = ViewBag.SearchQuery })">&raquo;</a>
                         </li>
                     </ul>
                 </nav>

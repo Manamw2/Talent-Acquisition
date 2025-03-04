@@ -12,6 +12,13 @@ namespace DataAccess.Repository.IRepository
     {
         Task<T?> GetFirstOrDefaultAsync(Expression<Func<T, bool>> filter, string? includeProperties = null, bool tracked = true);
         Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>>? filter = null, string? includeProperties = null);
+        Task<int> CountAsync(Expression<Func<T, bool>> filter = null);
+        Task<IEnumerable<T>> GetPagedListAsync(
+            Expression<Func<T, bool>> filter = null,
+            Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
+            string includeProperties = "",
+            int pageIndex = 0,
+            int pageSize = 5);
         Task AddAsync(T entity);
         void Update(T entity);
         void Remove(T entity);

@@ -30,17 +30,20 @@ namespace HrBackOffice.Controllers
 
         public async Task<IActionResult> Index(int page = 1)
         {
-
-
             int pageSize = 5; // Number of items per page
-            //int pageNumber = page ?? 1; // Default to page 1 if no page is specified
 
-            var jobs = await _unitOfWork.JobRepository
-                                        .GetAllAsync(
-                                            filter: job => job.Batch != null && job.Batch.EndDate > DateTime.UtcNow,
-                                            includeProperties: "Batch,Department"
-                                        );
+            // Get total count for pagination
+            var totalJobs = await _unitOfWork.JobRepository.CountAsync(
+                job => job.Batch != null && job.Batch.EndDate > DateTime.UtcNow
+            );
 
+            // Get only the jobs for the current page
+            var jobs = await _unitOfWork.JobRepository.GetPagedListAsync(
+                filter: job => job.Batch != null && job.Batch.EndDate > DateTime.UtcNow,
+                includeProperties: "Batch,Department",
+                pageIndex: page - 1,
+                pageSize: pageSize
+            );
 
             var jobViewModels = jobs.Select(job => new JobViewM
             {
@@ -54,18 +57,15 @@ namespace HrBackOffice.Controllers
                 DepartmentName = job.Department?.Name
             }).ToList();
 
-            //var pagedJobs = jobViewModels.ToPagedList(pageNumber, pageSize);
-            // Paginate the jobs
-            var paginatedJobs = jobViewModels.Skip((page - 1) * pageSize).Take(pageSize).ToList();
-
             // Calculate total pages
-            var totalJobs = jobViewModels.Count();
             var totalPages = (int)Math.Ceiling(totalJobs / (double)pageSize);
 
             // Pass data to the view
+            ViewBag.TotalItems = totalJobs;
             ViewBag.CurrentPage = page;
             ViewBag.TotalPages = totalPages;
-            return View(paginatedJobs);
+
+            return View(jobViewModels);
         }
 
 

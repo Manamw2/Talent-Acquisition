@@ -20,6 +20,7 @@ namespace HrBackOffice.Controllers
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly UserManager<AppUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IEmailSend _emailSender;
         private readonly HttpClient _httpClient;
         private readonly IApplicantService _AppSevice;
@@ -34,7 +35,7 @@ namespace HrBackOffice.Controllers
             HttpClient httpClient,IEmailSend emailSender,
             IUnitOfWork unitOfWork, IMapper mapper,
             ApplicationDbContext context,
-            UserManager<AppUser> userManager, ILogger<ApplicantController> logger)
+            UserManager<AppUser> userManager, ILogger<ApplicantController> logger, RoleManager<IdentityRole> roleManager)
         {
             _emailSender = emailSender;
             _userManager = userManager;
@@ -46,6 +47,7 @@ namespace HrBackOffice.Controllers
             _fileStorage = fileStorage;
             _logger = logger;
             _context = context;
+            _roleManager = roleManager;
         }
 
         public async Task<IActionResult> Index(int page = 1, string searchQuery = null)
@@ -53,8 +55,9 @@ namespace HrBackOffice.Controllers
             try
             {
                 int pageSize = 5;
-                var applicants = new List<UserViewModel>();
-                 
+                var totalApplicants = 0;
+                var paginatedApplicants = new List<UserViewModel>();
+
                 if (!string.IsNullOrEmpty(searchQuery))
                 {
                     try
@@ -78,15 +81,22 @@ namespace HrBackOffice.Controllers
                                 }
 
                                 var matchedUserIds = searchResult.Results.Select(r => r.Id).ToList();
+                                totalApplicants = matchedUserIds.Count;
 
-                                foreach (var userId in matchedUserIds)
+                                // Only get the IDs needed for the current page
+                                var pageUserIds = matchedUserIds
+                                    .Skip((page - 1) * pageSize)
+                                    .Take(pageSize)
+                                    .ToList();
+
+                                foreach (var userId in pageUserIds)
                                 {
                                     try
                                     {
                                         var user = await _userManager.FindByIdAsync(userId);
                                         if (user != null && await _userManager.IsInRoleAsync(user, "Applicant"))
                                         {
-                                            applicants.Add(new UserViewModel
+                                            paginatedApplicants.Add(new UserViewModel
                                             {
                                                 Id = user.Id,
                                                 UserName = user.UserName,
@@ -100,7 +110,6 @@ namespace HrBackOffice.Controllers
                                     }
                                     catch (Exception ex) when (ex is ArgumentNullException || ex is InvalidOperationException)
                                     {
-                                        // Log the error but continue processing other users
                                         _logger.LogError($"Error processing user {userId}: {ex.Message}");
                                         continue;
                                     }
@@ -115,43 +124,63 @@ namespace HrBackOffice.Controllers
                     catch (HttpRequestException ex)
                     {
                         _logger.LogError($"Error calling search API: {ex.Message}");
-                        // Fallback to non-search behavior
-                        await LoadAllApplicants(applicants);
+                        // Fallback to database pagination
+                        (paginatedApplicants, totalApplicants) = await LoadPaginatedApplicants(page, pageSize);
                     }
                 }
                 else
                 {
-                    await LoadAllApplicants(applicants);
+                    // Use database pagination
+                    (paginatedApplicants, totalApplicants) = await LoadPaginatedApplicants(page, pageSize);
                 }
 
-                var paginatedapplicant = applicants.Skip((page - 1) * pageSize).Take(pageSize).ToList();
-                var totalJobs = applicants.Count();
-                var totalPages = (int)Math.Ceiling(totalJobs / (double)pageSize);
+                var totalPages = (int)Math.Ceiling(totalApplicants / (double)pageSize);
 
                 ViewBag.SearchQuery = searchQuery;
+                ViewBag.TotalItems = totalApplicants;
                 ViewBag.CurrentPage = page;
                 ViewBag.TotalPages = totalPages;
-                return View(paginatedapplicant);
+                return View(paginatedApplicants);
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Unhandled error in Index action: {ex.Message}");
-                // You might want to show a user-friendly error page
                 return View("Error");
             }
         }
 
-        // Helper method to load all applicants
-        private async Task LoadAllApplicants(List<UserViewModel> applicants)
+        // Optimized helper method to load only the applicants for current page
+        private async Task<(List<UserViewModel>, int)> LoadPaginatedApplicants(int page, int pageSize)
         {
             try
             {
-                var users = await _userManager.Users.ToListAsync();
-                foreach (var user in users)
+                // Get applicant users from database with pagination
+                var applicantRole = await _roleManager.FindByNameAsync("Applicant");
+                if (applicantRole == null)
                 {
-                    if (await _userManager.IsInRoleAsync(user, "Applicant"))
+                    return (new List<UserViewModel>(), 0);
+                }
+
+                // Get total count for pagination
+                var totalCount = await _context.UserRoles
+                    .Where(ur => ur.RoleId == applicantRole.Id)
+                    .CountAsync();
+
+                // Get just the users for the current page
+                var userIdsForCurrentPage = await _context.UserRoles
+                    .Where(ur => ur.RoleId == applicantRole.Id)
+                    .Select(ur => ur.UserId)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+
+                var paginatedUsers = new List<UserViewModel>();
+                foreach (var userId in userIdsForCurrentPage)
+                {
+                    var user = await _userManager.FindByIdAsync(userId);
+                    if (user != null)
                     {
-                        applicants.Add(new UserViewModel
+                        paginatedUsers.Add(new UserViewModel
                         {
                             Id = user.Id,
                             UserName = user.UserName,
@@ -163,11 +192,13 @@ namespace HrBackOffice.Controllers
                         });
                     }
                 }
+
+                return (paginatedUsers, totalCount);
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error loading all applicants: {ex.Message}");
-                throw; // Re-throw to be handled by the calling method
+                _logger.LogError($"Error loading paginated applicants: {ex.Message}`");
+                throw;
             }
         }
         public IActionResult AddApplicant()

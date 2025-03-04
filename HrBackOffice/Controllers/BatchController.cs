@@ -21,21 +21,27 @@ namespace HrBackOffice.Controllers
             _unitOfWork = unitOfWork;
         }
         public async Task<IActionResult> Index(int page = 1)
-		{
+        {
             int pageSize = 5;
-			var batches = await _unitOfWork.BatchRepository.GetAllAsync();
 
-			
-            var paginatedJobs = batches.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+            // Get total count for pagination
+            var totalBatches = await _unitOfWork.BatchRepository.CountAsync();
+
+            // Get only the batches for the current page
+            var batches = await _unitOfWork.BatchRepository.GetPagedListAsync(
+                pageIndex: page - 1,
+                pageSize: pageSize
+            );
 
             // Calculate total pages
-            var totalJobs = batches.Count();
-            var totalPages = (int)Math.Ceiling(totalJobs / (double)pageSize);
+            var totalPages = (int)Math.Ceiling(totalBatches / (double)pageSize);
 
             // Pass data to the view
+            ViewBag.TotalItems = totalBatches;
             ViewBag.CurrentPage = page;
             ViewBag.TotalPages = totalPages;
-            return View(paginatedJobs);
+
+            return View(batches);
         }
 
         public IActionResult Create()

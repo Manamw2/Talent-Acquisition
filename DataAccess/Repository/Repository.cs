@@ -22,6 +22,7 @@ namespace DataAccess.Repository
             dbSet = _context.Set<T>();
         }
 
+
         public async Task AddAsync(T entity)
         {
             await dbSet.AddAsync(entity);
@@ -111,6 +112,55 @@ namespace DataAccess.Repository
             }
 
             return jobs;
+        }
+
+        public async Task<int> CountAsync(Expression<Func<T, bool>> filter = null)
+        {
+            IQueryable<T> query = dbSet;
+
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+
+            return await query.CountAsync();
+        }
+
+        // Paged list implementation
+        public async Task<IEnumerable<T>> GetPagedListAsync(
+            Expression<Func<T, bool>> filter = null,
+            Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
+            string includeProperties = "",
+            int pageIndex = 0,
+            int pageSize = 10)
+        {
+            IQueryable<T> query = dbSet;
+
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+
+            foreach (var includeProperty in includeProperties.Split
+                (new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                query = query.Include(includeProperty);
+            }
+
+            if (orderBy != null)
+            {
+                return await orderBy(query)
+                    .Skip(pageIndex * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+            }
+            else
+            {
+                return await query
+                    .Skip(pageIndex * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+            }
         }
     }
 }

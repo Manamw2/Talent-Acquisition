@@ -71,26 +71,8 @@
                         </table>
                     </div>
 
-                    <!-- Pagination Controls -->
                     
-                    <nav aria-label="Page navigation" class="d-flex justify-content-center mt-4">
-                        <ul class="pagination">
-                            <!-- Previous -->
-                            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
-                                <a class="page-link" href="@Url.Action("Index", new { page = currentPage - 1 })">&laquo;</a>
-                            </li>
-
-                            <!-- Page Numbers -->
-                            <li class="page-item @(currentPage)">
-                                <a class="page-link" href="@Url.Action("Index", new { page = currentPage })">@currentPage</a>
-                            </li>
-
-                            <!-- Next -->
-                            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
-                                <a class="page-link" href="@Url.Action("Index", new { page = currentPage + 1 })">&raquo;</a>
-                            </li>
-                        </ul>
-                    </nav>
+                    
                 }
                 else
                 {
@@ -104,41 +86,148 @@
                         </a>
                     </div>
                 }
+                <!-- Pagination Controls -->
+                @if (Model.Any())
+                {
+                    <nav aria-label="Page navigation" class="d-flex justify-content-center mt-4">
+                        <ul class="pagination">
+                            <!-- First Page -->
+                            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                                <a class="page-link" href="@Url.Action("Index", new { page = 1})" aria-label="First">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+
+                            <!-- Previous Page -->
+                            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                                <a class="page-link" href="@Url.Action("Index", new { page = currentPage - 1})" aria-label="Previous">
+                                    <span aria-hidden="true">&lsaquo;</span>
+                                </a>
+                            </li>
+
+                            @{
+                                // Simplified: just show a few pages
+                                int pagesOnEachSide = 1;
+                                int startPage = Math.Max(1, currentPage - pagesOnEachSide);
+                                int endPage = Math.Min(totalPages, currentPage + pagesOnEachSide);
+                            }
+
+                            @for (int i = startPage; i <= endPage; i++)
+                            {
+                                if (i == currentPage)
+                                {
+                                    <li class="page-item active">
+                                        <!-- Simple form with just the essential elements -->
+                                        <form id="pageJumpForm" method="get" action="@Url.Action("Index")" style="margin:0; padding:0">
+                                            <input type="text" name="page"
+                                                   class="form-control border-0 text-center bg-primary text-white"
+                                                   style="width: 40px; height: 38px; padding: 0;"
+                                                   value="@currentPage" />
+                                        </form>
+                                    </li>
+                                }
+                                else
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link" href="@Url.Action("Index", new { page = i})">@i</a>
+                                    </li>
+                                }
+                            }
+
+                            @if (endPage < totalPages)
+                            {
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+
+                                <li class="page-item">
+                                    <a class="page-link" href="@Url.Action("Index", new { page = totalPages })">@totalPages</a>
+                                </li>
+                            }
+
+                            <!-- Next Page -->
+                            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                                <a class="page-link" href="@Url.Action("Index", new { page = currentPage + 1 })" aria-label="Next">
+                                    <span aria-hidden="true">&rsaquo;</span>
+                                </a>
+                            </li>
+
+                            <!-- Last Page -->
+                            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                                <a class="page-link" href="@Url.Action("Index", new { page = totalPages, searchQuery = ViewBag.SearchQuery })" aria-label="Last">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+
+                    <div class="text-center mt-2">
+                        <small>@currentPage of @totalPages pages (@ViewBag.TotalItems items)</small>
+                    </div>
+                }
+
             </div>
         </div>
     </div>
 </div>
-
-<script>
-    document.getElementById("searchBox").addEventListener("keyup", function () {
-        let searchValue = this.value.toLowerCase();
-        let rows = document.querySelectorAll("#jobTable tr");
-        let hasResults = false;
-
-        rows.forEach(row => {
-            let jobTitle = row.cells[0].innerText.toLowerCase();
-            if (jobTitle.includes(searchValue)) {
-                row.style.display = "";
-                hasResults = true;
-            } else {
-                row.style.display = "none";
+@section Scripts {
+    <script>
+        // Minimal JavaScript - just handle Enter key and limit to document ready
+        document.addEventListener('DOMContentLoaded', function () {
+            var form = document.getElementById('pageJumpForm');
+            if (form) {
+                var input = form.querySelector('input[name="page"]');
+                if (input) {
+                    // Only handle Enter key press
+                    input.addEventListener('keypress', function (e) {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            // Simple validation to prevent server errors
+                            var val = parseInt(this.value);
+                            if (isNaN(val) || val < 1) {
+                                this.value = 1;
+                            } else if (val > @totalPages) {
+                                this.value = @totalPages;
+                            }
+                            form.submit();
+                        }
+                    });
+                }
             }
         });
+    </script>
+    <script>
+        document.getElementById("searchBox").addEventListener("keyup", function () {
+            let searchValue = this.value.toLowerCase();
+            let rows = document.querySelectorAll("#jobTable tr");
+            let hasResults = false;
 
-        // Show message if no search results found
-        let jobResults = document.getElementById("jobResults");
-        let noResultsMessage = document.getElementById("noResultsMessage");
+            rows.forEach(row => {
+                let jobTitle = row.cells[0].innerText.toLowerCase();
+                if (jobTitle.includes(searchValue)) {
+                    row.style.display = "";
+                    hasResults = true;
+                } else {
+                    row.style.display = "none";
+                }
+            });
 
-        if (!hasResults) {
-            if (!noResultsMessage) {
-                noResultsMessage = document.createElement("div");
-                noResultsMessage.id = "noResultsMessage";
-                noResultsMessage.className = "alert alert-info text-center mt-3";
-                noResultsMessage.innerHTML = '<i class="fas fa-info-circle"></i> No matching jobs found.';
-                jobResults.appendChild(noResultsMessage);
+            // Show message if no search results found
+            let jobResults = document.getElementById("jobResults");
+            let noResultsMessage = document.getElementById("noResultsMessage");
+
+            if (!hasResults) {
+                if (!noResultsMessage) {
+                    noResultsMessage = document.createElement("div");
+                    noResultsMessage.id = "noResultsMessage";
+                    noResultsMessage.className = "alert alert-info text-center mt-3";
+                    noResultsMessage.innerHTML = '<i class="fas fa-info-circle"></i> No matching jobs found.';
+                    jobResults.appendChild(noResultsMessage);
+                }
+            } else if (noResultsMessage) {
+                noResultsMessage.remove();
             }
-        } else if (noResultsMessage) {
-            noResultsMessage.remove();
-        }
-    });
-</script>
+        });
+    </script>
+}
+

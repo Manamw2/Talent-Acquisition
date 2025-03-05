@@ -12,6 +12,7 @@ using HrBackOffice.Hubs;
 using Hangfire;
 using HrBackOffice.Helper.FileProcessingService;
 using HrBackOffice.Services.ProfileServices;
+using HrBackOffice.Extentions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -85,6 +86,9 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+
+app.ApplyMigrations();
+//app.Seed()
 
 // Configure Hangfire Dashboard
 app.UseHangfireDashboard("/hangfire");

@@ -17,6 +17,7 @@ namespace DataAccess.Data
         public DbSet<ApplicantExperience> ApplicantExperiences { get; set; }
         public DbSet<ApplicantSkill> ApplicantSkills { get; set; }
         public DbSet<ApplicantProject> ApplicantProjects { get; set; }
+        public DbSet<BulkCvsJobsHistory> BulkCvsJobsHistory { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

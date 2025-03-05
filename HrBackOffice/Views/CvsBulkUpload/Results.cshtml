@@ -1,0 +1,319 @@
+﻿@{
+    ViewBag.Title = "Processing Results";
+}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>File Processing Results</h2>
+                <a href="@Url.Action("UploadingFiles", "CvsBulkUpload")" class="btn btn-outline-primary">
+                    <i class="bi bi-upload me-2"></i>Upload More Files
+                </a>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header text-white">
+                    <h2 class="h4 mb-0">Processing Status</h2>
+                </div>
+                <div class="card-body">
+                    <div class="status-container">
+                        <div class="mb-3">
+                            <h6>Progress</h6>
+                            <div class="progress">
+                                <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated"
+                                     role="progressbar" style="width: 0%"></div>
+                            </div>
+                            <small class="text-muted" id="progressText">0 of 0 files processed</small>
+                        </div>
+
+                        <div class="status-counts mb-4">
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <div class="p-2 border rounded text-center bg-success text-white">
+                                        <div class="h4 mb-0" id="successCount">0</div>
+                                        <small>Successful</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="p-2 border rounded text-center bg-danger text-white">
+                                        <div class="h4 mb-0" id="failedCount">0</div>
+                                        <small>Failed</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="processingComplete" class="alert alert-success d-none" role="alert">
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                            Processing complete! All files have been processed.
+                        </div>
+
+                        <div id="processingInProgress" class="alert alert-info" role="alert">
+                            <i class="bi bi-info-circle-fill me-2"></i>
+                            <span id="statusMessage">Processing files...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mt-4" id="summarySectionCard">
+                <div class="card-header">
+                    <h2 class="h4 mb-0">Processing Summary</h2>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="card bg-light h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">Processed Files</h5>
+                                    <div class="d-flex align-items-center mt-3">
+                                        <i class="bi bi-file-earmark-text fs-1 text-primary me-3"></i>
+                                        <div>
+                                            <h3 class="mb-0" id="summaryProcessedFiles">0</h3>
+                                            <small class="text-muted">Total files processed</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">Results Overview</h5>
+                                    <div class="d-flex align-items-center mt-3">
+                                        <i class="bi bi-pie-chart-fill fs-1 text-info me-3"></i>
+                                        <div>
+                                            <h3 class="mb-0" id="summarySuccessFiles">0</h3>
+                                            <small class="text-muted">Successful out of <span id="summaryTotalFiles">0</span></small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header bg-light">Failure Reasons</div>
+                                <div class="card-body">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            CV Already Exists
+                                            <span class="badge bg-secondary rounded-pill" id="summaryCvExists">0</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            Email Already Exists
+                                            <span class="badge bg-secondary rounded-pill" id="summaryEmailExists">0</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            Invalid Email
+                                            <span class="badge bg-secondary rounded-pill" id="summaryEmailNotValid">0</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            Server Errors
+                                            <span class="badge bg-secondary rounded-pill" id="summaryServerErrors">0</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header bg-light">Status Distribution</div>
+                                <div class="card-body">
+                                    <div class="ratio ratio-1x1">
+                                        <canvas id="statusChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="noProcessedData" class="text-center py-4 d-none">
+                        <i class="bi bi-clipboard-data text-muted fs-1"></i>
+                        <p class="mt-2 text-muted">No processing data available yet.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        $(document).ready(function () {
+            let statusChart = null;
+
+            // SignalR connection setup
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl("/processingHub")
+                .withAutomaticReconnect()
+                .build();
+
+            // Listen for processing updates from SignalR
+            connection.on("ReceiveProcessingUpdate", function (status) {
+                updateStatus(status);
+
+                // If all files are processed, show completion message and chart
+                if (status.totalFiles > 0 && status.processedFiles >= status.totalFiles) {
+                    $('#processingComplete').removeClass('d-none');
+                    $('#processingInProgress').addClass('d-none');
+                    // Only update summary and show chart when processing is complete
+                    updateSummary(status, true);
+                } else if (status.totalFiles > 0) {
+                    $('#processingInProgress').removeClass('d-none');
+                    $('#statusMessage').text(`Processing files (${status.processedFiles} of ${status.totalFiles})...`);
+                    // Update summary but don't show chart yet
+                    updateSummary(status, false);
+                }
+            });
+
+            // Start the SignalR connection
+            connection.start().then(function() {
+                // Request current status after connection is established
+                connection.invoke("RequestCurrentStatus").catch(function(err) {
+                    console.error(err.toString());
+                });
+            }).catch(function (err) {
+                console.error(err.toString());
+            });
+
+            function updateStatus(status) {
+                const progress = status.totalFiles > 0
+                    ? (status.processedFiles / status.totalFiles) * 100
+                    : 0;
+
+                $('#progressBar').css('width', progress + '%');
+                $('#progressText').text(`${status.processedFiles} of ${status.totalFiles} files processed`);
+                $('#successCount').text(status.successfulFiles);
+                $('#failedCount').text(status.failedFiles);
+            }
+
+            function updateSummary(status, showChart) {
+                // Update summary section with the status data
+                $('#summaryProcessedFiles').text(status.processedFiles);
+                $('#summarySuccessFiles').text(status.successfulFiles);
+                $('#summaryTotalFiles').text(status.totalFiles);
+
+                // Update failure reasons
+                $('#summaryCvExists').text(status.cvExists);
+                $('#summaryEmailExists').text(status.emailExists);
+                $('#summaryEmailNotValid').text(status.emailNotValid);
+                $('#summaryServerErrors').text(status.serverErrors);
+
+                // Only update or create the chart when showChart is true
+                if (showChart) {
+                    // Show chart container
+                    $('#chartContainer').removeClass('d-none');
+                    updateStatusChart(status);
+                } else {
+                    // Hide chart container during processing
+                    $('#chartContainer').addClass('d-none');
+                }
+
+                // Show/hide no data message
+                if (status.totalFiles > 0) {
+                    $('#noProcessedData').addClass('d-none');
+                    $('#summarySectionCard .row').removeClass('d-none');
+                } else {
+                    $('#noProcessedData').removeClass('d-none');
+                    $('#summarySectionCard .row').addClass('d-none');
+                }
+            }
+
+            function updateStatusChart(status) {
+                const ctx = document.getElementById('statusChart').getContext('2d');
+
+                // Create data for the chart
+                const data = {
+                    labels: ['Successful', 'CV Exists', 'Email Exists', 'Invalid Email', 'Server Errors'],
+                    datasets: [{
+                        data: [
+                            status.successfulFiles,
+                            status.cvExists,
+                            status.emailExists,
+                            status.emailNotValid,
+                            status.serverErrors
+                        ],
+                        backgroundColor: [
+                            '#28a745', // Success
+                            '#6c757d', // CV Exists
+                            '#fd7e14', // Email Exists
+                            '#ffc107', // Invalid Email
+                            '#dc3545'  // Server Errors
+                        ],
+                        borderWidth: 1
+                    }]
+                };
+
+                // Create or update chart
+                if (statusChart) {
+                    statusChart.data = data;
+                    statusChart.update();
+                } else {
+                    statusChart = new Chart(ctx, {
+                        type: 'pie',
+                        data: data,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom'
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            let label = context.label || '';
+                                            if (label) {
+                                                label += ': ';
+                                            }
+                                            const value = context.raw;
+                                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                            const percentage = ((value * 100) / total).toFixed(1);
+                                            return label + value + ' (' + percentage + '%)';
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+
+            // Check if processing is active - if not, show appropriate message
+            function checkActiveProcessing() {
+                $.ajax({
+                    url: "/CvsBulkUpload/GetProcessingStatus",
+                    type: 'GET',
+                    success: function(status) {
+                        updateStatus(status);
+
+                        if (!status.isProcessing) {
+                            if (status.totalFiles === 0) {
+                                $('#processingInProgress').addClass('d-none');
+                                $('#processingComplete').addClass('d-none');
+                                $('#noProcessedData').removeClass('d-none');
+                                $('#summarySectionCard .row').addClass('d-none');
+                                $('#chartContainer').addClass('d-none');
+                            } else if (status.processedFiles >= status.totalFiles) {
+                                $('#processingComplete').removeClass('d-none');
+                                $('#processingInProgress').addClass('d-none');
+                                // Show summary with chart when processing is complete
+                                updateSummary(status, true);
+                            } else {
+                                // Show summary without chart during processing
+                                updateSummary(status, false);
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Initial check
+            checkActiveProcessing();
+        });
+    </script>
+}

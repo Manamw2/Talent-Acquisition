@@ -1,9 +1,13 @@
-﻿using Hangfire;
+﻿using DataAccess.Repository.IRepository;
+using Hangfire;
 using Hangfire.Storage;
 using HrBackOffice.Helper.FileProcessingService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Models;
+using System.Security.Claims;
 
 namespace HrBackOffice.Controllers
 {
@@ -13,32 +17,48 @@ namespace HrBackOffice.Controllers
         private readonly IBackgroundJobClient _backgroundJobClient;
         private readonly PdfProcessingJob _processingJob;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly UserManager<AppUser> _userManager;
 
-        public CvsBulkUploadController(IBackgroundJobClient backgroundJobClient, PdfProcessingJob pdfProcessingJob, IWebHostEnvironment webHostEnvironment)
+        public CvsBulkUploadController(IBackgroundJobClient backgroundJobClient, PdfProcessingJob pdfProcessingJob, IWebHostEnvironment webHostEnvironment, UserManager<AppUser> userManager, IUnitOfWork unitOfWork)
         {
             _backgroundJobClient = backgroundJobClient;
             _processingJob = pdfProcessingJob;
             _webHostEnvironment = webHostEnvironment;
+            _unitOfWork = unitOfWork;
+            _userManager = userManager;
         }
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var monitoringApi = JobStorage.Current.GetMonitoringApi();
-            var processingJobs = monitoringApi.ProcessingJobs(0, 10); // Gets up to 10 active jobs
+            ViewBag.IsJobRunning = await IsJobRunningAsync();
+            IEnumerable<BulkCvsJobsHistory> jobs = await _unitOfWork.BulkCvsJobsHistoryRepo.GetAllAsync();
+            return View(jobs);
+        }
 
-            ViewBag.IsJobRunning = processingJobs.Any();
-
+        public async Task<IActionResult> UploadingFiles()
+        {
+            ViewBag.IsJobRunning = await IsJobRunningAsync();
             return View();
         }
 
+        public IActionResult Results()
+        {
+            return View();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var jobs = await _unitOfWork.BulkCvsJobsHistoryRepo.GetAllAsync();
+            return Json(new { data = jobs });
+        }
+
         [HttpPost]
-        public IActionResult Upload(List<IFormFile> files)
+        public async Task<IActionResult> Upload(List<IFormFile> files)
         {
             try
             {
-                // ✅ Check if a job is already running
-                var monitoringApi = JobStorage.Current.GetMonitoringApi();
-                var processingJobs = monitoringApi.ProcessingJobs(0, 10); // Gets up to 10 active jobs
-                if (processingJobs.Any())
+                if (await IsJobRunningAsync())
                 {
                     return Json(new
                     {
@@ -46,6 +66,24 @@ namespace HrBackOffice.Controllers
                         message = "A processing job is already running. Please wait until it finishes."
                     });
                 }
+
+                string jobId = Guid.NewGuid().ToString("N");
+                var claimsIdentity = (ClaimsIdentity)User.Identity;
+                var userId = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier).Value;
+                AppUser appUser = await _userManager.FindByIdAsync(userId);
+
+                BulkCvsJobsHistory jobHistory = new BulkCvsJobsHistory
+                {
+                    JobId = jobId,
+                    StartDate = DateTime.Now,
+                    IsRunning = true,
+                    TotalFiles = files.Count,
+                    StartedBy = appUser.DisplayName ?? appUser.Email,
+                };
+
+                await _unitOfWork.BulkCvsJobsHistoryRepo.AddAsync(jobHistory);
+                await _unitOfWork.SaveAsync();
+
 
                 List<string> filePaths = new List<string>();
 
@@ -69,8 +107,7 @@ namespace HrBackOffice.Controllers
                 }
 
                 // Enqueue background job with file paths
-                var jobId = _backgroundJobClient.Enqueue(() =>
-                    _processingJob.ProcessFiles(filePaths, null));
+                _backgroundJobClient.Enqueue(() => _processingJob.ProcessFiles(filePaths, jobId));
 
                 return Json(new
                 {
@@ -87,6 +124,16 @@ namespace HrBackOffice.Controllers
                     message = $"Error starting processing: {ex.Message}"
                 });
             }
+        }
+
+        // Method to check if any job is currently running
+        public async Task<bool> IsJobRunningAsync()
+        {
+            // Check the database to see if any job is marked as running
+            var runningJob = await _unitOfWork.BulkCvsJobsHistoryRepo
+                .GetFirstOrDefaultAsync(j => j.IsRunning);
+
+            return runningJob != null;
         }
 
     }

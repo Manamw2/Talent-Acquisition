@@ -241,47 +241,8 @@ namespace HrBackOffice.Controllers
                 return NotFound();
             }
 
-            var applications = new List<JobApplicationViewModel>();
-
-            if (!string.IsNullOrEmpty(searchQuery))
-            {
-                using (var client = new HttpClient())
-                {
-                    var link = _config["Search"];
-                    var response = await client.GetAsync($"{link}query={Uri.EscapeDataString(searchQuery)}&max_results=5&exact_thresh=0.9&nonexact_thresh=0.5");
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var searchResult = await response.Content.ReadFromJsonAsync<SearchResult>();
-                        var matchedUserIds = searchResult.Results.Select(r => r.Id).ToList();
-
-                        // Filter applications based on matched user IDs
-                        applications = job.JobApplications
-                            .Where(app => matchedUserIds.Contains(app.UserId))
-                            .Select(app => new JobApplicationViewModel
-                            {
-                                ApplicationId = app.ApplicationId,
-                                UserId = app.UserId,
-                                ApplicantName = app.AppUser.UserName,
-                                ApplicantEmail = app.AppUser.Email,
-                                AppliedDate = app.AppliedDate,
-                                Status = app.Status
-                            }).ToList();
-                    }
-                }
-            }
-            else
-            {
-                applications = job.JobApplications.Select(app => new JobApplicationViewModel
-                {
-                    ApplicationId = app.ApplicationId,
-                    UserId = app.UserId,
-                    ApplicantName = app.AppUser.DisplayName,
-                    ApplicantEmail = app.AppUser.Email,
-                    AppliedDate = app.AppliedDate,
-                    Status = app.Status
-                }).ToList();
-            }
+         
+            
 
             var model = new JobViewM
             {
@@ -301,7 +262,6 @@ namespace HrBackOffice.Controllers
                     Value = d.DepartmentId.ToString(),
                     Text = d.Name
                 }).ToList(),
-                JobApplications = applications
             };
 
             return View(model);

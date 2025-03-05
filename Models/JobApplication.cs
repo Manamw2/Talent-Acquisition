@@ -11,7 +11,7 @@ namespace Models
     public class JobApplication
     {
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)] // Auto-increment
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int ApplicationId { get; set; }
 
         [Required]
@@ -19,18 +19,26 @@ namespace Models
 
         [ForeignKey("UserId")]
         public AppUser AppUser { get; set; } // Navigation Property
+
+        // Remove JobId, add BatchId
         [Required]
-        public int JobId { get; set; }
+        public int BatchId { get; set; }
+
+        [ForeignKey("BatchId")]
+        public Batch Batch { get; set; }
+
+        // Optional: Keep reference to Job for maintaining existing data relationships
+        public int? JobId { get; set; }
 
         [ForeignKey("JobId")]
-        public Job Job { get; set; }
+        public Job? Job { get; set; }
 
         [Required]
         public DateTime AppliedDate { get; set; } = DateTime.UtcNow;
 
         [Required]
         [StringLength(20)]
-        public string Status { get; set; } = "Pending"; // Default value
+        public string Status { get; set; } = "Pending";
 
         public string? AddedBy { get; set; }
         public string? SourceDetails { get; set; }

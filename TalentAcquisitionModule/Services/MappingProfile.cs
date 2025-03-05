@@ -20,9 +20,8 @@ namespace TalentAcquisitionModule.Services
            .ForMember(dest => dest.DepartmentName,
                      opt => opt.MapFrom(src => src.Department.Name))
            .ForMember(dest => dest.EndDate,
-                     opt => opt.MapFrom(src => src.Batch.EndDate))
-           .ForMember(dest => dest.ApplicationCount,
-                     opt => opt.MapFrom(src => src.JobApplications.Count));
+                     opt => opt.MapFrom(src => src.Batch.EndDate));
+      
         }
     }
     }

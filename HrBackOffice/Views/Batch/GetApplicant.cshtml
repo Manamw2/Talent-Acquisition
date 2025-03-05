@@ -1,0 +1,125 @@
+﻿@model IEnumerable<JobApplicationVM>
+@{
+    ViewData["Title"] = "Batch Applicants";
+}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+            <i class="fas fa-calendar-alt me-2"></i>
+            <span class="font-weight-bold">Batch Applicants</span>
+        </div>
+        <div>
+            <span class="badge bg-info">Total Applicants: @Model.Count()</span>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <form id="searchForm" class="mb-4">
+                    <div class="input-group">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i>
+                        </button>
+                        <input type="text"
+                               id="searchBox"
+                               class="form-control"
+                               placeholder="Search applicants..."
+                               minlength="4"
+                               required>
+
+                        <button type="button" id="resetSearch" class="btn btn-secondary">
+                            <i class="fas fa-close"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        @if (!Model.Any())
+        {
+            <div class="alert alert-info text-center">
+                <i class="fas fa-info-circle me-2"></i>
+                No applicants found for this batch.
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover border">
+                    <thead class="table-light">
+                        <tr>
+                            <th><i class="fas fa-user me-1"></i>Applicant Name</th>
+                            <th><i class="fas fa-envelope me-1"></i>Email</th>
+                            <th><i class="fas fa-calendar me-1"></i>Applied Date</th>
+                            <th><i class="fas fa-info-circle me-1"></i>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="applicationsTable">
+                        @foreach (var app in Model)
+                        {
+                            <tr ondblclick="viewApplicantProfile('@app.UserId')">
+                                <td>@app.ApplicantName</td>
+                                <td>@app.ApplicantEmail</td>
+                                <td>@app.AppliedDate.ToShortDateString()</td>
+                                <td>
+                                    <span class="badge bg-@(app.Status.ToLower() == "pending" ? "warning" :
+        app.Status.ToLower() == "approved" ? "success" :
+        app.Status.ToLower() == "rejected" ? "danger" : "primary")">
+                                        @app.Status
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Wait for DOM to be fully loaded
+        document.addEventListener('DOMContentLoaded', function () {
+            // Get form and search input elements
+            const searchForm = document.getElementById('searchForm');
+            const searchBox = document.getElementById('searchBox');
+
+            // Set search box value from URL parameter on page load
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchQuery = urlParams.get('searchQuery');
+            if (searchQuery) {
+                searchBox.value = searchQuery;
+            }
+
+            // Handle form submission
+            searchForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                const query = searchBox.value.trim();
+
+                if (query.length > 3) {
+                    window.location.href = `/Batch/GetApplicant?id=$searchQuery=${encodeURIComponent(query)}`;
+                } else if (query.length === 0) {
+                    window.location.href = '/Batch/GetApplicant';
+                } else {
+                    alert('Please enter at least 4 characters for search');
+                }
+            });
+
+            // Optional: Clear search with a reset button if needed
+            const resetButton = document.getElementById('resetSearch');
+            if (resetButton) {
+                resetButton.addEventListener('click', function () {
+                    searchBox.value = '';
+                    window.location.href = '/Batch/GetApplicant';
+                });
+            }
+        });
+
+        function viewApplicantProfile(userId) {
+            if (userId) {
+                window.location.href = `/Batch/ApplicantProfile?userId=${userId}`;
+            }
+        }
+    </script>
+}

@@ -23,6 +23,9 @@ namespace Models
         public DateTime EndDate { get; set; } = DateTime.Now; // Add EndDate
 
         // One Batch can have only one Job
-        public Job? Job { get; set; } 
+        public Job? Job { get; set; }
+
+        public ICollection<JobApplication> JobApplications { get; set; } = new List<JobApplication>();
+
     }
 }

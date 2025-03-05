@@ -44,8 +44,7 @@ namespace Models
         [ForeignKey("DepartmentId")]
         public Department Department { get; set; }
 
-        // One job can have many applicants (Applications)
-        public ICollection<JobApplication> JobApplications { get; set; } = new List<JobApplication>();
+        
     }
 
 }

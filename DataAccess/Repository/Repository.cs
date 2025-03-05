@@ -101,7 +101,7 @@ namespace DataAccess.Repository
                         EndDate = j.Batch.EndDate
                     },
                     Department = j.Department,
-                    JobApplications = j.JobApplications
+                    //JobApplications = j.JobApplications
                 })
                 .ToListAsync();
 

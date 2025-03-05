@@ -2,11 +2,14 @@
 using DataAccess.Repository.IRepository;
 using HrBackOffice.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using Models.ViewModels;
 using System.Drawing.Printing;
+using JobApplicationVM = HrBackOffice.Models.JobApplicationVM;
 
 
 namespace HrBackOffice.Controllers
@@ -14,11 +17,17 @@ namespace HrBackOffice.Controllers
     [Authorize]
     public class BatchController : Controller
 	{
+        private readonly ILogger<ApplicantController> _logger;
         private readonly IUnitOfWork _unitOfWork;
-
-        public BatchController(IUnitOfWork unitOfWork, IMapper mapper)
+        private readonly IConfiguration _config;
+        private readonly UserManager<AppUser> _userManager;
+        public BatchController(ILogger<ApplicantController> logger,IConfiguration configuration,UserManager<AppUser> userManager,IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
+            _config = configuration;
+            _userManager = userManager;
+            _logger = logger;
+
         }
         public async Task<IActionResult> Index(int page = 1)
         {
@@ -79,26 +88,6 @@ namespace HrBackOffice.Controllers
 
             return PartialView("_CreateBatchPartial", model);
         }
-        #region Comm
-        //[HttpPost]
-        //        [Route("Batch/CreateBatchAjax")]
-
-        //        public async Task<IActionResult> CreateBatchAjax([FromBody] Batch batch)
-        //        {
-        //            if (batch == null || string.IsNullOrWhiteSpace(batch.BatchName))
-        //            {
-        //                return BadRequest("Invalid batch data");
-        //            }
-
-        //            await _unitOfWork.BatchRepository.AddAsync(batch);
-        //            await _unitOfWork.SaveAsync();
-
-        //            return Json(new { batchId = batch.BatchId, batchName = batch.BatchName });
-        //        }
-        #endregion
-
-
-
 
         public async Task<IActionResult> Delete(int id)
         {
@@ -193,5 +182,141 @@ namespace HrBackOffice.Controllers
 
             return Json(new { success = false, message = string.Join(", ", errors) });
         }
+
+        public async Task<IActionResult> GetApplicant(int id, string searchQuery = null)
+        {
+            // Validate batch ID
+            if (id <= 0)
+            {
+                return BadRequest("Invalid batch ID");
+            }
+
+            try
+            {
+                var batch = await _unitOfWork.BatchRepository.GetFirstOrDefaultAsync(
+                    filter: B => B.BatchId == id,
+                    includeProperties: "JobApplications.AppUser"
+                );
+
+                if (batch == null)
+                {
+                    return NotFound();
+                }
+
+                var applications = new List<JobApplicationVM>();
+
+                // Only perform external search if query is provided
+                if (!string.IsNullOrEmpty(searchQuery))
+                {
+                    using (var client = new HttpClient())
+                    {
+                        var link = _config["Search"];
+
+                        // Construct the search URL with proper encoding
+                        var searchUrl = $"{link}query={Uri.EscapeDataString(searchQuery)}&max_results=5&exact_thresh=0.9&nonexact_thresh=0.5";
+
+                        try
+                        {
+                            var response = await client.GetAsync(searchUrl);
+
+                            // Ensure success status code
+                            response.EnsureSuccessStatusCode();
+
+                            var searchResult = await response.Content.ReadFromJsonAsync<SearchResult>();
+
+                            if (searchResult?.Results != null)
+                            {
+                                var matchedUserIds = searchResult.Results.Select(r => r.Id).ToList();
+
+                                // Filter applications based on matched user IDs
+                                applications = batch.JobApplications
+                                    .Where(app => matchedUserIds.Contains(app.UserId))
+                                    .Select(app => new JobApplicationVM
+                                    {
+                                        ApplicationId = app.ApplicationId,
+                                        UserId = app.UserId,
+                                        ApplicantName = app.AppUser.DisplayName ?? app.AppUser.UserName,
+                                        ApplicantEmail = app.AppUser.Email,
+                                        AppliedDate = app.AppliedDate,
+                                        Status = app.Status
+                                    }).ToList();
+                            }
+                        }
+                        catch (HttpRequestException ex)
+                        {
+                            // Log the error but continue with full list
+                            _logger.LogError(ex, "External search API request failed");
+
+                            // Fallback to full list if API fails
+                            applications = batch.JobApplications
+                                .Select(app => new JobApplicationVM
+                                {
+                                    ApplicationId = app.ApplicationId,
+                                    UserId = app.UserId,
+                                    ApplicantName = app.AppUser.DisplayName ?? app.AppUser.UserName,
+                                    ApplicantEmail = app.AppUser.Email,
+                                    AppliedDate = app.AppliedDate,
+                                    Status = app.Status
+                                }).ToList();
+                        }
+                    }
+                }
+                else
+                {
+                    // If no search query, return all applications
+                    applications = batch.JobApplications
+                        .Select(app => new JobApplicationVM
+                        {
+                            ApplicationId = app.ApplicationId,
+                            UserId = app.UserId,
+                            ApplicantName = app.AppUser.DisplayName ?? app.AppUser.UserName,
+                            ApplicantEmail = app.AppUser.Email,
+                            AppliedDate = app.AppliedDate,
+                            Status = app.Status
+                        }).ToList();
+                }
+
+                return View(applications);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving applicants for batch {BatchId}", id);
+                return StatusCode(500, "An error occurred while retrieving applicants");
+            }
+        }
+        public IActionResult ApplicantProfile(string userId)
+        {
+            if (string.IsNullOrEmpty(userId))
+                return NotFound();
+
+            var applicant = _userManager.Users
+                .Include(u => u.ApplicantExperiences)
+                .Include(u => u.ApplicantSkills)
+                .Include(u => u.ApplicantProjects)
+                .FirstOrDefault(u => u.Id == userId);
+
+            if (applicant == null)
+                return NotFound();
+
+            return View(applicant);
+        }
+
+        [HttpGet]
+        public IActionResult GetCv(string filePath, string fileName, bool download = false)
+        {
+            if (string.IsNullOrEmpty(filePath) || !System.IO.File.Exists(filePath))
+                return NotFound("File not found");
+
+            var fileBytes = System.IO.File.ReadAllBytes(filePath);
+            var contentType = "application/pdf";
+
+            // Set Content-Disposition: "inline" to display, "attachment" to force download
+            var contentDisposition = download ? "attachment" : "inline";
+
+            Response.Headers["Content-Disposition"] = $"{contentDisposition}; filename=\"{fileName}\"";
+
+            return File(fileBytes, contentType);
+        }
+
     }
 }

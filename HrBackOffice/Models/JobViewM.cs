@@ -40,7 +40,7 @@ namespace HrBackOffice.Models
                 Text = jt.ToString()
             }).ToList();
 
-        public List<JobApplicationViewModel> JobApplications { get; set; } = new List<JobApplicationViewModel>();
+        
 
     }
 

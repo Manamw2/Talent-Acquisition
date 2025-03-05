@@ -85,6 +85,10 @@
                                                 onclick="confirmDelete(@batch.BatchId)">
                                             <i class="fas fa-trash-alt"></i>
                                         </button>
+                                            <a asp-action="GetApplicant" asp-route-id="@batch.BatchId"
+                                               class="btn btn-sm btn-primary">
+                                                <i class="fas fa-people"></i>
+                                            </a>
                                     </div>
                                 </td>
                             </tr>

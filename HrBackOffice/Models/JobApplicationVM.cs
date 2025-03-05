@@ -1,6 +1,6 @@
 ﻿namespace HrBackOffice.Models
 {
-    public class JobApplicationViewModel
+    public class JobApplicationVM
     {
         public int ApplicationId { get; set; }
         public string UserId { get; set; }

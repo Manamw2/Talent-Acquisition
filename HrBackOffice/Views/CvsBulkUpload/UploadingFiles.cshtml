@@ -1,0 +1,182 @@
+﻿@{
+    ViewBag.Title = "Upload";
+}
+
+            <div class="container mt-5">
+                <div class="row">
+                    <!-- Upload Card -->
+                    <div class="col-md-8 mx-auto mb-4">
+                        <div class="alert alert-info mt-4">
+                        <h4 class="alert-heading">CV Upload & Processing Notice</h4>
+                        <p>
+                            This section is dedicated to uploading CV files for bulk processing. Once the upload starts, the system will lock the upload feature until processing is complete. This ensures that only one batch of files is processed at a time, preventing data conflicts and maintaining system integrity.
+                        </p>
+                        <p>
+                            <strong>How the Process Works:</strong>
+                        </p>
+                        <ul>
+                            <li>Upload PDF files containing applicant CVs using the drag-and-drop area or the file browser.</li>
+                            <li>Click the <em>Upload & Process Files</em> button to begin processing.</li>
+                            <li>During processing, the system will extract relevant applicant information (like name, contact details, and experience) from each CV.</li>
+                            <li>Extracted data will be automatically added to the applicant tracking system.</li>
+                            <li>While a batch is being processed, no other uploads can start until the current job finishes.</li>
+                        </ul>
+                        <p>
+                            You can monitor the current job's status or view historical results through the relevant links provided. If files are already being processed, please wait until the current operation is complete.
+                        </p>
+                        <hr>
+                        <p class="mb-0">
+                            Thank you for your patience and understanding as we ensure a smooth and reliable CV management experience!
+                        </p>
+                    </div>
+
+            <div class="card shadow-sm mt-4">
+                <div class="card-header text-white">
+                    <h2 class="h4 mb-0">File Upload Center</h2>
+                </div>
+                <div class="card-body">
+                    @if (!ViewBag.IsJobRunning)
+                    {
+                        <form id="uploadForm">
+                            <div class="mb-4">
+                                <div class="upload-area p-4 border rounded bg-light text-center">
+                                    <i class="bi bi-cloud-upload fs-1 text-primary mb-3 d-block"></i>
+                                    <h5>Drag and drop PDF files here</h5>
+                                    <p class="text-muted mb-3">or</p>
+                                    <div class="position-relative">
+                                        <input type="file" class="form-control" id="fileInput" name="files" multiple
+                                               accept=".pdf" style="z-index: 2; opacity: 0; position: absolute;">
+                                        <button id="BrowseButton" type="button" class="btn btn-outline-primary px-4" onclick="document.getElementById('fileInput').click()">
+                                            Browse Files
+                                        </button>
+                                        <div id="loadingSpinner" class="d-none">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="fileList" class="mb-4 d-none">
+                                <h6 class="mb-3">Selected Files:</h6>
+                                <div class="list-group" id="selectedFiles">
+                                    <!-- Files will be listed here dynamically -->
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center">
+                                <button type="submit" class="btn btn-primary px-4">
+                                    <i class="bi bi-upload me-2"></i>Upload & Process Files
+                                </button>
+                                <a href="@Url.Action("Index", "CvsBulkUpload")" class="btn btn-outline-info">
+                                    <i class="bi bi-eye me-2"></i>Back to History
+                                </a>
+                            </div>
+                        </form>
+                    }
+                    else
+                    {
+                        <div class="text-center p-4">
+                            <div class="spinner-border text-primary mb-3" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <h5>Processing in progress...</h5>
+                            <p class="text-muted">Files are currently being processed. Please wait or check the results page.</p>
+                            <a href="@Url.Action("Results", "CvsBulkUpload")" class="btn btn-primary mt-3">
+                                <i class="bi bi-eye me-2"></i>View Processing Status
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // File input handling
+            const fileInput = $('#fileInput');
+            const fileList = $('#fileList');
+            const selectedFiles = $('#selectedFiles');
+            const submitButton = $('button[type="submit"]');
+            const loadingSpinner = $('#loadingSpinner');
+            const browseButton = $('#BrowseButton');
+
+            fileInput.on('change', function () {
+                const files = Array.from(this.files);
+
+                if (files.length > 0) {
+                    fileList.removeClass('d-none');
+                    selectedFiles.empty();
+
+                    files.forEach(file => {
+                        const fileSize = (file.size / 1024 / 1024).toFixed(2);
+                        const fileItem = `
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="bi bi-file-earmark-text me-2"></i>
+                                    ${file.name}
+                                    <small class="text-muted ms-2">${fileSize} MB</small>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-danger remove-file">
+                                    <i class="bi bi-x"></i>
+                                </button>
+                            </div>`;
+                        selectedFiles.append(fileItem);
+                    });
+                } else {
+                    fileList.addClass('d-none');
+                }
+            });
+
+            // Remove file from selection
+            $(document).on('click', '.remove-file', function () {
+                $(this).closest('.list-group-item').remove();
+                if (selectedFiles.children().length === 0) {
+                    fileList.addClass('d-none');
+                }
+            });
+
+            // Handle form submission
+            $('#uploadForm').on('submit', function (e) {
+                e.preventDefault(); // Prevent the default form submission
+
+                // Start processing state - show spinner and disable button
+                loadingSpinner.removeClass('d-none');
+                browseButton.addClass('d-none');
+                submitButton.prop('disabled', true);
+
+                const formData = new FormData(this);
+
+                $.ajax({
+                    url: "/CvsBulkUpload/Upload",
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (response) {
+                        if (response.success) {
+                            // Redirect to results page after successful upload
+                            window.location.href = '@Url.Action("Results", "CvsBulkUpload")';
+                        } else {
+                            alert('Error: ' + response.message);
+                            loadingSpinner.addClass('d-none');
+                            browseButton.removeClass('d-none');
+                            submitButton.prop('disabled', false);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        alert('Error uploading files. Please try again.');
+                        console.error(xhr.responseText);
+                        loadingSpinner.addClass('d-none');
+                        browseButton.removeClass('d-none');
+                        submitButton.prop('disabled', false);
+                    }
+                });
+            });
+        });
+    </script>
+}

@@ -15,6 +15,8 @@ using System.Security.Cryptography;
 using HrBackOffice.Helper.EmailSetting;
 using static System.Net.WebRequestMethods;
 using DataAccess.Data;
+using DataAccess.Repository.IRepository;
+using Hangfire;
 
 
 namespace HrBackOffice.Helper.FileProcessingService
@@ -28,9 +30,9 @@ namespace HrBackOffice.Helper.FileProcessingService
         private readonly IConfiguration _configuration;
         private readonly IEmailSend _emailSender;
         private readonly FileStorageService _fileStorage;
-        private static readonly object _statusLock = new(); // Lock object for thread safety
+        private readonly IUnitOfWork _unitOfWork;
 
-        public PdfProcessingJob(IHubContext<ProcessingHub> hubContext, IApplicantService applicantService, UserManager<AppUser> userManager, IConfiguration configuration, IEmailSend emailSender, FileStorageService fileStorage)
+        public PdfProcessingJob(IHubContext<ProcessingHub> hubContext, IApplicantService applicantService, UserManager<AppUser> userManager, IConfiguration configuration, IEmailSend emailSender, FileStorageService fileStorage, IUnitOfWork unitOfWork)
         {
             _hubContext = hubContext;
             _applicantService = applicantService;
@@ -38,18 +40,20 @@ namespace HrBackOffice.Helper.FileProcessingService
             _configuration = configuration;
             _emailSender = emailSender;
             _fileStorage = fileStorage;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task ProcessFiles(List<string> files, string jobId)
         {
-            lock (_statusLock) // Ensure thread-safe updates
-            {
-                _status.TotalFiles = files.Count;
-                _status.ProcessedFiles = 0;
-                _status.SuccessfulFiles = 0;
-                _status.FailedFiles = 0;
-                _status.ProcessingErrors.Clear();
-            }
+            _status.TotalFiles = files.Count;
+            _status.ProcessedFiles = 0;
+            _status.SuccessfulFiles = 0;
+            _status.FailedFiles = 0;
+            _status.CvExists = 0;
+            _status.EmailExists = 0;
+            _status.EmailNotValid = 0;
+            _status.ServerErrors = 0;
+            _status.ProcessingErrors.Clear();
             await UpdateStatus();
 
             foreach (var file in files)
@@ -70,6 +74,18 @@ namespace HrBackOffice.Helper.FileProcessingService
                     await UpdateStatus();
                 }
             }
+
+            var jobHistory = await _unitOfWork.BulkCvsJobsHistoryRepo.GetFirstOrDefaultAsync(x => x.JobId == jobId);
+
+            jobHistory.EndDate = DateTime.Now;
+            jobHistory.SuccessfulFiles = _status.SuccessfulFiles;
+            jobHistory.FailedFiles = _status.FailedFiles;
+            jobHistory.CvExists = _status.CvExists;
+            jobHistory.EmailExists = _status.EmailExists;
+            jobHistory.EmailNotValid = _status.EmailNotValid;
+            jobHistory.ServerErrors = _status.ServerErrors;
+            jobHistory.IsRunning = false;
+            await _unitOfWork.SaveAsync();
         }
 
         private async Task ProcessSingleFile(string filePath)
@@ -91,6 +107,7 @@ namespace HrBackOffice.Helper.FileProcessingService
                 if (await IsCvExists(fileHash))
                 {
                     // Delete the duplicate file from upload folder
+                    _status.CvExists++;
                     throw new ArgumentException("This CV already exists in our system.");
                 }
 
@@ -107,6 +124,7 @@ namespace HrBackOffice.Helper.FileProcessingService
 
                     if (!IsValidEmail(model.Email))
                     {
+                        _status.EmailNotValid++;
                         throw new ArgumentException("The provided email is not in a valid format.");
                     }
 
@@ -181,6 +199,7 @@ namespace HrBackOffice.Helper.FileProcessingService
                     }
                     else
                     {
+                        _status.EmailExists++;
                         throw new ApplicationException("User creation failed: " + string.Join(", ", result.Errors.Select(e => e.Description)));
                     }
                 } // The FileStream is disposed here

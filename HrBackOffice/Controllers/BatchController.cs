@@ -1,15 +1,15 @@
 ﻿using AutoMapper;
 using DataAccess.Repository.IRepository;
+using Hangfire.Common;
 using HrBackOffice.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.DotNet.Scaffolding.Shared.Project;
 using Microsoft.EntityFrameworkCore;
 using Models;
-using Models.ViewModels;
-using System.Drawing.Printing;
-using JobApplicationVM = HrBackOffice.Models.JobApplicationVM;
+
 
 
 namespace HrBackOffice.Controllers
@@ -21,13 +21,16 @@ namespace HrBackOffice.Controllers
         private readonly IUnitOfWork _unitOfWork;
         private readonly IConfiguration _config;
         private readonly UserManager<AppUser> _userManager;
-        public BatchController(ILogger<ApplicantController> logger,IConfiguration configuration,UserManager<AppUser> userManager,IUnitOfWork unitOfWork, IMapper mapper)
+        private readonly IMapper _mapper;
+
+        public BatchController(ILogger<ApplicantController> logger,IConfiguration configuration,
+            UserManager<AppUser> userManager,IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _config = configuration;
             _userManager = userManager;
             _logger = logger;
-
+            _mapper = mapper;
         }
         public async Task<IActionResult> Index(int page = 1)
         {
@@ -38,9 +41,21 @@ namespace HrBackOffice.Controllers
 
             // Get only the batches for the current page
             var batches = await _unitOfWork.BatchRepository.GetPagedListAsync(
+                includeProperties: "Job",
                 pageIndex: page - 1,
                 pageSize: pageSize
             );
+            var viewModels = batches.Select(b => new BatchViewModel
+            {
+                Id = b.BatchId,
+                BatchName = b.BatchName,
+                StartDate = b.StartDate,
+                EndDate = b.EndDate,
+                JobId = b.JobId,
+                JobTitle = b.Job?.Title,
+                Status = b.Status,
+                TargetNumber = b.TargetNumber
+            }).ToList();
 
             // Calculate total pages
             var totalPages = (int)Math.Ceiling(totalBatches / (double)pageSize);
@@ -50,50 +65,101 @@ namespace HrBackOffice.Controllers
             ViewBag.CurrentPage = page;
             ViewBag.TotalPages = totalPages;
 
-            return View(batches);
+            return View(viewModels);
         }
 
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            var batch = new Batch
+            var batch = new BatchViewModel
             {
-                StartDate = DateTime.Now // Set default StartDate
+                StartDate = DateTime.Now, // Set default StartDate
+                Status = BatchStatus.New, // Set default status
+                TargetNumber = 1 // Set default target number
             };
+
+            // Populate jobs dropdown
+            await PopulateJobsDropdownAsync();
+
             return View(batch);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Batch batch)
+        public async Task<IActionResult> Create(BatchViewModel model)
         {
+            
             if (ModelState.IsValid)
             {
+                // Map ViewModel to domain model
+                var batch = _mapper.Map<Batch>(model);
                 _unitOfWork.BatchRepository.AddAsync(batch);
                 await _unitOfWork.SaveAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(batch);
+
+            // Repopulate jobs dropdown on validation error
+            await PopulateJobsDropdownAsync();
+
+            return View(model);
         }
-        [HttpPost]
-        public async Task<IActionResult> CreateBatch(Batch model)
+
+        public async Task<IActionResult> Edit(int id)
         {
-            if (ModelState.IsValid)
+            var batch = await _unitOfWork.BatchRepository.GetFirstOrDefaultAsync(b => b.BatchId == id);
+            if (batch == null)
             {
-                // Save batch to database (example using EF Core)
-                await _unitOfWork.BatchRepository.AddAsync(model);
-                await _unitOfWork.SaveAsync();
-                TempData["NewBatchId"] = model.BatchId;
-                return RedirectToAction("Create", "Job");
+                return NotFound();
+            }
+            var model = _mapper.Map<BatchViewModel>(batch);
+            model.Id = batch.BatchId;
+            // Populate jobs dropdown
+            await PopulateJobsDropdownAsync();
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, BatchViewModel model)
+        {
+            if (id != model.Id)
+            {
+                return NotFound();
             }
 
-            return PartialView("_CreateBatchPartial", model);
+            if (ModelState.IsValid)
+            {
+
+                var batch = _mapper.Map<Batch>(model);
+                batch.BatchId = id;
+                _unitOfWork.BatchRepository.Update(batch);
+                await _unitOfWork.SaveAsync();
+                return RedirectToAction(nameof(Index));
+
+               
+            }
+
+            // Repopulate jobs dropdown on validation error
+            await PopulateJobsDropdownAsync();
+
+            return View(model);
         }
+
+        // Helper method to populate jobs dropdown
+        private async Task PopulateJobsDropdownAsync()
+        {
+            // Get all jobs from the database
+            var jobs = await _unitOfWork.JobRepository.GetAllAsync();
+
+            // Create SelectList for dropdown
+            ViewBag.Jobs = new SelectList(jobs, "JobId", "Title");
+        }
+
 
         public async Task<IActionResult> Delete(int id)
         {
             var batch = await _unitOfWork.BatchRepository
                 .GetFirstOrDefaultAsync(filter: b => b.BatchId == id, includeProperties: "Job");
-
             if (batch == null)
             {
                 return NotFound();
@@ -103,86 +169,20 @@ namespace HrBackOffice.Controllers
             var isBatchAssigned = await _unitOfWork.JobRepository
                 .GetFirstOrDefaultAsync(j => j.BatchId == id) != null;
 
-            if (isBatchAssigned)
+            // Only allow deletion if NO jobs are assigned (opposite of current logic)
+            if (!isBatchAssigned)
+            {
+                _unitOfWork.BatchRepository.Remove(batch);
+                await _unitOfWork.SaveAsync();
+                TempData["Success"] = "Batch deleted successfully.";
+            }
+            else
             {
                 TempData["Error"] = "Cannot delete batch because it is assigned to a job.";
-                return RedirectToAction("Index");
             }
 
-            _unitOfWork.BatchRepository.Remove(batch);
-            await _unitOfWork.SaveAsync();
-
-            TempData["Success"] = "Batch deleted successfully.";
             return RedirectToAction("Index");
         }
-
-
-        public async Task<IActionResult> Edit(int id)
-        {
-            var batch = await _unitOfWork.BatchRepository.GetFirstOrDefaultAsync(b => b.BatchId == id);
-            if (batch == null)
-            {
-                return NotFound();
-            }
-            return View(batch);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Batch batch)
-        {
-            if (id != batch.BatchId)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                _unitOfWork.BatchRepository.Update(batch);
-                await _unitOfWork.SaveAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            return View(batch);
-        }
-        [HttpPost]
-        public async Task<IActionResult> CreateAjax([FromBody] BatchViewModel model)
-        {
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    // Create batch entity from model
-                    var batch = new Batch
-                    {
-                        BatchName = model.Name,
-                        StartDate = model.StartDate,
-                        EndDate = model.EndDate
-                        // Add any other necessary properties
-                    };
-
-                    // Add to database
-                    _unitOfWork.BatchRepository.AddAsync(batch);
-                    await _unitOfWork.SaveAsync();
-
-                    // Return success with the new batch ID
-                    return Json(new { success = true, batchId = batch.BatchId });
-                }
-                catch (Exception ex)
-                {
-                    // Log the exception
-                    return Json(new { success = false, message = "An error occurred: " + ex.Message });
-                }
-            }
-
-            // If model state is invalid, return validation errors
-            var errors = ModelState.Values
-                .SelectMany(v => v.Errors)
-                .Select(e => e.ErrorMessage)
-                .ToList();
-
-            return Json(new { success = false, message = string.Join(", ", errors) });
-        }
-
         public async Task<IActionResult> GetApplicant(int id, string searchQuery = null)
         {
             // Validate batch ID

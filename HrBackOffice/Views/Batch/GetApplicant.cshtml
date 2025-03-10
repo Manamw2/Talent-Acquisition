@@ -79,11 +79,13 @@
 
 @section Scripts {
     <script>
-        // Wait for DOM to be fully loaded
         document.addEventListener('DOMContentLoaded', function () {
             // Get form and search input elements
             const searchForm = document.getElementById('searchForm');
             const searchBox = document.getElementById('searchBox');
+
+            // Get batchId from the page context (assuming it's available)
+            const batchId = @Context.Request.RouteValues["id"];
 
             // Set search box value from URL parameter on page load
             const urlParams = new URLSearchParams(window.location.search);
@@ -98,9 +100,11 @@
                 const query = searchBox.value.trim();
 
                 if (query.length > 3) {
-                    window.location.href = `/Batch/GetApplicant?id=$searchQuery=${encodeURIComponent(query)}`;
+                    // Include batchId in the search URL
+                    window.location.href = `/Batch/GetApplicant/${batchId}?searchQuery=${encodeURIComponent(query)}`;
                 } else if (query.length === 0) {
-                    window.location.href = '/Batch/GetApplicant';
+                    // Return to the original batch applicants page
+                    window.location.href = `/Batch/GetApplicant/${batchId}`;
                 } else {
                     alert('Please enter at least 4 characters for search');
                 }
@@ -111,7 +115,7 @@
             if (resetButton) {
                 resetButton.addEventListener('click', function () {
                     searchBox.value = '';
-                    window.location.href = '/Batch/GetApplicant';
+                    window.location.href = `/Batch/GetApplicant/${batchId}`;
                 });
             }
         });

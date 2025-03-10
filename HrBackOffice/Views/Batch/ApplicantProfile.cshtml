@@ -1,95 +1,254 @@
 ﻿@model AppUser
 
-<div class="container-fluid px-4">
-    <h1 class="mt-4 mb-4">Applicant Profile</h1>
-
-    <div class="card mb-4 shadow-sm">
-        <div class="card-header bg-primary text-white">
-            <h4 class="mb-0">
-                <i class="fas fa-user-circle me-2"></i>@Model.DisplayName
-            </h4>
-        </div>
-        <div class="card-body">
-            <div class="row mb-4">
-                <div class="col-md-6">
-                    <p><i class="fas fa-envelope me-2"></i><strong>Email:</strong> @Model.Email</p>
-                    <p><i class="fas fa-graduation-cap me-2"></i><strong>Faculty:</strong> @Model.Faculty</p>
-                    <p><i class="fas fa-user-graduate me-2"></i><strong>Education Level:</strong> @Model.EducationLevel</p>
-                </div>
-                <div class="col-md-6">
-                    <p><i class="fas fa-language me-2"></i><strong>English Level:</strong> @Model.EnglishLevel</p>
-                    <p><i class="fas fa-phone-alt me-2"></i><strong>Contact Method:</strong> @Model.MethodOfContact</p>
-                    <p><i class="fas fa-birthday-cake me-2"></i><strong>Birth Date:</strong> @Model.BirthDate?.ToShortDateString()</p>
+<div class="cv-container shadow-lg mx-auto my-5">
+    <!-- Profile Header -->
+    <div class="profile-header bg-gradient text-white p-4">
+        <div class="row align-items-center">
+            <div class="col-md-3 text-center">
+                @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                {
+                    <img src="@Model.ImageUrl" alt="@Model.DisplayName" class="profile-img rounded-circle img-thumbnail border-light shadow">
+                }
+                else
+                {
+                    <div class="profile-img-placeholder bg-light text-primary rounded-circle d-flex align-items-center justify-content-center shadow">
+                        <i class="fas fa-user-circle fa-5x"></i>
+                    </div>
+                }
+            </div>
+            <div class="col-md-9">
+                <h1 class="display-4 fw-bold">@Model.DisplayName</h1>
+                <p class="fs-4 mb-3">@(Model.Faculty) Student</p>
+                <div class="d-flex flex-wrap mt-4">
+                    <div class="me-4 mb-3">
+                        <i class="fas fa-envelope me-2"></i> @Model.Email
+                    </div>
+                    <div class="me-4 mb-3">
+                        <i class="fas fa-phone-alt me-2"></i> @Model.MethodOfContact
+                    </div>
                 </div>
             </div>
-
-            @if (Model.ApplicantExperiences.Any())
-            {
-                <div class="card mb-3">
-                    <div class="card-header bg-secondary text-white">
-                        <i class="fas fa-briefcase me-2"></i>Experience
-                    </div>
-                    <ul class="list-group list-group-flush">
-                        @foreach (var exp in Model.ApplicantExperiences)
-                        {
-                            <li class="list-group-item">
-                                <strong>@exp.Position</strong> at <em>@exp.Company</em>
-                                <span class="text-muted">(@exp.StartDate?.ToShortDateString() - @exp.EndDate?.ToShortDateString())</span>
-                            </li>
-                        }
-                    </ul>
-                </div>
-            }
-
-            @if (Model.ApplicantSkills.Any())
-            {
-                <div class="card mb-3">
-                    <div class="card-header bg-success text-white">
-                        <i class="fas fa-cogs me-2"></i>Skills
-                    </div>
-                    <div class="card-body">
-                        @foreach (var skill in Model.ApplicantSkills)
-                        {
-                            <span class="badge bg-info text-dark me-2 mb-2">
-                                <i class="fas fa-wrench me-1"></i>@skill.Name - @skill.Level
-                            </span>
-                        }
-                    </div>
-                </div>
-            }
-
-            @if (Model.ApplicantProjects.Any())
-            {
-                <div class="card mb-3">
-                    <div class="card-header bg-warning text-dark">
-                        <i class="fas fa-project-diagram me-2"></i>Projects
-                    </div>
-                    <ul class="list-group list-group-flush">
-                        @foreach (var project in Model.ApplicantProjects)
-                        {
-                            <li class="list-group-item">
-                                <strong>@project.Name:</strong> <span>@project.Description</span>
-                            </li>
-                        }
-                    </ul>
-                </div>
-            }
-
-            @if (!string.IsNullOrEmpty(Model.CvUrl))
-            {
-                
-                <div class="d-flex justify-content-center mt-3">
-                    <a href="@Url.Action("GetCv", "Job", new { filePath = Model.CvUrl, fileName = Model.UserName + ".pdf" })"
-                       target="_blank" class="btn btn-outline-primary me-2">
-                        <i class="fas fa-eye me-1"></i> View CV
-                    </a>
-
-                    <a href="@Url.Action("GetCv", "Job", new { filePath = Model.CvUrl, fileName = Model.UserName + ".pdf",  download = true  })"
-                       download class="btn btn-outline-success">
-                        <i class="fas fa-download me-1"></i> Download CV
-                    </a>
-                </div>
-            }
         </div>
     </div>
+
+    <!-- Main Content -->
+    <div class="row g-0">
+        <!-- Left Column -->
+        <div class="col-md-4 border-end">
+            <div class="p-4">
+                <!-- Education Section -->
+                <div class="mb-4">
+                    <h3 class="border-bottom border-primary pb-2 mb-3">
+                        <i class="fas fa-graduation-cap me-2"></i>Education
+                    </h3>
+                    <div class="bg-light p-3 rounded">
+                        <h5>@Model.Faculty</h5>
+                        <p class="mb-1">@Model.University</p>
+                        <p class="mb-1">
+                            <span class="badge bg-primary">@Model.EducationLevel</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Personal Details -->
+                <div class="mb-4">
+                    <h3 class="border-bottom border-primary pb-2 mb-3">
+                        <i class="fas fa-user me-2"></i>Personal Details
+                    </h3>
+                    <div class="bg-light p-3 rounded">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width:40px;height:40px">
+                                <i class="fas fa-language"></i>
+                            </div>
+                            <div>
+                                <p class="mb-0 fw-bold">English Level</p>
+                                <p class="mb-0">@Model.EnglishLevel</p>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width:40px;height:40px">
+                                <i class="fas fa-birthday-cake"></i>
+                            </div>
+                            <div>
+                                <p class="mb-0 fw-bold">Birth Date</p>
+                                <p class="mb-0">@Model.BirthDate?.ToShortDateString()</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Skills Section -->
+                <div>
+                    <h3 class="border-bottom border-primary pb-2 mb-3">
+                        <i class="fas fa-cogs me-2"></i>Skills
+                    </h3>
+                    @if (Model.ApplicantSkills.Any())
+                    {
+                        <div>
+                            @foreach (var skill in Model.ApplicantSkills)
+                            {
+                                <div class="bg-light rounded p-2 mb-2">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span>@skill.Name</span>
+                                        <span class="badge bg-info">@skill.Level</span>
+                                    </div>
+                                    <div class="progress mt-2" style="height: 5px;">
+                                        <div class="progress-bar bg-primary" role="progressbar"
+                                             style="width: @GetSkillPercentage(skill.Level)%"
+                                             aria-valuenow="@GetSkillPercentage(skill.Level)"
+                                             aria-valuemin="0"
+                                             aria-valuemax="100"></div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">No skills listed</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="col-md-8">
+            <div class="p-4">
+                <!-- Experience Section -->
+                <div class="mb-4">
+                    <h3 class="border-bottom border-primary pb-2 mb-3">
+                        <i class="fas fa-briefcase me-2"></i>Professional Experience
+                    </h3>
+                    @if (Model.ApplicantExperiences.Any())
+                    {
+                        <div class="timeline">
+                            @foreach (var exp in Model.ApplicantExperiences)
+                            {
+                                <div class="timeline-item position-relative ps-4 pb-4">
+                                    <h4>@exp.Position</h4>
+                                    <h6 class="text-muted mb-2">@exp.Company</h6>
+                                    <p class="text-secondary mb-2">
+                                        @exp.StartDate?.ToShortDateString() - @(exp.EndDate?.ToShortDateString() ?? "Present")
+                                    </p>
+                                    <p>@exp.Description</p>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">No experience listed</p>
+                    }
+                </div>
+
+                <!-- Projects Section -->
+                <div>
+                    <h3 class="border-bottom border-primary pb-2 mb-3">
+                        <i class="fas fa-project-diagram me-2"></i>Projects
+                    </h3>
+                    @if (Model.ApplicantProjects.Any())
+                    {
+                        <div class="row">
+                            @foreach (var project in Model.ApplicantProjects)
+                            {
+                                <div class="col-md-6 mb-3">
+                                    <div class="project-card border-start border-3 border-warning bg-light p-3 h-100">
+                                        <h5>@project.Name</h5>
+                                        <p class="mb-0">@project.Description</p>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">No projects listed</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CV Actions -->
+    <div class="bg-light p-4 text-center border-top">
+        @if (!string.IsNullOrEmpty(Model.CvUrl))
+        {
+            <a href="@Url.Action("GetCv", "Job", new { filePath = Model.CvUrl, fileName = Model.UserName + ".pdf" })"
+               target="_blank" class="btn btn-primary btn-lg me-3">
+                <i class="fas fa-eye me-2"></i> View CV
+            </a>
+
+            <a href="@Url.Action("GetCv", "Job", new { filePath = Model.CvUrl, fileName = Model.UserName + ".pdf", download = true })"
+               download class="btn btn-success btn-lg">
+                <i class="fas fa-download me-2"></i> Download CV
+            </a>
+        }
+    </div>
 </div>
+
+@functions {
+    public int GetSkillPercentage(string level)
+    {
+        return level?.ToLower() switch
+        {
+            "beginner" => 25,
+            "intermediate" => 50,
+            "advanced" => 75,
+            "expert" => 100,
+            _ => 50
+        };
+    }
+}
+
+<style>
+    .cv-container {
+        max-width: 1000px;
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .profile-header {
+        background: linear-gradient(135deg, #2c3e50, #3498db);
+    }
+
+    .profile-img, .profile-img-placeholder {
+        width: 150px;
+        height: 150px;
+        border: 5px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .timeline-item {
+        padding-left: 30px;
+    }
+
+        .timeline-item:before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 2px;
+            background-color: #3498db;
+        }
+
+        .timeline-item:after {
+            content: '';
+            position: absolute;
+            left: -4px;
+            top: 0;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #3498db;
+        }
+
+    .project-card {
+        transition: all 0.3s;
+    }
+
+        .project-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+</style>

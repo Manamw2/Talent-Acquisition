@@ -34,12 +34,12 @@ namespace HrBackOffice.Controllers
 
             // Get total count for pagination
             var totalJobs = await _unitOfWork.JobRepository.CountAsync(
-                job => job.Batch != null && job.Batch.EndDate > DateTime.UtcNow
+                //job => job.Batch != null && job.Batch.EndDate > DateTime.UtcNow
             );
 
             // Get only the jobs for the current page
             var jobs = await _unitOfWork.JobRepository.GetPagedListAsync(
-                filter: job => job.Batch != null && job.Batch.EndDate > DateTime.UtcNow,
+                //filter: job => job.Batch != null && job.Batch.EndDate > DateTime.UtcNow,
                 includeProperties: "Batch,Department",
                 pageIndex: page - 1,
                 pageSize: pageSize
@@ -53,7 +53,6 @@ namespace HrBackOffice.Controllers
                 JobType = job.JobType,
                 BatchId = job.BatchId,
                 DepartmentId = job.DepartmentId,
-                BatchName = job.Batch?.BatchName,
                 DepartmentName = job.Department?.Name
             }).ToList();
 
@@ -74,9 +73,7 @@ namespace HrBackOffice.Controllers
         private async Task PopulateDropdowns(JobViewM model)
         {
             var departments = await _unitOfWork.DepRepository.GetAllAsync();
-            var batches = await _unitOfWork.BatchRepository.GetAllAsync(
-                filter: b => (b.Job == null || b.BatchId == model.BatchId ) && b.EndDate >= DateTime.Now 
-            );
+            
 
             model.Departments = departments.Select(d => new SelectListItem
             {
@@ -84,21 +81,7 @@ namespace HrBackOffice.Controllers
                 Text = d.Name
             }).ToList();
 
-            model.Batches = batches.Select(b => new SelectListItem
-            {
-                Value = b.BatchId.ToString(),
-                Text = b.BatchName
-            }).ToList();
-
-            // Set the selected batch to the batch associated with the job
-            if (model.BatchId != null)
-            {
-                var selectedBatch = model.Batches.FirstOrDefault(b => b.Value == model.BatchId.ToString());
-                if (selectedBatch != null)
-                {
-                    selectedBatch.Selected = true;
-                }
-            }
+            
         }
 
 
@@ -107,11 +90,7 @@ namespace HrBackOffice.Controllers
         {
             var model = new JobViewM();
             await PopulateDropdowns(model);
-            // Restore newly added batch selection
-            if (TempData["NewBatchId"] != null)
-            {
-                model.BatchId = (int)TempData["NewBatchId"];
-            }
+            
             return View(model); // Return the populated model
         }
 
@@ -252,11 +231,11 @@ namespace HrBackOffice.Controllers
                 JobType = job.JobType,
                 BatchId = job.BatchId,
                 DepartmentId = job.DepartmentId,
-                Batches = (await _unitOfWork.BatchRepository.GetAllAsync()).Select(b => new SelectListItem
-                {
-                    Value = b.BatchId.ToString(),
-                    Text = b.BatchName
-                }).ToList(),
+                //Batches = (await _unitOfWork.BatchRepository.GetAllAsync()).Select(b => new SelectListItem
+                //{
+                //    Value = b.BatchId.ToString(),
+                //    Text = b.BatchName
+                //}).ToList(),
                 Departments = (await _unitOfWork.DepRepository.GetAllAsync()).Select(d => new SelectListItem
                 {
                     Value = d.DepartmentId.ToString(),

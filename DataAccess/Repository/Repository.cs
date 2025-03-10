@@ -67,7 +67,7 @@ namespace DataAccess.Repository
         }
         public void Update(T entity)
         {
-            dbSet.Attach(entity);
+            //dbSet.Attach(entity);
             _context.Entry(entity).State = EntityState.Modified;
         }
 

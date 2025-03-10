@@ -1,8 +1,9 @@
-﻿@model Batch
-
+﻿@model BatchViewModel
+@{
+    var id = Model.Id;
+}
 <div class="container-fluid px-4">
-    <h1 class="mt-4 mb-4">@(Model.BatchId == 0 ? "Create New Batch" : "Edit Batch")</h1>
-
+    <h1 class="mt-4 mb-4">@(Model.Id == 0 ? "Create New Batch" : "Edit Batch")</h1>
     <div class="row">
         <div class="col-xl-8">
             <div class="card mb-4">
@@ -12,19 +13,35 @@
                 </div>
                 <div class="card-body">
                     <form method="post">
-                        @if (Model.BatchId > 0)
+                        @if (Model.Id > 0)
                         {
-                            <input type="hidden" asp-for="BatchId" />
+                            <input type="hidden" asp-for="Id" />
                         }
-
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
-
                         <div class="mb-3">
                             <label asp-for="BatchName" class="small mb-1 fw-bold">Batch Name</label>
                             <input asp-for="BatchName" class="form-control" placeholder="Enter batch name" />
                             <span asp-validation-for="BatchName" class="text-danger small"></span>
                         </div>
-
+                        <div class="mb-3">
+                            <label asp-for="JobId" class="small mb-1 fw-bold">Select Job</label>
+                            <select asp-for="JobId" asp-items="ViewBag.Jobs" class="form-select">
+                                <option value="">-- Select a Job --</option>
+                            </select>
+                            <span asp-validation-for="JobId" class="text-danger small"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="TargetNumber" class="small mb-1 fw-bold">Target Number</label>
+                            <input asp-for="TargetNumber" class="form-control" placeholder="Enter target number" min="1" />
+                            <span asp-validation-for="TargetNumber" class="text-danger small"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Status" class="small mb-1 fw-bold">Status</label>
+                            <select asp-for="Status" asp-items="Html.GetEnumSelectList<BatchStatus>()" class="form-select">
+                                <option value="">-- Select Status --</option>
+                            </select>
+                            <span asp-validation-for="Status" class="text-danger small"></span>
+                        </div>
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <div class="form-group">
@@ -47,14 +64,13 @@
                                 </div>
                             </div>
                         </div>
-
                         <div class="d-flex justify-content-between mt-4">
                             <a asp-action="Index" class="btn btn-outline-secondary">
                                 <i class="fas fa-arrow-left me-1"></i> Back to List
                             </a>
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-save me-1"></i>
-                                @(Model.BatchId > 0 ? "Save Changes" : "Create Batch")
+                                @(Model.Id > 0 ? "Save Changes" : "Create Batch")
                             </button>
                         </div>
                     </form>
@@ -63,24 +79,8 @@
         </div>
     </div>
 </div>
-
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
-   @*  <script>
-        // Add date validation
-        document.addEventListener('DOMContentLoaded', function () {
-            const startDate = document.querySelector('[asp-for="StartDate"]');
-            const endDate = document.querySelector('[asp-for="EndDate"]');
-
-            startDate.addEventListener('change', function () {
-                endDate.min = this.value;
-            });
-
-            endDate.addEventListener('change', function () {
-                startDate.max = this.value;
-            });
-        });
-    </script> *@
 }

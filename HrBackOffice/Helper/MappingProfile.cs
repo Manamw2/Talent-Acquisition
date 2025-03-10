@@ -17,6 +17,12 @@ namespace HrBackOffice.Helper
             CreateMap<JobViewM, Job>()
                 .ForMember(dest => dest.BatchId, opt => opt.MapFrom(src => src.BatchId))
                 .ForMember(dest => dest.DepartmentId, opt => opt.MapFrom(src => src.DepartmentId));
+
+            CreateMap<Batch, BatchViewModel>()
+                .ForMember(dest => dest.JobId, opt => opt.MapFrom(src => src.JobId));
+
+            CreateMap<BatchViewModel, Batch>()
+                .ForMember(dest => dest.JobId, opt => opt.MapFrom(src => src.JobId));
         }
     }
 }

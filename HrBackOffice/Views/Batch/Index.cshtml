@@ -1,4 +1,4 @@
-﻿@model IEnumerable<Batch>
+﻿@model IEnumerable<BatchViewModel>
 @{
     int currentPage = ViewBag.CurrentPage ?? 1;
     int totalPages = ViewBag.TotalPages ?? 1;
@@ -52,9 +52,11 @@
                     <thead class="table-light">
                         <tr>
                             <th><i class="fas fa-tag me-1"></i>Name</th>
+                            <th><i class="fas fa-briefcase me-1"></i>Job</th>
+                            <th><i class="fas fa-people-group me-1"></i>Target</th>
+                            <th><i class="fas fa-clock me-1"></i>Status</th>
                             <th><i class="fas fa-calendar me-1"></i>Start Date</th>
                             <th><i class="fas fa-calendar-check me-1"></i>End Date</th>
-                            <th><i class="fas fa-clock me-1"></i>Status</th>
                             <th class="text-center">Actions</th>
                         </tr>
                     </thead>
@@ -63,31 +65,28 @@
                         {
                             <tr>
                                 <td class="align-middle">@batch.BatchName</td>
+                                    <td>@(batch.JobTitle ?? "N/A")</td>
+                                    <td>@batch.TargetNumber</td>
+                                    <td>
+                                        <span class="badge @GetStatusBadgeClass(batch.Status)">
+                                            @batch.Status
+                                        </span>
+                                    </td>
                                 <td class="align-middle">@batch.StartDate.ToShortDateString()</td>
                                 <td class="align-middle">@batch.EndDate.ToShortDateString()</td>
-                                <td class="align-middle">
-                                    @{
-                                        var today = DateTime.Today;
-                                        var status = batch.StartDate > today ? "Upcoming" :
-                                        batch.EndDate < today ? "Completed" : "Active";
-                                        var badgeClass = status == "Active" ? "success" :
-                                        status == "Upcoming" ? "primary" : "secondary";
-                                    }
-                                    <span class="badge bg-@badgeClass">@status</span>
-                                </td>
                                 <td class="text-center">
                                     <div class="btn-group" role="group">
-                                        <a asp-action="Edit" asp-route-id="@batch.BatchId"
+                                        <a asp-action="Edit" asp-route-id="@batch.Id"
                                            class="btn btn-sm btn-primary">
                                             <i class="fas fa-edit"></i>
                                         </a>
                                         <button type="button" class="btn btn-sm btn-danger"
-                                                onclick="confirmDelete(@batch.BatchId)">
+                                                onclick="confirmDelete(@batch.Id)">
                                             <i class="fas fa-trash-alt"></i>
                                         </button>
-                                            <a asp-action="GetApplicant" asp-route-id="@batch.BatchId"
+                                            <a asp-action="GetApplicant" asp-route-id="@batch.Id"
                                                class="btn btn-sm btn-primary">
-                                                <i class="fas fa-people"></i>
+                                                <i class="fas fa-user"></i>
                                             </a>
                                     </div>
                                 </td>
@@ -214,7 +213,20 @@
         </div>
     </div>
 </div>
-
+@functions {
+    string GetStatusBadgeClass(BatchStatus status)
+    {
+        return status switch
+        {
+            BatchStatus.New => "bg-secondary",
+            BatchStatus.Active => "bg-success",
+            BatchStatus.OnHold => "bg-warning",
+            BatchStatus.Completed => "bg-primary",
+            BatchStatus.Cancelled => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+}
 @section Scripts {
     <script>
         // Minimal JavaScript - just handle Enter key and limit to document ready

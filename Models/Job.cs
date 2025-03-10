@@ -30,10 +30,10 @@ namespace Models
         public string Description { get; set; }
 
         [Required]
-        public JobType JobType { get; set; } // Add JobType
+        public JobType JobType { get; set; }
 
         // Foreign Key for Batch (One Job belongs to One Batch)
-        public int BatchId { get; set; }
+        public int? BatchId { get; set; }
 
         [ForeignKey("BatchId")]
         public Batch Batch { get; set; }
@@ -43,8 +43,6 @@ namespace Models
 
         [ForeignKey("DepartmentId")]
         public Department Department { get; set; }
-
-        
     }
 
 }

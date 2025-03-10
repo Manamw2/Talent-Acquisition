@@ -10,7 +10,7 @@ namespace HrBackOffice.Models
 
         [Required(ErrorMessage = "Batch Name is required")]
         [StringLength(100, ErrorMessage = "Batch Name cannot exceed 100 characters")]
-        public string Name { get; set; }
+        public string BatchName { get; set; }
 
         [Required(ErrorMessage = "Start Date is required")]
         [DataType(DataType.Date)]
@@ -22,10 +22,24 @@ namespace HrBackOffice.Models
         [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
         public DateTime EndDate { get; set; }
 
-        // Navigation property for Jobs
-        public ICollection<Job> Jobs { get; set; } = new List<Job>();
+        public int? JobId { get; set; }
+
+        [Display(Name = "Job")]
+        public string JobTitle { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Target Number is required")]
+        [Range(1, int.MaxValue, ErrorMessage = "Target Number must be greater than 0")]
+        [Display(Name = "Target Number")]
+        public int TargetNumber { get; set; }
+
+        [Required(ErrorMessage = "Status is required")]
+        public BatchStatus Status { get; set; } = BatchStatus.New;
+
+        [Display(Name = "Status")]
+        public string StatusName => Status.ToString();
 
         public List<JobApplicationVM> JobApplications { get; set; } = new List<JobApplicationVM>();
-
     }
+
+   
 }

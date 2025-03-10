@@ -24,7 +24,7 @@ namespace Models.ViewModels
 
         [Required]
         [Display(Name = "Batch")]
-        public int BatchId { get; set; }
+        public int? BatchId { get; set; }
 
         [Required]
         [Display(Name = "Department")]

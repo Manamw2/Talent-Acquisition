@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.DotNet.Scaffolding.Shared.Project;
 using Microsoft.EntityFrameworkCore;
 using Models;
+using System.Linq.Expressions;
 
 
 
@@ -32,19 +33,28 @@ namespace HrBackOffice.Controllers
             _logger = logger;
             _mapper = mapper;
         }
-        public async Task<IActionResult> Index(int page = 1)
+        public async Task<IActionResult> Index(int page = 1, string searchQuery = "")
         {
             int pageSize = 5;
-
+            // Create a filter expression that includes the search
+            Expression<Func<Batch, bool>> filter = null;
+            if (!string.IsNullOrWhiteSpace(searchQuery))
+            {
+                filter = batch => batch.BatchName.Contains(searchQuery);
+                // You can expand this to search other fields if needed
+                // filter = job => job.Title.Contains(searchQuery) || job.Description.Contains(searchQuery);
+            }
             // Get total count for pagination
-            var totalBatches = await _unitOfWork.BatchRepository.CountAsync();
+            var totalBatches = await _unitOfWork.BatchRepository.CountAsync(filter);
 
             // Get only the batches for the current page
             var batches = await _unitOfWork.BatchRepository.GetPagedListAsync(
+                filter: filter,
                 includeProperties: "Job",
                 pageIndex: page - 1,
                 pageSize: pageSize
             );
+            
             var viewModels = batches.Select(b => new BatchViewModel
             {
                 Id = b.BatchId,
@@ -64,7 +74,7 @@ namespace HrBackOffice.Controllers
             ViewBag.TotalItems = totalBatches;
             ViewBag.CurrentPage = page;
             ViewBag.TotalPages = totalPages;
-
+            ViewBag.SearchQuery = searchQuery;
             return View(viewModels);
         }
 

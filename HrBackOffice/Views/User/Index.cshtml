@@ -54,14 +54,14 @@
                                             </td>
                                             <td class="text-center">
                                                 <div class="btn-group" role="group">
-                                                    <a class="btn btn-sm btn-primary" asp-action="Edit" asp-route-id="@user.Id">
+                                                    <a class="btn btn-sm btn-primary" asp-action="Edit" asp-route-id="@user.Id" title="Edit User">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
                                                     <form asp-action="DeleteHRUser" method="post" id="deleteForm">
                                                         @Html.AntiForgeryToken()
                                                     </form>
 
-                                                    <button type="button" class="btn btn-sm btn-danger"
+                                                    <button type="button" class="btn btn-sm btn-danger" title="Delete User"
                                                             onclick="confirmDeleteUser('@user.Id', '@user.UserName')">
                                                         <i class="fas fa-trash-alt"></i>
                                                     </button>

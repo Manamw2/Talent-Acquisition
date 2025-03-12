@@ -56,9 +56,9 @@ namespace HrBackOffice.Controllers
             }
 
             await _signInManager.SignInAsync(user, isPersistent: false);
-            ViewData["UserProfileImage"] = user.ImageUrl ?? "/images/Logo1.png";
+            ViewData["UserProfileImage"] = user.ImageUrl;
 
-            return RedirectToAction("Index", "Job");
+            return RedirectToAction("Index", "Applicant");
         }
 
 

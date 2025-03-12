@@ -12,6 +12,8 @@ namespace DataAccess.Data
         }
 
         public DbSet<Job> Jobs { get; set; }
+        public DbSet<Department> Department { get; set; }
+        public DbSet<Employee> Employee { get; set; }
         public DbSet<JobApplication> JobApplications { get; set; }
         public DbSet<JobRecommend> JobRecommend { get; set; }
         public DbSet<ApplicantExperience> ApplicantExperiences { get; set; }

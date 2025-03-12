@@ -34,19 +34,32 @@
                                 <div class="mb-3">
                                     @if (!string.IsNullOrEmpty(Model.ImageUrl))
                                     {
-                                        <img src="@Model.ImageUrl" alt="Profile Image" class="img-thumbnail rounded-circle" style="width: 150px; height: 150px; object-fit: cover;" />
+                                        <div class="profile-image-container position-relative mx-auto">
+                                            <img src="@Model.ImageUrl" alt="Profile Image" class="img-thumbnail rounded-circle" style="width: 150px; height: 150px; object-fit: cover;" />
+                                            <div class="image-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center rounded-circle">
+                                                <a href="#" class="text-white" data-bs-toggle="modal" data-bs-target="#profileImageModal">
+                                                    <i class="fas fa-camera"></i>
+                                                </a>
+                                            </div>
+                                        </div>
                                     }
                                     else
                                     {
-                                        <div class="bg-light rounded-circle d-flex align-items-center justify-content-center" style="width: 150px; height: 150px; margin: 0 auto;">
-                                            <i class="bi bi-person-circle" style="font-size: 4rem;"></i>
+                                        <div class="profile-img-placeholder bg-light text-primary rounded-circle d-flex align-items-center justify-content-center shadow position-relative mx-auto" style="width: 150px; height: 150px;">
+                                            <i class="fas fa-user-circle fa-8x"></i>
+                                            <div class="image-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center rounded-circle">
+                                                <a href="#" class="text-white" data-bs-toggle="modal" data-bs-target="#profileImageModal">
+                                                    <i class="fas fa-camera"></i>
+                                                </a>
+                                            </div>
                                         </div>
                                     }
                                 </div>
+
                                 <div class="mb-3">
-                                    <label class="btn btn-outline-primary btn-sm">
+                                    <label for="imageFileInput" class="btn btn-outline-primary">
                                         Change Photo
-                                        <input type="file" asp-for="ImageFile" class="d-none" accept="image/*" onchange="displayFileName(this)" />
+                                        <input id="imageFileInput" type="file" asp-for="ImageFile" class="d-none" accept="image/*" onchange="displayFileName(this)" />
                                     </label>
                                     <div id="selectedFileName" class="small text-muted mt-1"></div>
                                 </div>
@@ -68,24 +81,24 @@
 
                                 @* @if (User.IsInRole("Admin"))
                                 {
-                                    <div class="mb-3">
-                                        <label class="form-label">Role</label>
-                                        <select id="userRole" class="form-select" onchange="updateUserRole()">
-                                            @foreach (var role in Model.AvailableRoles)
-                                            {
-                                                <option value="@role" selected="@(role == Model.Role)">@role</option>
-                                            }
-                                        </select>
-                                    </div>
+                                <div class="mb-3">
+                                <label class="form-label">Role</label>
+                                <select id="userRole" class="form-select" onchange="updateUserRole()">
+                                @foreach (var role in Model.AvailableRoles)
+                                {
+                                <option value="@role" selected="@(role == Model.Role)">@role</option>
+                                }
+                                </select>
+                                </div>
                                 }
                                 else
                                 { *@
-                                    <div class="mb-3">
-                                        <label class="form-label">Role</label>
-                                        <input type="text" value="@Model.Role" class="form-control" readonly />
-                                    </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Role</label>
+                                    <input type="text" value="@Model.Role" class="form-control" readonly />
+                                </div>
                                 @* } *@
-                                
+
                             </div>
                         </div>
 
@@ -93,9 +106,30 @@
                             <button type="submit" class="btn btn-primary">Update Profile</button>
                         </div>
                     </form>
-                    
+
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Add this script for handling the file input display -->
+<script>
+    function displayFileName(input) {
+        var fileName = input.files[0] ? input.files[0].name : '';
+        document.getElementById('selectedFileName').textContent = fileName;
+
+        // Optional: Display image preview
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                var imageElement = document.querySelector('.profile-image-container img');
+                if (imageElement) {
+                    imageElement.src = e.target.result;
+                }
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>
+

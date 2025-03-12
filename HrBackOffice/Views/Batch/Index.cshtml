@@ -37,12 +37,21 @@
         <div class="card-body">
             <div class="row mb-3">
                 <div class="col-md-6">
-                    <div class="input-group">
-                        <span class="input-group-text bg-light">
-                            <i class="fas fa-search"></i>
-                        </span>
-                        <input type="text" id="searchBox" class="form-control" placeholder="Search batches...">
-                    </div>
+                    <form method="get" action="@Url.Action("Index")">
+                        <div class="input-group">
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i></button>
+                            
+                            <input type="text" name="searchQuery" id="searchBox" class="form-control"
+                                   placeholder="Search batches..." value="@ViewBag.SearchQuery">
+
+                            @if (!string.IsNullOrEmpty(ViewBag.SearchQuery))
+                            {
+                                <a href="@Url.Action("Index")" class="btn btn-outline-secondary"><i class="fas fa-close"></i></a>
+                            }
+                            <!-- Hidden input to reset page when searching -->
+                            <input type="hidden" name="page" value="1" />
+                        </div>
+                    </form>
                 </div>
             </div>
             @if (Model.Any())
@@ -77,15 +86,15 @@
                                 <td class="text-center">
                                     <div class="btn-group" role="group">
                                         <a asp-action="Edit" asp-route-id="@batch.Id"
-                                           class="btn btn-sm btn-primary">
+                                               class="btn btn-sm btn-primary" title="Edit Batch">
                                             <i class="fas fa-edit"></i>
                                         </a>
-                                        <button type="button" class="btn btn-sm btn-danger"
+                                            <button type="button" title="Delete Batch" class="btn btn-sm btn-danger"
                                                 onclick="confirmDelete(@batch.Id)">
                                             <i class="fas fa-trash-alt"></i>
                                         </button>
                                             <a asp-action="GetApplicant" asp-route-id="@batch.Id"
-                                               class="btn btn-sm btn-primary">
+                                               class="btn btn-sm btn-primary" title="Get Applicant for this Batch">
                                                 <i class="fas fa-user"></i>
                                             </a>
                                     </div>
@@ -95,7 +104,6 @@
                     </tbody>
                 </table>
             </div>
-                <!-- Pagination -->
                 
             }
             else
@@ -110,20 +118,21 @@
                     </a>
                 </div>
             }
+            <!-- Pagination Controls -->
             @if (Model.Any())
             {
                 <nav aria-label="Page navigation" class="d-flex justify-content-center mt-4">
                     <ul class="pagination">
                         <!-- First Page -->
                         <li class="page-item @(currentPage == 1 ? "disabled" : "")">
-                            <a class="page-link" href="@Url.Action("Index", new { page = 1 })" aria-label="First">
+                            <a class="page-link" href="@Url.Action("Index", new { page = 1 , searchQuery = ViewBag.SearchQuery})" aria-label="First">
                                 <span aria-hidden="true">&laquo;</span>
                             </a>
                         </li>
 
                         <!-- Previous Page -->
                         <li class="page-item @(currentPage == 1 ? "disabled" : "")">
-                            <a class="page-link" href="@Url.Action("Index", new { page = currentPage - 1 })" aria-label="Previous">
+                            <a class="page-link" href="@Url.Action("Index", new { page = currentPage - 1 , searchQuery = ViewBag.SearchQuery})" aria-label="Previous">
                                 <span aria-hidden="true">&lsaquo;</span>
                             </a>
                         </li>
@@ -153,7 +162,7 @@
                             else
                             {
                                 <li class="page-item">
-                                    <a class="page-link" href="@Url.Action("Index", new { page = i })">@i</a>
+                                    <a class="page-link" href="@Url.Action("Index", new { page = i})">@i</a>
                                 </li>
                             }
                         }
@@ -178,7 +187,7 @@
 
                         <!-- Last Page -->
                         <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
-                            <a class="page-link" href="@Url.Action("Index", new { page = totalPages })" aria-label="Last">
+                            <a class="page-link" href="@Url.Action("Index", new { page = totalPages, searchQuery = ViewBag.SearchQuery })" aria-label="Last">
                                 <span aria-hidden="true">&raquo;</span>
                             </a>
                         </li>
@@ -189,8 +198,6 @@
                     <small>@currentPage of @totalPages pages (@ViewBag.TotalItems items)</small>
                 </div>
             }
-
-         
         </div>
     </div>
 </div>
@@ -229,7 +236,6 @@
 }
 @section Scripts {
     <script>
-        // Minimal JavaScript - just handle Enter key and limit to document ready
         document.addEventListener('DOMContentLoaded', function () {
             var form = document.getElementById('pageJumpForm');
             if (form) {
@@ -253,23 +259,5 @@
             }
         });
     </script>
-    <script>
-        // Search functionality
-        document.getElementById("searchBox").addEventListener("keyup", function () {
-            let searchValue = this.value.toLowerCase();
-            let rows = document.querySelectorAll("#batchTable tr");
-            rows.forEach(row => {
-                let batchName = row.cells[0].innerText.toLowerCase();
-                row.style.display = batchName.includes(searchValue) ? "" : "none";
-            });
-        });
 
-        // Delete confirmation
-        function confirmDelete(batchId) {
-            var deleteLink = document.getElementById('deleteLink');
-            deleteLink.href = '@Url.Action("Delete")/' + batchId;
-            var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
-            deleteModal.show();
-        }
-    </script>
 }

@@ -23,6 +23,7 @@ namespace DataAccess.Repository
         public IRepository<JobApplication> JobApplicationRepository { get; private set; }
 
         public IRepository<Department> DepartmentRepository { get; private set; }
+        public IRepository<Employee> EmpRepository { get; private set; }
         public IRepository<Department> DepRepository { get; private set; }
 
         public IRepository<JobRecommend> JobRecommendRepository { get; private set; }
@@ -35,6 +36,7 @@ namespace DataAccess.Repository
             BatchRepository = new Repository<Batch>(_context);
             JobApplicationRepository = new Repository<JobApplication>(_context);
             DepartmentRepository = new Repository<Department>(_context);
+            EmpRepository = new Repository<Employee>(_context);
             DepRepository = new Repository<Department>(_context);
             AppExpRepository = new Repository<ApplicantExperience>(_context);
             AppSkillRepository = new Repository<ApplicantSkill>(_context);

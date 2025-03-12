@@ -19,5 +19,6 @@ namespace Models
         public string Name { get; set; }
         // One Department can have multiple Jobs
         public ICollection<Job> Jobs { get; set; } = new List<Job>();
+        public ICollection<Employee> Employees { get; set; } = new List<Employee>();
     }
 }

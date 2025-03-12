@@ -20,12 +20,23 @@
         <div class="card-body">
             <div class="row mb-3">
                 <div class="col-md-6">
-                    <div class="input-group">
-                        <span class="input-group-text bg-light">
-                            <i class="fas fa-search"></i>
-                        </span>
-                        <input type="text" id="searchBox" class="form-control" placeholder="Search jobs...">
-                    </div>
+                    <form method="get" action="@Url.Action("Index")">
+                        <div class="input-group">
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i></button>
+                            @* <span class="input-group-text bg-light">
+                                <i class="fas fa-search"></i>
+                            </span> *@
+                            <input type="text" name="searchQuery" id="searchBox" class="form-control"
+                                   placeholder="Search jobs..." value="@ViewBag.SearchQuery">
+                           
+                            @if (!string.IsNullOrEmpty(ViewBag.SearchQuery))
+                            {
+                                <a href="@Url.Action("Index")" class="btn btn-outline-secondary"><i class="fas fa-close"></i></a>
+                            }
+                            <!-- Hidden input to reset page when searching -->
+                            <input type="hidden" name="page" value="1" />
+                        </div>
+                    </form>
                 </div>
             </div>
 
@@ -51,14 +62,16 @@
                                         <td class="align-middle">@job.DepartmentName</td>
                                         <td class="text-center">
                                             <div class="btn-group" role="group">
-                                                <a asp-action="Edit" asp-route-id="@job.JobId" class="btn btn-sm btn-primary">
+                                                <a asp-action="Edit" asp-route-id="@job.JobId"
+                                                   class="btn btn-sm btn-primary" title="Edit Job">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
-                                                <a asp-action="Details" asp-route-id="@job.JobId" class="btn btn-sm btn-info">
+                                                <a asp-action="Details" asp-route-id="@job.JobId"
+                                                   class="btn btn-sm btn-info" title="Job Details">
                                                     <i class="fas fa-info-circle"></i>
                                                 </a>
                                                 <a class="btn btn-sm btn-danger"
-                                                   asp-action="Delete" asp-route-id="@job.JobId">
+                                                   asp-action="Delete" asp-route-id="@job.JobId" title="Delete Job">
                                                     <i class="fas fa-trash-alt"></i>
                                                 </a>
                                             </div>
@@ -91,14 +104,14 @@
                         <ul class="pagination">
                             <!-- First Page -->
                             <li class="page-item @(currentPage == 1 ? "disabled" : "")">
-                                <a class="page-link" href="@Url.Action("Index", new { page = 1})" aria-label="First">
+                                <a class="page-link" href="@Url.Action("Index", new { page = 1 , searchQuery = ViewBag.SearchQuery})" aria-label="First">
                                     <span aria-hidden="true">&laquo;</span>
                                 </a>
                             </li>
 
                             <!-- Previous Page -->
                             <li class="page-item @(currentPage == 1 ? "disabled" : "")">
-                                <a class="page-link" href="@Url.Action("Index", new { page = currentPage - 1})" aria-label="Previous">
+                                <a class="page-link" href="@Url.Action("Index", new { page = currentPage - 1 , searchQuery = ViewBag.SearchQuery})" aria-label="Previous">
                                     <span aria-hidden="true">&lsaquo;</span>
                                 </a>
                             </li>
@@ -117,6 +130,7 @@
                                     <li class="page-item active">
                                         <!-- Simple form with just the essential elements -->
                                         <form id="pageJumpForm" method="get" action="@Url.Action("Index")" style="margin:0; padding:0">
+                                            <input type="hidden" name="searchQuery" value="@ViewBag.SearchQuery" />
                                             <input type="text" name="page"
                                                    class="form-control border-0 text-center bg-primary text-white"
                                                    style="width: 40px; height: 38px; padding: 0;"
@@ -194,38 +208,6 @@
             }
         });
     </script>
-    <script>
-        document.getElementById("searchBox").addEventListener("keyup", function () {
-            let searchValue = this.value.toLowerCase();
-            let rows = document.querySelectorAll("#jobTable tr");
-            let hasResults = false;
-
-            rows.forEach(row => {
-                let jobTitle = row.cells[0].innerText.toLowerCase();
-                if (jobTitle.includes(searchValue)) {
-                    row.style.display = "";
-                    hasResults = true;
-                } else {
-                    row.style.display = "none";
-                }
-            });
-
-            // Show message if no search results found
-            let jobResults = document.getElementById("jobResults");
-            let noResultsMessage = document.getElementById("noResultsMessage");
-
-            if (!hasResults) {
-                if (!noResultsMessage) {
-                    noResultsMessage = document.createElement("div");
-                    noResultsMessage.id = "noResultsMessage";
-                    noResultsMessage.className = "alert alert-info text-center mt-3";
-                    noResultsMessage.innerHTML = '<i class="fas fa-info-circle"></i> No matching jobs found.';
-                    jobResults.appendChild(noResultsMessage);
-                }
-            } else if (noResultsMessage) {
-                noResultsMessage.remove();
-            }
-        });
-    </script>
+  
 }
 

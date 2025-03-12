@@ -1,34 +1,40 @@
 ﻿@model AppUser
 
 <div class="cv-container shadow-lg mx-auto my-5">
-    <!-- Profile Header -->
-    <div class="profile-header bg-gradient text-white p-4">
-        <div class="row align-items-center">
-            <div class="col-md-3 text-center">
-                @if (!string.IsNullOrEmpty(Model.ImageUrl))
-                {
-                    <img src="@Model.ImageUrl" alt="@Model.DisplayName" class="profile-img rounded-circle img-thumbnail border-light shadow">
-                }
-                else
-                {
-                    <div class="profile-img-placeholder bg-light text-primary rounded-circle d-flex align-items-center justify-content-center shadow">
-                        <i class="fas fa-user-circle fa-5x"></i>
-                    </div>
-                }
+    <!-- Profile Header with Basic Info -->
+    <div class="profile-header bg-gradient text-black p-3">
+        <h4 class="display-4 fw-bold mb-3 text-center">@Model.DisplayName</h4>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="basic-info-item mb-3">
+                    <i class="fas fa-envelope me-2"></i>
+                    <span class="fw-bold">Email:</span> @Model.Email
+                </div>
+                <div class="basic-info-item mb-3">
+                    <i class="fas fa-phone-alt me-2"></i>
+                    <span class="fw-bold">Contact:</span> @Model.MethodOfContact
+                </div>
             </div>
-            <div class="col-md-9">
-                <h1 class="display-4 fw-bold">@Model.DisplayName</h1>
-                <p class="fs-4 mb-3">@(Model.Faculty) Student</p>
-                <div class="d-flex flex-wrap mt-4">
-                    <div class="me-4 mb-3">
-                        <i class="fas fa-envelope me-2"></i> @Model.Email
-                    </div>
-                    <div class="me-4 mb-3">
-                        <i class="fas fa-phone-alt me-2"></i> @Model.MethodOfContact
-                    </div>
+            <div class="col-md-6">
+                <div class="basic-info-item mb-3">
+                    <i class="fas fa-birthday-cake me-2"></i>
+                    <span class="fw-bold">Birth Date:</span> @(Model.BirthDate?.ToShortDateString() ?? "Not specified")
+                </div>
+                <div class="basic-info-item mb-3">
+                    <i class="fas fa-language me-2"></i>
+                    <span class="fw-bold">English Level:</span> @(Model.EnglishLevel ?? "Not specified")
                 </div>
             </div>
         </div>
+
+        @* <div class="mt-2">
+        <p class="fs-5 mb-0">
+        @(Model.University ?? "University not specified"),
+        @(Model.Faculty ?? "Faculty not specified")
+        (@(Model.EducationLevel ?? "Education level not specified"))
+        </p>
+        </div> *@
     </div>
 
     <!-- Main Content -->
@@ -42,38 +48,11 @@
                         <i class="fas fa-graduation-cap me-2"></i>Education
                     </h3>
                     <div class="bg-light p-3 rounded">
-                        <h5>@Model.Faculty</h5>
-                        <p class="mb-1">@Model.University</p>
+                        <h5>@(Model.Faculty ?? "Not specified")</h5>
+                        <p class="mb-1">@(Model.University ?? "Not specified")</p>
                         <p class="mb-1">
-                            <span class="badge bg-primary">@Model.EducationLevel</span>
+                            <span class="badge bg-primary">@(Model.EducationLevel ?? "Not specified")</span>
                         </p>
-                    </div>
-                </div>
-
-                <!-- Personal Details -->
-                <div class="mb-4">
-                    <h3 class="border-bottom border-primary pb-2 mb-3">
-                        <i class="fas fa-user me-2"></i>Personal Details
-                    </h3>
-                    <div class="bg-light p-3 rounded">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width:40px;height:40px">
-                                <i class="fas fa-language"></i>
-                            </div>
-                            <div>
-                                <p class="mb-0 fw-bold">English Level</p>
-                                <p class="mb-0">@Model.EnglishLevel</p>
-                            </div>
-                        </div>
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width:40px;height:40px">
-                                <i class="fas fa-birthday-cake"></i>
-                            </div>
-                            <div>
-                                <p class="mb-0 fw-bold">Birth Date</p>
-                                <p class="mb-0">@Model.BirthDate?.ToShortDateString()</p>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
@@ -82,7 +61,7 @@
                     <h3 class="border-bottom border-primary pb-2 mb-3">
                         <i class="fas fa-cogs me-2"></i>Skills
                     </h3>
-                    @if (Model.ApplicantSkills.Any())
+                    @if (Model.ApplicantSkills != null && Model.ApplicantSkills.Any())
                     {
                         <div>
                             @foreach (var skill in Model.ApplicantSkills)
@@ -119,7 +98,7 @@
                     <h3 class="border-bottom border-primary pb-2 mb-3">
                         <i class="fas fa-briefcase me-2"></i>Professional Experience
                     </h3>
-                    @if (Model.ApplicantExperiences.Any())
+                    @if (Model.ApplicantExperiences != null && Model.ApplicantExperiences.Any())
                     {
                         <div class="timeline">
                             @foreach (var exp in Model.ApplicantExperiences)
@@ -128,9 +107,9 @@
                                     <h4>@exp.Position</h4>
                                     <h6 class="text-muted mb-2">@exp.Company</h6>
                                     <p class="text-secondary mb-2">
-                                        @exp.StartDate?.ToShortDateString() - @(exp.EndDate?.ToShortDateString() ?? "Present")
+                                        @(exp.StartDate?.ToShortDateString() ?? "Not specified") - @(exp.EndDate?.ToShortDateString() ?? "Present")
                                     </p>
-                                    <p>@exp.Description</p>
+                                    <p>@(exp.Description ?? "")</p>
                                 </div>
                             }
                         </div>
@@ -146,7 +125,7 @@
                     <h3 class="border-bottom border-primary pb-2 mb-3">
                         <i class="fas fa-project-diagram me-2"></i>Projects
                     </h3>
-                    @if (Model.ApplicantProjects.Any())
+                    @if (Model.ApplicantProjects != null && Model.ApplicantProjects.Any())
                     {
                         <div class="row">
                             @foreach (var project in Model.ApplicantProjects)
@@ -154,7 +133,7 @@
                                 <div class="col-md-6 mb-3">
                                     <div class="project-card border-start border-3 border-warning bg-light p-3 h-100">
                                         <h5>@project.Name</h5>
-                                        <p class="mb-0">@project.Description</p>
+                                        <p class="mb-0">@(project.Description ?? "")</p>
                                     </div>
                                 </div>
                             }
@@ -212,14 +191,13 @@
         background: linear-gradient(135deg, #2c3e50, #3498db);
     }
 
-    .profile-img, .profile-img-placeholder {
-        width: 150px;
-        height: 150px;
-        border: 5px solid rgba(255, 255, 255, 0.3);
+    .basic-info-item {
+        font-size: 1.1rem;
     }
 
     .timeline-item {
         padding-left: 30px;
+        position: relative;
     }
 
         .timeline-item:before {

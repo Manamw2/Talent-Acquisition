@@ -1,0 +1,11 @@
+﻿@model Department
+
+@{
+    ViewData["Title"] = "Edit Department";
+}
+
+
+<form asp-action="Edit">
+    @await Html.PartialAsync("CreateEditFormPartialView", Model)
+
+</form>

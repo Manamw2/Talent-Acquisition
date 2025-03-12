@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Models;
+using System.Linq.Expressions;
 using X.PagedList; // Add this
 using X.PagedList.Extensions;
 using X.PagedList.Mvc.Core;
@@ -28,18 +29,25 @@ namespace HrBackOffice.Controllers
             _config = configuration;
         }
 
-        public async Task<IActionResult> Index(int page = 1)
+        public async Task<IActionResult> Index(int page = 1, string searchQuery = "")
         {
             int pageSize = 5; // Number of items per page
 
-            // Get total count for pagination
-            var totalJobs = await _unitOfWork.JobRepository.CountAsync(
-                //job => job.Batch != null && job.Batch.EndDate > DateTime.UtcNow
-            );
+            // Create a filter expression that includes the search
+            Expression<Func<Job, bool>> filter = null;
+            if (!string.IsNullOrWhiteSpace(searchQuery))
+            {
+                filter = job => job.Title.Contains(searchQuery);
+                // You can expand this to search other fields if needed
+                // filter = job => job.Title.Contains(searchQuery) || job.Description.Contains(searchQuery);
+            }
 
-            // Get only the jobs for the current page
+            // Get total count for pagination with the filter applied
+            var totalJobs = await _unitOfWork.JobRepository.CountAsync(filter);
+
+            // Get only the jobs for the current page with filter applied
             var jobs = await _unitOfWork.JobRepository.GetPagedListAsync(
-                //filter: job => job.Batch != null && job.Batch.EndDate > DateTime.UtcNow,
+                filter: filter,
                 includeProperties: "Batch,Department",
                 pageIndex: page - 1,
                 pageSize: pageSize
@@ -63,6 +71,7 @@ namespace HrBackOffice.Controllers
             ViewBag.TotalItems = totalJobs;
             ViewBag.CurrentPage = page;
             ViewBag.TotalPages = totalPages;
+            ViewBag.SearchQuery = searchQuery; // Pass the search query to the view
 
             return View(jobViewModels);
         }

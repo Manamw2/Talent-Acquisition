@@ -58,7 +58,7 @@
                                 @foreach (var user in Model)
                                 {
                                     <tr ondblclick="viewApplicantProfile('@user.Id')" style="cursor: pointer;">
-                                        <td>@user.DisplayName</td>
+                                        <td><a href="/Batch/ApplicantProfile?userId=@user.Id" target="_blank">@user.DisplayName</a></td>
                                         <td>@user.Email</td>
                                         <td>@user.EducationLevel</td>
                                         <td>@user.EnglishProficiencyLevel</td>

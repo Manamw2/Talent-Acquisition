@@ -38,6 +38,12 @@ namespace Models
         public Job? Job { get; set; }
 
         public ICollection<JobApplication> JobApplications { get; set; } = new List<JobApplication>();
+
+        public int? TemplateId { get; set; }
+        [ForeignKey(nameof(TemplateId))]
+        public HiringTemplate? HiringTemplate { get; set; }
+        public List<HiringTask> Tasks { get; set; } = new List<HiringTask>();
+
     }
 
     // Add this enum for batch status

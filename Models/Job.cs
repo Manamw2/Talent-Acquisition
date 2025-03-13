@@ -43,6 +43,9 @@ namespace Models
 
         [ForeignKey("DepartmentId")]
         public Department Department { get; set; }
+        public int? TemplateId { get; set; }
+        [ForeignKey(nameof(TemplateId))]
+        public HiringTemplate? HiringTemplate { get; set; }
     }
 
 }

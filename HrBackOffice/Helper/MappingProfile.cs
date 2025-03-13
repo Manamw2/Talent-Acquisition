@@ -2,6 +2,8 @@
 using Models;
 
 using HrBackOffice.Models;
+using Models.Dtos.Template;
+using Models.Dtos.Stage;
 //using Models.ViewModels;
 
 namespace HrBackOffice.Helper

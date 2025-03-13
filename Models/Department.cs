@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Models.Dtos.Stage;
 
 namespace Models
 {
@@ -20,5 +21,9 @@ namespace Models
         // One Department can have multiple Jobs
         public ICollection<Job> Jobs { get; set; } = new List<Job>();
         public ICollection<Employee> Employees { get; set; } = new List<Employee>();
+        public List<StageDepartmentNeed> departmentNeedDtos { get; set; } = new List<StageDepartmentNeed>();
+        public int? TemplateId { get; set; }
+        [ForeignKey(nameof(TemplateId))]
+        public HiringTemplate? HiringTemplate { get; set; }
     }
 }

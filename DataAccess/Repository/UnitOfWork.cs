@@ -28,6 +28,7 @@ namespace DataAccess.Repository
 
         public IRepository<JobRecommend> JobRecommendRepository { get; private set; }
         public IBulkCvsJobsHistoryRepo BulkCvsJobsHistoryRepo { get; private set; }
+        public IRepository<HiringParameter> HiringParameterRepo { get; private set; }
         public UnitOfWork(ApplicationDbContext context)
         {
             _context = context;
@@ -43,6 +44,7 @@ namespace DataAccess.Repository
             AppProjRepository = new Repository<ApplicantProject>(_context);
             JobRecommendRepository = new Repository<JobRecommend>(_context);
             BulkCvsJobsHistoryRepo = new BulkCvsJobsHistoryRepo(_context);
+            HiringParameterRepo = new Repository<HiringParameter>(_context);
         }
 
         public async Task SaveAsync()

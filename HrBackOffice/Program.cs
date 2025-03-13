@@ -48,6 +48,9 @@ builder.Services.AddScoped<IProfileService, ProfileService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped(typeof(IRepository<Job>), typeof(Repository<Job>));
 builder.Services.AddScoped(typeof(IRepository<JobApplication>), typeof(Repository<JobApplication>));
+builder.Services.AddScoped<IHiringStageRepo, HiringStageRepo>();
+builder.Services.AddScoped<IHiringTemplateRepo, HiringTemplateRepo>();
+
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 builder.Services.AddSingleton<FileStorageService>(provider =>

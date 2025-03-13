@@ -180,6 +180,7 @@ namespace TalentAcquisitionModule.Controllers
             await _userManager.UpdateAsync(appUser);
             ViewBag.Universities = GetUniversities();
             ViewBag.Faculties = GetFaculties();
+            //view model should be modified to include cvfile
             return View(profileInfoVM);
         }
 

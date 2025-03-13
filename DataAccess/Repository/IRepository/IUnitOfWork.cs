@@ -21,6 +21,8 @@ namespace DataAccess.Repository.IRepository
         IRepository<ApplicantSkill> AppSkillRepository { get;}
         IRepository<ApplicantProject> AppProjRepository { get; }
         IBulkCvsJobsHistoryRepo BulkCvsJobsHistoryRepo { get; }
+        IRepository<HiringParameter> HiringParameterRepo { get; }
+
         Task SaveAsync();
     }
 }

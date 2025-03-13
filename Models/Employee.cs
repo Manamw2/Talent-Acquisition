@@ -28,5 +28,6 @@ namespace Models
 
         [ForeignKey("DepartmentId")]
         public Department? Department { get; set; }
+        public List<EmployeeTask> EmployeeTasks { get; set; } = new List<EmployeeTask>();
     }
 }

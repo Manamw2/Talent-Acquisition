@@ -48,8 +48,7 @@
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Education Level</label>
                         <select asp-for="EducationLevel" asp-items="Model.EducationLevels" id="EducationLevel" class="form-control">
-                            @* <option value="">Select University</option>
-                            <option value="Other">Others</option> *@
+                            
                         </select>
                         <span asp-validation-for="EducationLevel" class="text-danger"></span>
                     </div>
@@ -134,9 +133,11 @@
                                             <input type="hidden" asp-for="ApplicantExperiences[i].Id" />
                                             <div class="mb-3">
                                                 <input type="text" class="form-control" asp-for="ApplicantExperiences[i].Company" placeholder="Company" />
+                                                <span asp-validation-for="ApplicantExperiences[i].Company" class="text-danger"></span>
                                             </div>
                                             <div class="mb-3">
                                                 <input type="text" class="form-control" asp-for="ApplicantExperiences[i].Position" placeholder="Position" />
+                                                <span asp-validation-for="ApplicantExperiences[i].Position" class="text-danger"></span>
                                             </div>
                                             <div class="row mb-3">
                                                 <div class="col-md-6">
@@ -148,6 +149,7 @@
                                             </div>
                                             <div class="mb-3">
                                                 <textarea class="form-control" asp-for="ApplicantExperiences[i].Description" rows="3" placeholder="Description"></textarea>
+                                                <span asp-validation-for="ApplicantExperiences[i].Description" class="text-danger"></span>
                                             </div>
                                         </div>
                                     </div>
@@ -177,6 +179,7 @@
                                         <input type="hidden" name="ApplicantSkills[i].Id" value="0" />
                                         <div class="col-md-8">
                                             <input type="text" class="form-control" asp-for="ApplicantSkills[i].Name" placeholder="Skill name" />
+                                            <span asp-validation-for="ApplicantSkills[i].Name" class="text-danger"></span>
                                         </div>
                                         <div class="col-md-4">
                                             <select class="form-control" asp-for="ApplicantSkills[i].Level">
@@ -185,6 +188,7 @@
                                                 <option value="Advanced">Advanced</option>
                                                 <option value="Expert">Expert</option>
                                             </select>
+                                            <span asp-validation-for="ApplicantSkills[i].Level" class="text-danger"></span>
                                         </div>
                                     </div>
                                 </div>
@@ -212,9 +216,11 @@
                                         <div class="collapsible-content show">
                                             <div class="mb-3">
                                                 <input type="text" class="form-control" asp-for="ApplicantProjects[i].Name" placeholder="Project name" />
+                                                <span asp-validation-for="ApplicantProjects[i].Name" class="text-danger"></span>
                                             </div>
                                             <div class="mb-3">
                                                 <textarea class="form-control" asp-for="ApplicantProjects[i].Description" rows="3" placeholder="Project description"></textarea>
+                                                <span asp-validation-for="ApplicantProjects[i].Description" class="text-danger"></span>
                                             </div>
                                         </div>
                                     </div>
@@ -234,218 +240,223 @@
         </div>
     </div>
 </div>
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Function to toggle collapsible content
+            function toggleCollapsibleContent(button) {
+                const content = button.closest('.card, .row').querySelector('.collapsible-content');
+                content.classList.toggle('show');
+                const chevron = button.querySelector('.chevron-icon');
+                chevron.textContent = content.classList.contains('show') ? '▼' : '▶';
+            }
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Function to toggle collapsible content
-        function toggleCollapsibleContent(button) {
-            const content = button.closest('.card, .row').querySelector('.collapsible-content');
-            content.classList.toggle('show');
-            const chevron = button.querySelector('.chevron-icon');
-            chevron.textContent = content.classList.contains('show') ? '▼' : '▶';
-        }
+            // Function to remove an item (experience, skill, or project)
+            function removeItem(button) {
+                const item = button.closest('.card, .row');
+                item.remove();
+            }
 
-        // Function to remove an item (experience, skill, or project)
-        function removeItem(button) {
-            const item = button.closest('.card, .row');
-            item.remove();
-        }
-
-        // Add event listeners for existing toggle and close buttons
-        document.querySelectorAll('.toggle-experience').forEach(button => {
-            button.addEventListener('click', function () {
-                toggleCollapsibleContent(this);
+            // Add event listeners for existing toggle and close buttons
+            document.querySelectorAll('.toggle-experience').forEach(button => {
+                button.addEventListener('click', function () {
+                    toggleCollapsibleContent(this);
+                });
             });
-        });
 
-        document.querySelectorAll('.toggle-skill').forEach(button => {
-            button.addEventListener('click', function () {
-                toggleCollapsibleContent(this);
+            document.querySelectorAll('.toggle-skill').forEach(button => {
+                button.addEventListener('click', function () {
+                    toggleCollapsibleContent(this);
+                });
             });
-        });
 
-        document.querySelectorAll('.toggle-project').forEach(button => {
-            button.addEventListener('click', function () {
-                toggleCollapsibleContent(this);
+            document.querySelectorAll('.toggle-project').forEach(button => {
+                button.addEventListener('click', function () {
+                    toggleCollapsibleContent(this);
+                });
             });
-        });
 
-        document.querySelectorAll('.remove-experience, .remove-skill, .remove-project').forEach(button => {
-            button.addEventListener('click', function () {
-                removeItem(this);
+            document.querySelectorAll('.remove-experience, .remove-skill, .remove-project').forEach(button => {
+                button.addEventListener('click', function () {
+                    removeItem(this);
+                });
             });
-        });
 
-        // Experience template
-        const experienceTemplate = `
-                    <div class="card mb-3">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <button type="button" class="btn btn-outline-secondary toggle-experience">
-                                    <span class="chevron-icon">▼</span>
-                                    Experience {display_index}
-                                </button>
-                                <button type="button" class="btn-close remove-experience" aria-label="Close"></button>
-                            </div>
-                            <div class="collapsible-content show">
-                                    <input type="hidden" name="ApplicantExperiences[{index}].Id" value="0" />
-                                <div class="mb-3">
-                                        <input type="text" class="form-control" name="ApplicantExperiences[{index}].Company" placeholder="Company" />
-                                </div>
-                                <div class="mb-3">
-                                        <input type="text" class="form-control" name="ApplicantExperiences[{index}].Position" placeholder="Position" />
-                                </div>
-                                <div class="row mb-3">
-                                    <div class="col-md-6">
-                                            <input type="date" class="form-control" name="ApplicantExperiences[{index}].StartDate" />
+            // Experience template
+            const experienceTemplate = `
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <button type="button" class="btn btn-outline-secondary toggle-experience">
+                                            <span class="chevron-icon">▼</span>
+                                            Experience {display_index}
+                                        </button>
+                                        <button type="button" class="btn-close remove-experience" aria-label="Close"></button>
                                     </div>
-                                    <div class="col-md-6">
-                                            <input type="date" class="form-control" name="ApplicantExperiences[{index}].EndDate" />
+                                    <div class="collapsible-content show">
+                                            <input type="hidden" name="ApplicantExperiences[{index}].Id" value="0" />
+                                        <div class="mb-3">
+                                                <input type="text" class="form-control" name="ApplicantExperiences[{index}].Company" placeholder="Company" />
+                                        </div>
+                                        <div class="mb-3">
+                                                <input type="text" class="form-control" name="ApplicantExperiences[{index}].Position" placeholder="Position" />
+                                        </div>
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                    <input type="date" class="form-control" name="ApplicantExperiences[{index}].StartDate" />
+                                            </div>
+                                            <div class="col-md-6">
+                                                    <input type="date" class="form-control" name="ApplicantExperiences[{index}].EndDate" />
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                                <textarea class="form-control" name="ApplicantExperiences[{index}].Description" rows="3" placeholder="Description"></textarea>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="mb-3">
-                                        <textarea class="form-control" name="ApplicantExperiences[{index}].Description" rows="3" placeholder="Description"></textarea>
+                            </div>
+                        `;
+
+            // Add new experience
+            document.getElementById('addExperience').addEventListener('click', function () {
+                const container = document.getElementById('experiencesContainer');
+                const index = container.children.length;
+                const display_index = index + 1;
+                const newExperience = experienceTemplate.replace(/{index}/g, index).replace(/{display_index}/g, display_index);;
+                container.insertAdjacentHTML('beforeend', newExperience);
+
+                // Add event listeners for the new experience
+                const newExperienceCard = container.lastElementChild;
+                newExperienceCard.querySelector('.toggle-experience').addEventListener('click', function () {
+                    toggleCollapsibleContent(this);
+                });
+                newExperienceCard.querySelector('.remove-experience').addEventListener('click', function () {
+                    removeItem(this);
+                });
+            });
+
+            // Skill template
+            const skillTemplate = `
+                            <div class="row mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <button type="button" class="btn btn-outline-secondary toggle-skill">
+                                        <span class="chevron-icon">▼</span>
+                                        Skill {display_index}
+                                    </button>
+                                    <button type="button" class="btn-close remove-skill" aria-label="Close"></button>
+                                </div>
+                                <div class="collapsible-content show">
+                                        <input type="hidden" name="ApplicantSkills[{index}].Id" value="0" />
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                                    <input type="text" class="form-control" name="ApplicantSkills[{index}].Name" placeholder="Skill name" />
+                                        </div>
+                                        <div class="col-md-4">
+                                                <select class="form-control" name="ApplicantSkills[{index}].Level">
+                                                <option value="Beginner">Beginner</option>
+                                                <option value="Intermediate">Intermediate</option>
+                                                <option value="Advanced">Advanced</option>
+                                                <option value="Expert">Expert</option>
+                                            </select>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                `;
+                        `;
 
-        // Add new experience
-        document.getElementById('addExperience').addEventListener('click', function () {
-            const container = document.getElementById('experiencesContainer');
-            const index = container.children.length;
-            const display_index = index + 1;
-            const newExperience = experienceTemplate.replace(/{index}/g, index).replace(/{display_index}/g, display_index);;
-            container.insertAdjacentHTML('beforeend', newExperience);
+            // Add new skill
+            document.getElementById('addSkill').addEventListener('click', function () {
+                const container = document.getElementById('skillsContainer');
+                const index = container.children.length;
+                const display_index = index + 1;
+                const newSkill = skillTemplate.replace(/{index}/g, index).replace(/{display_index}/g, display_index);
+                container.insertAdjacentHTML('beforeend', newSkill);
 
-            // Add event listeners for the new experience
-            const newExperienceCard = container.lastElementChild;
-            newExperienceCard.querySelector('.toggle-experience').addEventListener('click', function () {
-                toggleCollapsibleContent(this);
+                // Add event listeners for the new skill
+                const newSkillRow = container.lastElementChild;
+                newSkillRow.querySelector('.toggle-skill').addEventListener('click', function () {
+                    toggleCollapsibleContent(this);
+                });
+                newSkillRow.querySelector('.remove-skill').addEventListener('click', function () {
+                    removeItem(this);
+                });
             });
-            newExperienceCard.querySelector('.remove-experience').addEventListener('click', function () {
-                removeItem(this);
+
+            // Project template
+            const projectTemplate = `
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <button type="button" class="btn btn-outline-secondary toggle-project">
+                                            <span class="chevron-icon">▼</span>
+                                            Project {display_index}
+                                        </button>
+                                        <button type="button" class="btn-close remove-project" aria-label="Close"></button>
+                                    </div>
+                                    <div class="collapsible-content show">
+                                            <input type="hidden" name="ApplicantProjects[{index}].Id" value="0" />
+                                        <div class="mb-3">
+                                                <input type="text" class="form-control" name="ApplicantProjects[{index}].Name" placeholder="Project name" />
+                                        </div>
+                                        <div class="mb-3">
+                                                <textarea class="form-control" name="ApplicantProjects[{index}].Description" rows="3" placeholder="Project description"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+
+            // Add new project
+            document.getElementById('addProject').addEventListener('click', function () {
+                const container = document.getElementById('projectsContainer');
+                const index = container.children.length;
+                const display_index = index + 1;
+                const newProject = projectTemplate.replace(/{index}/g, index).replace(/{display_index}/g, display_index);;
+                container.insertAdjacentHTML('beforeend', newProject);
+
+                // Add event listeners for the new project
+                const newProjectCard = container.lastElementChild;
+                newProjectCard.querySelector('.toggle-project').addEventListener('click', function () {
+                    toggleCollapsibleContent(this);
+                });
+                newProjectCard.querySelector('.remove-project').addEventListener('click', function () {
+                    removeItem(this);
+                });
             });
         });
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const uploadCvButton = document.getElementById("uploadCvButton");
+            const cvFileInput = document.getElementById("cvFile");
+            const cvForm = document.getElementById("cvForm");
 
-        // Skill template
-        const skillTemplate = `
-                    <div class="row mb-3">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <button type="button" class="btn btn-outline-secondary toggle-skill">
-                                <span class="chevron-icon">▼</span>
-                                Skill {display_index}
-                            </button>
-                            <button type="button" class="btn-close remove-skill" aria-label="Close"></button>
-                        </div>
-                        <div class="collapsible-content show">
-                                <input type="hidden" name="ApplicantSkills[{index}].Id" value="0" />
-                            <div class="row">
-                                <div class="col-md-8">
-                                            <input type="text" class="form-control" name="ApplicantSkills[{index}].Name" placeholder="Skill name" />
-                                </div>
-                                <div class="col-md-4">
-                                        <select class="form-control" name="ApplicantSkills[{index}].Level">
-                                        <option value="Beginner">Beginner</option>
-                                        <option value="Intermediate">Intermediate</option>
-                                        <option value="Advanced">Advanced</option>
-                                        <option value="Expert">Expert</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
+            if (uploadCvButton && cvFileInput && cvForm) {
+                uploadCvButton.addEventListener("click", function () {
+                    cvFileInput.click(); // Trigger file selection
+                });
 
-        // Add new skill
-        document.getElementById('addSkill').addEventListener('click', function () {
-            const container = document.getElementById('skillsContainer');
-            const index = container.children.length;
-            const display_index = index + 1;
-            const newSkill = skillTemplate.replace(/{index}/g, index).replace(/{display_index}/g, display_index);
-            container.insertAdjacentHTML('beforeend', newSkill);
-
-            // Add event listeners for the new skill
-            const newSkillRow = container.lastElementChild;
-            newSkillRow.querySelector('.toggle-skill').addEventListener('click', function () {
-                toggleCollapsibleContent(this);
-            });
-            newSkillRow.querySelector('.remove-skill').addEventListener('click', function () {
-                removeItem(this);
-            });
+                cvFileInput.addEventListener("change", function () {
+                    cvForm.submit(); // Automatically submit form after file selection
+                });
+            } else {
+                console.error("One or more elements are missing: uploadCvButton, cvFileInput, cvForm.");
+            }
         });
 
-        // Project template
-        const projectTemplate = `
-                    <div class="card mb-3">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <button type="button" class="btn btn-outline-secondary toggle-project">
-                                    <span class="chevron-icon">▼</span>
-                                    Project {display_index}
-                                </button>
-                                <button type="button" class="btn-close remove-project" aria-label="Close"></button>
-                            </div>
-                            <div class="collapsible-content show">
-                                    <input type="hidden" name="ApplicantProjects[{index}].Id" value="0" />
-                                <div class="mb-3">
-                                        <input type="text" class="form-control" name="ApplicantProjects[{index}].Name" placeholder="Project name" />
-                                </div>
-                                <div class="mb-3">
-                                        <textarea class="form-control" name="ApplicantProjects[{index}].Description" rows="3" placeholder="Project description"></textarea>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
 
-        // Add new project
-        document.getElementById('addProject').addEventListener('click', function () {
-            const container = document.getElementById('projectsContainer');
-            const index = container.children.length;
-            const display_index = index + 1;
-            const newProject = projectTemplate.replace(/{index}/g, index).replace(/{display_index}/g, display_index);;
-            container.insertAdjacentHTML('beforeend', newProject);
-
-            // Add event listeners for the new project
-            const newProjectCard = container.lastElementChild;
-            newProjectCard.querySelector('.toggle-project').addEventListener('click', function () {
-                toggleCollapsibleContent(this);
-            });
-            newProjectCard.querySelector('.remove-project').addEventListener('click', function () {
-                removeItem(this);
-            });
+    </script>
+    <script>
+        document.getElementById("universitySelect").addEventListener("change", function () {
+            document.getElementById("universityInput").style.display = this.value === "Other" ? "block" : "none";
         });
-    });
-</script>
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const uploadCvButton = document.getElementById("uploadCvButton");
-        const cvFileInput = document.getElementById("cvFile");
-        const cvForm = document.getElementById("cvForm");
 
-        if (uploadCvButton && cvFileInput && cvForm) {
-            uploadCvButton.addEventListener("click", function () {
-                cvFileInput.click(); // Trigger file selection
-            });
+        document.getElementById("facultySelect").addEventListener("change", function () {
+            document.getElementById("facultyInput").style.display = this.value === "Other" ? "block" : "none";
+        });
+    </script>
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
 
-            cvFileInput.addEventListener("change", function () {
-                cvForm.submit(); // Automatically submit form after file selection
-            });
-        } else {
-            console.error("One or more elements are missing: uploadCvButton, cvFileInput, cvForm.");
-        }
-    });
-
-
-</script>
-<script>
-    document.getElementById("universitySelect").addEventListener("change", function () {
-        document.getElementById("universityInput").style.display = this.value === "Other" ? "block" : "none";
-    });
-
-    document.getElementById("facultySelect").addEventListener("change", function () {
-        document.getElementById("facultyInput").style.display = this.value === "Other" ? "block" : "none";
-    });
-</script>

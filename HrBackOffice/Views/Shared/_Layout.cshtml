@@ -537,6 +537,11 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link" asp-controller="Employees" asp-action="Index">
+                        <i class="fas fa-people-roof"></i> <span>Employees</span>
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" asp-controller="Department" asp-action="Index">
                         <i class="fas fa-people-roof"></i> <span>Departments</span>
                     </a>
@@ -585,7 +590,7 @@
             @{
                 var user = await UserManager.GetUserAsync(User);
                 var imageUrl = user?.ImageUrl;
-                var userName = user?.UserName ?? "User";
+                var userName = user?.DisplayName ?? "User";
                 var userRole = User.IsInRole("Admin") ? "Administrator" : "HR";
             }
             <div class="user-info">

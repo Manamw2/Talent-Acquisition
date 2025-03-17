@@ -18,6 +18,9 @@ namespace Models
         public DateOnly? BirthDate { get; set; }
         public string? CvUrl { get; set; }
         public string? ImageUrl { get; set; }
+
+        //extracted cv
+        //cv summary
         public List<ApplicantExperience> ApplicantExperiences { get; set; } = new List<ApplicantExperience>();
         public List<ApplicantSkill> ApplicantSkills { get; set; } = new List<ApplicantSkill>();
         public List<ApplicantProject> ApplicantProjects { get; set; } = new List<ApplicantProject>();

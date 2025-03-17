@@ -32,12 +32,13 @@ namespace DataAccess.Repository
 
         public async Task<List<HiringStage>> GetAllAsync()
         {
-            return await _context.hiringStages.Include(u => u.HiringStageOutcomes).ToListAsync();
+            return await _context.hiringStages.Include(u => u.HiringStageOutcomes).Include(u => u.CreatedBy).ToListAsync();
         }
 
         public async Task<HiringStage?> GetByIdAsync(int id)
         {
             return await _context.hiringStages
+                .Include(u => u.CreatedBy)
                 .Include(u => u.HiringStageOutcomes)
                 .Include(u => u.HiringStageParameters).ThenInclude(x => x.HiringParameter)
                 .FirstOrDefaultAsync(u => u.Id == id);

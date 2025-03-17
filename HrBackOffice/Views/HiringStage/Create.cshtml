@@ -1,0 +1,251 @@
+﻿@{
+    ViewData["Title"] = "Stage Creation Interface";
+}
+
+<div class="container py-4">
+    <div class="card mb-4" id="stage-template">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">Stage 1</h4>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <!-- Stage Name -->
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Stage Name</label>
+                        <input type="text" class="form-control stage-name" placeholder="Enter stage name">
+                    </div>
+                </div>
+
+                <!-- Required Employees -->
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Required Employees</label>
+                        <div class="departments-list">
+                            <div class="department-row mb-2">
+                                <div class="input-group">
+                                    <select class="form-select department-select">
+                                        <option value="">Select Department</option>
+                                        <option value="engineering">Engineering</option>
+                                        <option value="hr">Human Resources</option>
+                                        <option value="finance">Finance</option>
+                                        <option value="marketing">Marketing</option>
+                                    </select>
+                                    <input type="number" class="form-control employee-count" style="max-width: 100px;" min="1" value="1">
+                                    <button class="btn btn-outline-danger remove-row" type="button">✕</button>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn btn-link p-0 add-department" type="button">+ Add Department</button>
+                    </div>
+                </div>
+
+                <!-- Result Type -->
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Result Type</label>
+                        <select class="form-select result-type">
+                            <option value="pass_fail" selected>Pass/Fail</option>
+                            <option value="score">Score</option>
+                            <option value="text">Text</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Result Options -->
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Result Options</label>
+                        <div class="result-options d-flex gap-2">
+                            <div class="btn btn-outline-primary disabled result-option">Accepted</div>
+                            <div class="btn btn-outline-primary disabled result-option">Rejected</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Accepted Notification -->
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Accepted Notification</label>
+                        <textarea class="form-control accepted-notification" rows="3" placeholder="Notification message for accepted applicants"></textarea>
+                    </div>
+                </div>
+
+                <!-- Rejected Notification -->
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Rejected Notification</label>
+                        <textarea class="form-control rejected-notification" rows="3" placeholder="Notification message for rejected applicants"></textarea>
+                    </div>
+                </div>
+
+                <!-- Accepted Status -->
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Accepted Status</label>
+                        <input type="text" class="form-control accepted-status" placeholder="Status shown to accepted applicant">
+                    </div>
+                </div>
+
+                <!-- Rejected Status -->
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Rejected Status</label>
+                        <input type="text" class="form-control rejected-status" placeholder="Status shown to rejected applicant">
+                    </div>
+                </div>
+
+                <!-- Parameters -->
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label class="form-label">Parameters</label>
+                        <div class="parameters-list">
+                            <div class="parameter-row mb-2">
+                                <div class="input-group">
+                                    <select class="form-select parameter-select">
+                                        <option value="">Select Parameter</option>
+                                        <option value="comment">Comment</option>
+                                        <option value="offer">Offer</option>
+                                        <option value="rating">Rating</option>
+                                        <option value="attachment">Attachment</option>
+                                    </select>
+                                    <button class="btn btn-outline-danger remove-row" type="button">✕</button>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn btn-link p-0 add-parameter" type="button">+ Add Parameter</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex">
+        <button class="btn btn-primary create-template" type="button">Create Template</button>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            let stageCount = 1;
+
+            // Add department row
+            $(document).on('click', '.add-department', function() {
+                const departmentsList = $(this).closest('.form-group').find('.departments-list');
+                const newRow = `
+                    <div class="department-row mb-2">
+                        <div class="input-group">
+                            <select class="form-select department-select">
+                                <option value="">Select Department</option>
+                                <option value="engineering">Engineering</option>
+                                <option value="hr">Human Resources</option>
+                                <option value="finance">Finance</option>
+                                <option value="marketing">Marketing</option>
+                            </select>
+                            <input type="number" class="form-control employee-count" style="max-width: 100px;" min="1" value="1">
+                            <button class="btn btn-outline-danger remove-row" type="button">✕</button>
+                        </div>
+                    </div>
+                `;
+                departmentsList.append(newRow);
+            });
+
+            // Add parameter row
+            $(document).on('click', '.add-parameter', function() {
+                const parametersList = $(this).closest('.form-group').find('.parameters-list');
+                const newRow = `
+                    <div class="parameter-row mb-2">
+                        <div class="input-group">
+                            <select class="form-select parameter-select">
+                                <option value="">Select Parameter</option>
+                                <option value="comment">Comment</option>
+                                <option value="offer">Offer</option>
+                                <option value="rating">Rating</option>
+                                <option value="attachment">Attachment</option>
+                            </select>
+                            <button class="btn btn-outline-danger remove-row" type="button">✕</button>
+                        </div>
+                    </div>
+                `;
+                parametersList.append(newRow);
+            });
+
+            // Remove row (department or parameter)
+            $(document).on('click', '.remove-row', function() {
+                $(this).closest('.department-row, .parameter-row').remove();
+            });
+
+            // Toggle result options based on result type
+            $(document).on('change', '.result-type', function() {
+                const resultType = $(this).val();
+                const resultOptions = $(this).closest('.row').find('.result-options');
+
+                if (resultType === 'pass_fail') {
+                    resultOptions.html(`
+                        <div class="btn btn-outline-primary disabled result-option">Accepted</div>
+                        <div class="btn btn-outline-primary disabled result-option">Rejected</div>
+                    `);
+                } else if (resultType === 'score') {
+                    resultOptions.html(`
+                        <div class="btn btn-outline-primary disabled result-option">Pass</div>
+                        <div class="btn btn-outline-primary disabled result-option">Fail</div>
+                    `);
+                } else {
+                    resultOptions.html(`
+                        <div class="btn btn-outline-primary disabled result-option">Complete</div>
+                        <div class="btn btn-outline-primary disabled result-option">Incomplete</div>
+                    `);
+                }
+            });
+
+            // Handle result option selection
+            $(document).on('click', '.result-option', function() {
+                $(this).siblings().removeClass('active');
+                $(this).addClass('active');
+            });
+
+
+            // Create template
+            $('.create-template').click(function() {
+                // Here you would collect all the data and submit it
+                console.log('Creating template...');
+
+                // Example of collecting data for submission
+                const stages = [];
+                $('.card').each(function() {
+                    const stage = {
+                        name: $(this).find('.stage-name').val(),
+                        departments: [],
+                        resultType: $(this).find('.result-type').val(),
+                        acceptedNotification: $(this).find('.accepted-notification').val(),
+                        rejectedNotification: $(this).find('.rejected-notification').val(),
+                        acceptedStatus: $(this).find('.accepted-status').val(),
+                        rejectedStatus: $(this).find('.rejected-status').val(),
+                        parameters: []
+                    };
+
+                    // Collect departments
+                    $(this).find('.department-row').each(function() {
+                        stage.departments.push({
+                            department: $(this).find('.department-select').val(),
+                            count: $(this).find('.employee-count').val()
+                        });
+                    });
+
+                    // Collect parameters
+                    $(this).find('.parameter-row').each(function() {
+                        stage.parameters.push({
+                            type: $(this).find('.parameter-select').val()
+                        });
+                    });
+
+                    stages.push(stage);
+                });
+
+                console.log(stages);
+                // You would then send this data to your server using AJAX or form submission
+            });
+        });
+    </script>
+}

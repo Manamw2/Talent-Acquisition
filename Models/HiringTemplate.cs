@@ -19,8 +19,5 @@ namespace Models
         public List<Department> Departments { get; set; } = new List<Department>();
         public List<Job> Jobs { get; set; } = new List<Job>();
         public List<Batch> Batches { get; set; } = new List<Batch>();
-
-
-
     }
 }

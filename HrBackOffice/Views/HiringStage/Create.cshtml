@@ -1,134 +1,226 @@
-﻿@{
-    ViewData["Title"] = "Stage Creation Interface";
+﻿@model HiringStageVM
+@{
+    ViewData["Title"] = "Create New Hiring Stage";
 }
 
 <div class="container py-4">
-    <div class="card mb-4" id="stage-template">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h4 class="mb-0">Stage 1</h4>
-        </div>
-        <div class="card-body">
-            <div class="row g-3">
-                <!-- Stage Name -->
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label class="form-label">Stage Name</label>
-                        <input type="text" class="form-control stage-name" placeholder="Enter stage name">
+    <form asp-action="Create" method="post">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Create New Hiring Stage</h4>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <!-- Stage Name -->
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label asp-for="HiringStage.Name" class="form-label">Stage Name</label>
+                            <input asp-for="HiringStage.Name" class="form-control" placeholder="Enter stage name" required>
+                            <span asp-validation-for="HiringStage.Name" class="text-danger"></span>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Required Employees -->
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label class="form-label">Required Employees</label>
-                        <div class="departments-list">
-                            <div class="department-row mb-2">
-                                <div class="input-group">
-                                    <select class="form-select department-select">
-                                        <option value="">Select Department</option>
-                                        <option value="engineering">Engineering</option>
-                                        <option value="hr">Human Resources</option>
-                                        <option value="finance">Finance</option>
-                                        <option value="marketing">Marketing</option>
-                                    </select>
-                                    <input type="number" class="form-control employee-count" style="max-width: 100px;" min="1" value="1">
-                                    <button class="btn btn-outline-danger remove-row" type="button">✕</button>
+                    <!-- Required Employees -->
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Required Employees</label>
+                            <div class="departments-list">
+                                <div class="department-row mb-2">
+                                    <div class="input-group">
+                                        <select name="DepartmentIds" class="form-select department-select" required>
+                                            <option value="">Select Department</option>
+                                            @foreach (var department in Model.DepartmentsList)
+                                            {
+                                                <option value="@department.Value">@department.Text</option>
+                                            }
+                                        </select>
+                                        <input type="number" name="EmployeeCounts" class="form-control employee-count" style="max-width: 100px;" min="1" value="1" required>
+                                        <button class="btn btn-outline-danger remove-row" type="button">✕</button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <button class="btn btn-link p-0 add-department" type="button">+ Add Department</button>
-                    </div>
-                </div>
-
-                <!-- Result Type -->
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label class="form-label">Result Type</label>
-                        <select class="form-select result-type">
-                            <option value="pass_fail" selected>Pass/Fail</option>
-                            <option value="score">Score</option>
-                            <option value="text">Text</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Result Options -->
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label class="form-label">Result Options</label>
-                        <div class="result-options d-flex gap-2">
-                            <div class="btn btn-outline-primary disabled result-option">Accepted</div>
-                            <div class="btn btn-outline-primary disabled result-option">Rejected</div>
+                            <button class="btn btn-link p-0 add-department" type="button">+ Add Department</button>
                         </div>
                     </div>
-                </div>
 
-                <!-- Accepted Notification -->
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label class="form-label">Accepted Notification</label>
-                        <textarea class="form-control accepted-notification" rows="3" placeholder="Notification message for accepted applicants"></textarea>
+                    <!-- Min/Max Value (for Score type) - hidden for now -->
+                    <div class="col-md-6 score-range" style="display: none;">
+                        <div class="form-group">
+                            <label asp-for="HiringStage.MinValue" class="form-label">Minimum Value</label>
+                            <input asp-for="HiringStage.MinValue" class="form-control" type="number">
+                            <span asp-validation-for="HiringStage.MinValue" class="text-danger"></span>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Rejected Notification -->
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label class="form-label">Rejected Notification</label>
-                        <textarea class="form-control rejected-notification" rows="3" placeholder="Notification message for rejected applicants"></textarea>
+                    <div class="col-md-6 score-range" style="display: none;">
+                        <div class="form-group">
+                            <label asp-for="HiringStage.MaxValue" class="form-label">Maximum Value</label>
+                            <input asp-for="HiringStage.MaxValue" class="form-control" type="number">
+                            <span asp-validation-for="HiringStage.MaxValue" class="text-danger"></span>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Accepted Status -->
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label class="form-label">Accepted Status</label>
-                        <input type="text" class="form-control accepted-status" placeholder="Status shown to accepted applicant">
-                    </div>
-                </div>
-
-                <!-- Rejected Status -->
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label class="form-label">Rejected Status</label>
-                        <input type="text" class="form-control rejected-status" placeholder="Status shown to rejected applicant">
-                    </div>
-                </div>
-
-                <!-- Parameters -->
-                <div class="col-md-12">
-                    <div class="form-group">
-                        <label class="form-label">Parameters</label>
-                        <div class="parameters-list">
-                            <div class="parameter-row mb-2">
-                                <div class="input-group">
-                                    <select class="form-select parameter-select">
-                                        <option value="">Select Parameter</option>
-                                        <option value="comment">Comment</option>
-                                        <option value="offer">Offer</option>
-                                        <option value="rating">Rating</option>
-                                        <option value="attachment">Attachment</option>
-                                    </select>
-                                    <button class="btn btn-outline-danger remove-row" type="button">✕</button>
+                    <!-- Parameters -->
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Parameters</label>
+                            <div class="parameters-list">
+                                <div class="parameter-row mb-2">
+                                    <div class="input-group">
+                                        <select name="ParameterIds" class="form-select parameter-select" required>
+                                            <option value="">Select Parameter</option>
+                                            @foreach (var parameter in Model.ParametersList)
+                                            {
+                                                <option value="@parameter.Value">@parameter.Text</option>
+                                            }
+                                        </select>
+                                        <button class="btn btn-outline-danger remove-row" type="button">✕</button>
+                                    </div>
                                 </div>
                             </div>
+                            <button class="btn btn-link p-0 add-parameter" type="button">+ Add Parameter</button>
                         </div>
-                        <button class="btn btn-link p-0 add-parameter" type="button">+ Add Parameter</button>
+                    </div>
+
+                    <!-- Hidden field for OutcomeType - always set to PassFail (0) -->
+                    <input type="hidden" asp-for="HiringStage.OutcomeType" value="0" />
+
+                    <!-- Application Status fields as text inputs -->
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="AcceptedApplicationStatus" class="form-label">Accepted Application Status</label>
+                            <input asp-for="AcceptedApplicationStatus" class="form-control" placeholder="Enter accepted status (e.g. Shortlisted)" required>
+                            <span asp-validation-for="AcceptedApplicationStatus" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="RejectedApplicationStatus" class="form-label">Rejected Application Status</label>
+                            <input asp-for="RejectedApplicationStatus" class="form-control" placeholder="Enter rejected status (e.g. Rejected)" required>
+                            <span asp-validation-for="RejectedApplicationStatus" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <!-- Notification messages -->
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="AcceptedNotification" class="form-label">Accepted Notification</label>
+                            <textarea asp-for="AcceptedNotification" class="form-control" rows="3" placeholder="Notification message for accepted applicants" required></textarea>
+                            <span asp-validation-for="AcceptedNotification" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="RejectedNotification" class="form-label">Rejected Notification</label>
+                            <textarea asp-for="RejectedNotification" class="form-control" rows="3" placeholder="Notification message for rejected applicants" required></textarea>
+                            <span asp-validation-for="RejectedNotification" class="text-danger"></span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="d-flex">
-        <button class="btn btn-primary create-template" type="button">Create Template</button>
-    </div>
+        <div class="row py-2">
+            <div class="col-6 col-lg-3">
+                <button class="btn btn-primary form-control" type="submit">Create Stage</button>
+            </div>
+            <div class="col-6 col-lg-3">
+                <a asp-controller="HiringStage" asp-action="index" class="btn btn-light form-control border">Back to Stages List</a>
+            </div>
+        </div>
+    </form>
 </div>
 
 @section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
     <script>
         $(document).ready(function() {
-            let stageCount = 1;
+            // Keep all the outcome type logic for future use but don't call updateOutcomeOptions()
+            function updateOutcomeOptions() {
+                const outcomeType = '0'; // Hard-coded to PassFail for now
+                const container = $('.outcome-options-container');
+                container.empty();
+
+                // Show/hide score range inputs
+                if (outcomeType === '1') { // Set (assuming Set is enum value 1)
+                    $('.score-range').show();
+                } else {
+                    $('.score-range').hide();
+                }
+
+                // Add outcome options based on type
+                if (outcomeType === '0') { // PassFail
+                    container.append(`
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Accepted Outcome</label>
+                                    <input type="text" name="OutcomeNames" class="form-control" value="Accepted" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Rejected Outcome</label>
+                                    <input type="text" name="OutcomeNames" class="form-control" value="Rejected" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Accepted Notification</label>
+                                    <textarea name="OutcomeNotifications" class="form-control" rows="3" placeholder="Notification message for accepted applicants" required></textarea>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Rejected Notification</label>
+                                    <textarea name="OutcomeNotifications" class="form-control" rows="3" placeholder="Notification message for rejected applicants" required></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    `);
+                } else if (outcomeType === '1') { // Set
+                    container.append(`
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label class="form-label">Score Outcomes</label>
+                                <div class="score-outcomes-list">
+                                    <div class="score-outcome-row mb-2">
+                                        <div class="input-group">
+                                            <input type="text" name="OutcomeNames" class="form-control" placeholder="Outcome name" required>
+                                            <input type="number" name="OutcomeValues" class="form-control" placeholder="Threshold value" required>
+                                            <textarea name="OutcomeNotifications" class="form-control" placeholder="Notification message" required></textarea>
+                                            <button class="btn btn-outline-danger remove-row" type="button">✕</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="btn btn-link p-0 add-score-outcome" type="button">+ Add Score Outcome</button>
+                            </div>
+                        </div>
+                    `);
+                } else if (outcomeType === '2') { // Evaluation
+                    container.append(`
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label class="form-label">Evaluation Outcomes</label>
+                                <div class="evaluation-outcomes-list">
+                                    <div class="evaluation-outcome-row mb-2">
+                                        <div class="input-group">
+                                            <input type="text" name="OutcomeNames" class="form-control" placeholder="Outcome name" required>
+                                            <textarea name="OutcomeNotifications" class="form-control" placeholder="Notification message" required></textarea>
+                                            <button class="btn btn-outline-danger remove-row" type="button">✕</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="btn btn-link p-0 add-evaluation-outcome" type="button">+ Add Evaluation Outcome</button>
+                            </div>
+                        </div>
+                    `);
+                }
+            }
+
+            // Don't call updateOutcomeOptions() as we're handling it manually in the HTML
 
             // Add department row
             $(document).on('click', '.add-department', function() {
@@ -136,14 +228,14 @@
                 const newRow = `
                     <div class="department-row mb-2">
                         <div class="input-group">
-                            <select class="form-select department-select">
+                            <select name="DepartmentIds" class="form-select department-select" required>
                                 <option value="">Select Department</option>
-                                <option value="engineering">Engineering</option>
-                                <option value="hr">Human Resources</option>
-                                <option value="finance">Finance</option>
-                                <option value="marketing">Marketing</option>
+        @foreach (var department in Model.DepartmentsList)
+        {
+                                        <option value="@department.Value">@department.Text</option>
+        }
                             </select>
-                            <input type="number" class="form-control employee-count" style="max-width: 100px;" min="1" value="1">
+                            <input type="number" name="EmployeeCounts" class="form-control employee-count" style="max-width: 100px;" min="1" value="1" required>
                             <button class="btn btn-outline-danger remove-row" type="button">✕</button>
                         </div>
                     </div>
@@ -157,12 +249,12 @@
                 const newRow = `
                     <div class="parameter-row mb-2">
                         <div class="input-group">
-                            <select class="form-select parameter-select">
+                            <select name="ParameterIds" class="form-select parameter-select" required>
                                 <option value="">Select Parameter</option>
-                                <option value="comment">Comment</option>
-                                <option value="offer">Offer</option>
-                                <option value="rating">Rating</option>
-                                <option value="attachment">Attachment</option>
+        @foreach (var parameter in Model.ParametersList)
+        {
+                                                <option value="@parameter.Value">@parameter.Text</option>
+        }
                             </select>
                             <button class="btn btn-outline-danger remove-row" type="button">✕</button>
                         </div>
@@ -171,80 +263,41 @@
                 parametersList.append(newRow);
             });
 
-            // Remove row (department or parameter)
+            // Keep these for future use
+            // Add score outcome row
+            $(document).on('click', '.add-score-outcome', function() {
+                const scoreOutcomesList = $(this).closest('.form-group').find('.score-outcomes-list');
+                const newRow = `
+                    <div class="score-outcome-row mb-2">
+                        <div class="input-group">
+                            <input type="text" name="OutcomeNames" class="form-control" placeholder="Outcome name" required>
+                            <input type="number" name="OutcomeValues" class="form-control" placeholder="Threshold value" required>
+                            <textarea name="OutcomeNotifications" class="form-control" placeholder="Notification message" required></textarea>
+                            <button class="btn btn-outline-danger remove-row" type="button">✕</button>
+                        </div>
+                    </div>
+                `;
+                scoreOutcomesList.append(newRow);
+            });
+
+            // Add evaluation outcome row
+            $(document).on('click', '.add-evaluation-outcome', function() {
+                const evaluationOutcomesList = $(this).closest('.form-group').find('.evaluation-outcomes-list');
+                const newRow = `
+                    <div class="evaluation-outcome-row mb-2">
+                        <div class="input-group">
+                            <input type="text" name="OutcomeNames" class="form-control" placeholder="Outcome name" required>
+                            <textarea name="OutcomeNotifications" class="form-control" placeholder="Notification message" required></textarea>
+                            <button class="btn btn-outline-danger remove-row" type="button">✕</button>
+                        </div>
+                    </div>
+                `;
+                evaluationOutcomesList.append(newRow);
+            });
+
+            // Remove row (any type)
             $(document).on('click', '.remove-row', function() {
-                $(this).closest('.department-row, .parameter-row').remove();
-            });
-
-            // Toggle result options based on result type
-            $(document).on('change', '.result-type', function() {
-                const resultType = $(this).val();
-                const resultOptions = $(this).closest('.row').find('.result-options');
-
-                if (resultType === 'pass_fail') {
-                    resultOptions.html(`
-                        <div class="btn btn-outline-primary disabled result-option">Accepted</div>
-                        <div class="btn btn-outline-primary disabled result-option">Rejected</div>
-                    `);
-                } else if (resultType === 'score') {
-                    resultOptions.html(`
-                        <div class="btn btn-outline-primary disabled result-option">Pass</div>
-                        <div class="btn btn-outline-primary disabled result-option">Fail</div>
-                    `);
-                } else {
-                    resultOptions.html(`
-                        <div class="btn btn-outline-primary disabled result-option">Complete</div>
-                        <div class="btn btn-outline-primary disabled result-option">Incomplete</div>
-                    `);
-                }
-            });
-
-            // Handle result option selection
-            $(document).on('click', '.result-option', function() {
-                $(this).siblings().removeClass('active');
-                $(this).addClass('active');
-            });
-
-
-            // Create template
-            $('.create-template').click(function() {
-                // Here you would collect all the data and submit it
-                console.log('Creating template...');
-
-                // Example of collecting data for submission
-                const stages = [];
-                $('.card').each(function() {
-                    const stage = {
-                        name: $(this).find('.stage-name').val(),
-                        departments: [],
-                        resultType: $(this).find('.result-type').val(),
-                        acceptedNotification: $(this).find('.accepted-notification').val(),
-                        rejectedNotification: $(this).find('.rejected-notification').val(),
-                        acceptedStatus: $(this).find('.accepted-status').val(),
-                        rejectedStatus: $(this).find('.rejected-status').val(),
-                        parameters: []
-                    };
-
-                    // Collect departments
-                    $(this).find('.department-row').each(function() {
-                        stage.departments.push({
-                            department: $(this).find('.department-select').val(),
-                            count: $(this).find('.employee-count').val()
-                        });
-                    });
-
-                    // Collect parameters
-                    $(this).find('.parameter-row').each(function() {
-                        stage.parameters.push({
-                            type: $(this).find('.parameter-select').val()
-                        });
-                    });
-
-                    stages.push(stage);
-                });
-
-                console.log(stages);
-                // You would then send this data to your server using AJAX or form submission
+                $(this).closest('.department-row, .parameter-row, .score-outcome-row, .evaluation-outcome-row').remove();
             });
         });
     </script>

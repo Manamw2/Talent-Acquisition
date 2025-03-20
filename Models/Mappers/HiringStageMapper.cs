@@ -20,6 +20,8 @@ namespace Models.Mappers
                 OutcomeType = stage.OutcomeType,
                 OutcomeSet = stage.HiringStageOutcomes.Select(u => u.Name).ToList(),
                 Parameters = stage.HiringStageParameters.Select(u => u.HiringParameter).ToList(),
+                CreatedBy = stage?.CreatedBy?.DisplayName ?? "",
+                CreatedOn = stage.CreatedOn,
                 departmentNeedDtos = stage.StageDepartmentNeeds.Select(u => new DepartmentNeedDto
                 {
                     DepartmentId = u.DepartmentId,

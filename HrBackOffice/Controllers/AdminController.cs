@@ -3,6 +3,7 @@ using HrBackOffice.Services.ProfileServices;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Models;
+using Models.ViewModels;
 
 namespace HrBackOffice.Controllers
 {
@@ -49,7 +50,7 @@ namespace HrBackOffice.Controllers
             }
 
             var roles = await _userManager.GetRolesAsync(user);
-            if (!roles.Contains("Admin") && !roles.Contains("HR"))
+            if (!roles.Contains("Admin") && !roles.Contains("HR") && !roles.Contains("Employee"))
             {
                 ModelState.AddModelError(string.Empty, "You are not authorized to access this system");
                 return View(login);
@@ -138,6 +139,57 @@ namespace HrBackOffice.Controllers
 
             ModelState.AddModelError("", "Failed to change password");
             return RedirectToAction(nameof(ProfileIndex));
+        }
+
+        // GET: Admin/ResetPassword
+        public IActionResult ResetPassword(string email, string token)
+        {
+            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(token))
+            {
+                return BadRequest("Invalid password reset link");
+            }
+
+            var model = new ResetPasswordViewModel
+            {
+                Email = email,
+                Token = token
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                // Don't reveal that the user does not exist
+                return RedirectToAction("ResetPasswordConfirmation");
+            }
+
+            var result = await _userManager.ResetPasswordAsync(user, model.Token, model.Password);
+            if (result.Succeeded)
+            {
+                return RedirectToAction("ResetPasswordConfirmation");
+            }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError("", error.Description);
+            }
+            return View(model);
+        }
+
+        public IActionResult ResetPasswordConfirmation()
+        {
+            return View();
         }
 
     }

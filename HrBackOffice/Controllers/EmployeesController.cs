@@ -9,6 +9,10 @@ using DataAccess.Data;
 using Models;
 using System.Linq.Expressions;
 using DataAccess.Repository.IRepository;
+using Microsoft.AspNetCore.Identity;
+using HrBackOffice.Helper.EmailSetting;
+using System.Text;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace HrBackOffice.Controllers
 {
@@ -16,10 +20,15 @@ namespace HrBackOffice.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IUnitOfWork _unitOfWork;
-        public EmployeesController( IUnitOfWork unitOfWork,ApplicationDbContext context )
+        private readonly UserManager<AppUser> _userManager;
+        private readonly IEmailSend _emailService;
+
+        public EmployeesController(ApplicationDbContext context, IUnitOfWork unitOfWork, UserManager<AppUser> userManager, IEmailSend emailService)
         {
             _context = context;
             _unitOfWork = unitOfWork;
+            _userManager = userManager;
+            _emailService = emailService;
         }
 
         public async Task<IActionResult> Index(int page = 1, string searchQuery = "")
@@ -79,37 +88,100 @@ namespace HrBackOffice.Controllers
             return View(new Employee());
         }
 
-  
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Employee employee)
         {
             if (ModelState.IsValid)
             {
-                await _unitOfWork.EmpRepository.AddAsync(employee);
-                await _unitOfWork.SaveAsync();
-                return RedirectToAction(nameof(Index));
+                try
+                {
+                    // 1. Create the employee record
+                    await _unitOfWork.EmpRepository.AddAsync(employee);
+                    await _unitOfWork.SaveAsync();
+
+                    // 2. Create corresponding user account
+                    var user = new AppUser
+                    {
+                        UserName = employee.Email,
+                        Email = employee.Email,
+                        DisplayName = employee.Name,
+                        EmailConfirmed = true
+                    };
+
+                    // Generate a random secure password
+                    var password = GenerateSecureRandomPassword();
+
+                    // Create the user account
+                    var result = await _userManager.CreateAsync(user, password);
+
+                    if (result.Succeeded)
+                    {
+                        // 3. Assign default role
+                        await _userManager.AddToRoleAsync(user, "Employee");
+
+                        // 4. Generate password reset token and link
+                        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                        //token = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+                        var resetLink = Url.Action("ResetPassword", "Admin",
+                        new { email = user.Email, token = token },
+                        Request.Scheme);
+
+                        // 5. Send password reset email
+                        await _emailService.SendPasswordResetEmailAsync(user.Email, resetLink);
+
+                        return RedirectToAction(nameof(Index));
+                    }
+                    else
+                    {
+                        // If user creation fails, remove the employee
+                        _unitOfWork.EmpRepository.Remove(employee);
+                        await _unitOfWork.SaveAsync();
+
+                        foreach (var error in result.Errors)
+                        {
+                            ModelState.AddModelError("", error.Description);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", $"An error occurred: {ex.Message}");
+                }
             }
+
             ViewData["DepartmentId"] = new SelectList(_context.Department, "DepartmentId", "Name", employee.DepartmentId);
             return View(employee);
         }
-        // GET: Employees/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+
+        // Helper method to generate a secure random password
+        private string GenerateSecureRandomPassword()
         {
-            if (id == null)
+            const string upperChars = "ABCDEFGHJKLMNOPQRSTUVWXYZ";
+            const string lowerChars = "abcdefghijkmnopqrstuvwxyz";
+            const string numbers = "0123456789";
+            const string specialChars = "!@#$%^&*()_-+=<>?";
+
+            // Ensure password meets complexity requirements
+            var random = new Random();
+            var password = new StringBuilder();
+
+            // Add at least one of each character type
+            password.Append(upperChars[random.Next(upperChars.Length)]);
+            password.Append(lowerChars[random.Next(lowerChars.Length)]);
+            password.Append(numbers[random.Next(numbers.Length)]);
+            password.Append(specialChars[random.Next(specialChars.Length)]);
+
+            // Fill the rest with random characters
+            const string allChars = upperChars + lowerChars + numbers + specialChars;
+            for (int i = 4; i < 16; i++) // 16-character password
             {
-                return NotFound();
+                password.Append(allChars[random.Next(allChars.Length)]);
             }
 
-            var employee = await _context.Employee.FindAsync(id);
-            if (employee == null)
-            {
-                return NotFound();
-            }
-            ViewData["DepartmentId"] = new SelectList(_context.Department, "DepartmentId", "Name", employee.DepartmentId);
-            return View(employee);
+            // Shuffle the password
+            return new string(password.ToString().OrderBy(c => random.Next()).ToArray());
         }
-
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -124,8 +196,51 @@ namespace HrBackOffice.Controllers
             {
                 try
                 {
+                    // Get the old email before updating
+                    var existingEmployee = await _context.Employee.AsNoTracking()
+                        .FirstOrDefaultAsync(e => e.EmpId == id);
+                    string oldEmail = existingEmployee?.Email;
+
+                    // Update employee
                     _unitOfWork.EmpRepository.Update(employee);
                     await _unitOfWork.SaveAsync();
+
+                    // Update the associated user if email has changed
+                    if (oldEmail != employee.Email && !string.IsNullOrEmpty(oldEmail))
+                    {
+                        var user = await _userManager.FindByEmailAsync(oldEmail);
+                        if (user != null)
+                        {
+                            // Update basic user info
+                            user.UserName = employee.Email;
+                            user.Email = employee.Email;
+                            user.DisplayName = employee.Name;
+
+                            var updateResult = await _userManager.UpdateAsync(user);
+                            if (!updateResult.Succeeded)
+                            {
+                                foreach (var error in updateResult.Errors)
+                                {
+                                    ModelState.AddModelError("", error.Description);
+                                }
+                                ViewData["DepartmentId"] = new SelectList(_context.Department, "DepartmentId", "Name", employee.DepartmentId);
+                                return View(employee);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // If email didn't change, just update the display name
+                        var user = await _userManager.FindByEmailAsync(employee.Email);
+                        if (user != null && user.DisplayName != employee.Name)
+                        {
+                            user.DisplayName = employee.Name;
+                            await _userManager.UpdateAsync(user);
+                        }
+                    }
+
+                    TempData["SuccessMessage"] = "Employee updated successfully!";
+                    return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -138,11 +253,12 @@ namespace HrBackOffice.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
             }
+
             ViewData["DepartmentId"] = new SelectList(_context.Department, "DepartmentId", "Name", employee.DepartmentId);
             return View(employee);
         }
+
 
 
         public async Task<IActionResult> Delete(int id)
@@ -150,7 +266,20 @@ namespace HrBackOffice.Controllers
             var employee = await _unitOfWork.EmpRepository.GetFirstOrDefaultAsync(e=> e.EmpId == id);
             if (employee != null)
             {
+                var user = await _userManager.FindByEmailAsync(employee.Email);
+                if (user == null)
+                {
+                    return NotFound("User not found.");
+                }
+               
                 _unitOfWork.EmpRepository.Remove(employee);
+                // Remove user from database
+                var result = await _userManager.DeleteAsync(user);
+                if (!result.Succeeded)
+                {
+                    return BadRequest("Error deleting the user.");
+                }
+                
             }
 
             await _unitOfWork.SaveAsync();

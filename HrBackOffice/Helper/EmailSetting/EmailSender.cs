@@ -47,6 +47,23 @@ public class EmailSender : IEmailSend
         mailMessage.To.Add(toEmail);
         await _smtpClient.SendMailAsync(mailMessage);
     }
+    public async Task SendPasswordResetEmailAsync(string email, string resetLink)
+    {
+        var subject = "Welcome to Our Company - Set Your Password";
+        var htmlMessage = $@"
+            <html>
+                <body>
+                    <h2>Welcome to Our Company!</h2>
+                    <p>Your account has been created in our system.</p>
+                    <p>Please click the link below to set your password:</p>
+                    <p><a href='{resetLink}'>Set Your Password</a></p>
+                    <p>This link will expire in 24 hours.</p>
+                    <p>If you have any questions, please contact the HR department.</p>
+                </body>
+            </html>";
+
+        await SendEmailAsync(email, subject, htmlMessage);
+    }
 }
 
 

@@ -11,6 +11,7 @@ namespace DataAccess.Repository.IRepository
     {
         IRepository<Job> JobRepository { get; }
         IRepository<AppUser> UserRepository { get; }
+        IRepository<EmployeeTask> TaskRepository { get; }
         IRepository<Batch> BatchRepository { get; }
         IRepository<Department> DepartmentRepository { get; }
         IRepository<Employee> EmpRepository { get; }

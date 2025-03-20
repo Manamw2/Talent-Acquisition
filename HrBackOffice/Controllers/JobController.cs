@@ -38,8 +38,7 @@ namespace HrBackOffice.Controllers
             if (!string.IsNullOrWhiteSpace(searchQuery))
             {
                 filter = job => job.Title.Contains(searchQuery);
-                // You can expand this to search other fields if needed
-                // filter = job => job.Title.Contains(searchQuery) || job.Description.Contains(searchQuery);
+                
             }
 
             // Get total count for pagination with the filter applied

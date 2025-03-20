@@ -1,4 +1,5 @@
-﻿using Models;
+﻿using HrBackOffice.Helper;
+using Models;
 using System;
 using System.ComponentModel.DataAnnotations;
 
@@ -20,6 +21,7 @@ namespace HrBackOffice.Models
         [Required(ErrorMessage = "End Date is required")]
         [DataType(DataType.Date)]
         [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
+        [DateGreaterThan("StartDate", ErrorMessage = "End Date must be greater than or equal to Start Date")]
         public DateTime EndDate { get; set; }
 
         public int? JobId { get; set; }

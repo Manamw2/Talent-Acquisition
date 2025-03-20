@@ -94,10 +94,9 @@ namespace HrBackOffice.Helper.ApplicantService
             model.EducationLevels = new List<SelectListItem>
     {
         new SelectListItem { Value = "", Text = "Select Education Level" },
-        new SelectListItem { Value = "High School", Text = "High School" },
-        new SelectListItem { Value = "Bachelor", Text = "Bachelor" },
-        new SelectListItem { Value = "Master", Text = "Master" },
-        new SelectListItem { Value = "PhD", Text = "PhD" }
+        new SelectListItem { Value = "Graduated", Text = "Graduated" },
+        new SelectListItem { Value = "UnderGraduated", Text = "UnderGraduated" },
+        
     };
 
             // Initialize EnglishProficiencyLevels before inserting

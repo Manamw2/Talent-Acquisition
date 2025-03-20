@@ -21,12 +21,14 @@ namespace HrBackOffice.Models
         [RegularExpression(@"^[0-9]{11}$", ErrorMessage = "Phone number must be exactly 11 digits")]
         [Display(Name = "Phone Number")]
         public string Phone { get; set; } = string.Empty;
-
+        [Required(ErrorMessage = "Education Level is required.")]
         public string? EducationLevel { get; set; }
+        [Required(ErrorMessage = "Faculty is required.")]
         public string? Faculty { get; set; }
+        [Required(ErrorMessage = "University is required.")]
         public string? University { get; set; }
         public string? MethodOfContact { get; set; }
-
+        [Required(ErrorMessage = "English Level is required.")]
         public string EnglishProficiencyLevel { get; set; } = string.Empty; // Removed duplicate EnglishLevel
 
         public DateOnly? BirthDate { get; set; } // Changed from DateOnly? to DateTime?

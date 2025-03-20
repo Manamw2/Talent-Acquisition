@@ -1,0 +1,141 @@
+﻿@model HiringStageVM
+@{
+    ViewData["Title"] = "Create New Hiring Stage";
+}
+
+<div class="container py-4">
+    <form asp-action="Create" method="post">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Create New Hiring Stage</h4>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <!-- Stage Name -->
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label asp-for="HiringStage.Name" class="form-label">Stage Name</label>
+                            <input asp-for="HiringStage.Name" class="form-control" placeholder="Enter stage name" required>
+                            <span asp-validation-for="HiringStage.Name" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <!-- Required Employees -->
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Required Employees</label>
+                            <div class="departments-list">
+                                <div class="department-row mb-2">
+                                    <div class="input-group">
+                                        <select name="DepartmentIds" class="form-select department-select" required>
+                                            <option value="">Select Department</option>
+                                            @foreach (var department in Model.DepartmentsList)
+                                            {
+                                                <option value="@department.Value">@department.Text</option>
+                                            }
+                                        </select>
+                                        <input type="number" name="EmployeeCounts" class="form-control employee-count" style="max-width: 100px;" min="1" value="1" required>
+                                        <button class="btn btn-outline-danger remove-row" type="button">✕</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="btn btn-link p-0 add-department" type="button">+ Add Department</button>
+                        </div>
+                    </div>
+
+                    <!-- Min/Max Value (for Score type) - hidden for now -->
+                    <div class="col-md-6 score-range" style="display: none;">
+                        <div class="form-group">
+                            <label asp-for="HiringStage.MinValue" class="form-label">Minimum Value</label>
+                            <input asp-for="HiringStage.MinValue" class="form-control" type="number">
+                            <span asp-validation-for="HiringStage.MinValue" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 score-range" style="display: none;">
+                        <div class="form-group">
+                            <label asp-for="HiringStage.MaxValue" class="form-label">Maximum Value</label>
+                            <input asp-for="HiringStage.MaxValue" class="form-control" type="number">
+                            <span asp-validation-for="HiringStage.MaxValue" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <!-- Parameters -->
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Parameters</label>
+                            <div class="parameters-list">
+                                <div class="parameter-row mb-2">
+                                    <div class="input-group">
+                                        <select name="ParameterIds" class="form-select parameter-select" required>
+                                            <option value="">Select Parameter</option>
+                                            @foreach (var parameter in Model.ParametersList)
+                                            {
+                                                <option value="@parameter.Value">@parameter.Text</option>
+                                            }
+                                        </select>
+                                        <button class="btn btn-outline-danger remove-row" type="button">✕</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="btn btn-link p-0 add-parameter" type="button">+ Add Parameter</button>
+                        </div>
+                    </div>
+
+                    <!-- Hidden field for OutcomeType - always set to PassFail (0) -->
+                    <input type="hidden" asp-for="HiringStage.OutcomeType" value="0" />
+
+                    <!-- Application Status fields as text inputs -->
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="AcceptedApplicationStatus" class="form-label">Accepted Application Status</label>
+                            <input asp-for="AcceptedApplicationStatus" class="form-control" placeholder="Enter accepted status (e.g. Shortlisted)" required>
+                            <span asp-validation-for="AcceptedApplicationStatus" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="RejectedApplicationStatus" class="form-label">Rejected Application Status</label>
+                            <input asp-for="RejectedApplicationStatus" class="form-control" placeholder="Enter rejected status (e.g. Rejected)" required>
+                            <span asp-validation-for="RejectedApplicationStatus" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <!-- Notification messages -->
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="AcceptedNotification" class="form-label">Accepted Notification</label>
+                            <textarea asp-for="AcceptedNotification" class="form-control" rows="3" placeholder="Notification message for accepted applicants" required></textarea>
+                            <span asp-validation-for="AcceptedNotification" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="RejectedNotification" class="form-label">Rejected Notification</label>
+                            <textarea asp-for="RejectedNotification" class="form-control" rows="3" placeholder="Notification message for rejected applicants" required></textarea>
+                            <span asp-validation-for="RejectedNotification" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row py-2">
+            <div class="col-6 col-lg-3">
+                <button class="btn btn-primary form-control" type="submit">Create Stage</button>
+            </div>
+            <div class="col-6 col-lg-3">
+                <a asp-controller="HiringStage" asp-action="index" class="btn btn-light form-control border">Back to Stages List</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        var departmentsList = JSON.parse('@Html.Raw(Json.Serialize(Model.DepartmentsList))');
+        var parametersList = JSON.parse('@Html.Raw(Json.Serialize(Model.ParametersList))');
+    </script>
+    <script src="~/js/CreateHiringStage.js"></script>
+    <partial name="_ValidationScriptsPartial" />
+}

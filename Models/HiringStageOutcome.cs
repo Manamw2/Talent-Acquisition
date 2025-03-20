@@ -11,6 +11,8 @@ namespace Models
     {
         public int Id { get; set; }
         public string Name { get; set; }
+        public string NotificationMessage { get; set; }
+        public string ApplicationStatus { get; set; }
         public int StageId { get; set; }
         [ForeignKey(nameof(StageId))]
         public HiringStage HiringStage { get; set; }

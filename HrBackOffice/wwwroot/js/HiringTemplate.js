@@ -27,8 +27,8 @@ function loadTableData() {
                 "width": "25%",
                 "render": function (data) {
                     return `<div class="input-group" role="group">
-                            <a href="/HiringTemplate/Update?id=${data}" class="btn btn-primary mx-2">
-                                <i class="bi bi-pencil-square"></i> Edit
+                            <a href="/HiringTemplate/Details?id=${data}" class="btn btn-primary mx-2">
+                                <i class="bi bi-pencil-square"></i> Details
                             </a>
                             <a onclick="deleteTemplate('/api/HiringTemplateApi/${data}')" class="btn btn-danger mx-2">
                                 <i class="bi bi-trash-fill"></i> Delete

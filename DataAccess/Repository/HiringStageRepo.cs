@@ -42,6 +42,7 @@ namespace DataAccess.Repository
                 .Include(u => u.CreatedBy)
                 .Include(u => u.HiringStageOutcomes)
                 .Include(u => u.HiringStageParameters).ThenInclude(x => x.HiringParameter)
+                .Include(u => u.StageDepartmentNeeds).ThenInclude(d => d.Department)
                 .FirstOrDefaultAsync(u => u.Id == id);
         }
 

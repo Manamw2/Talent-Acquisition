@@ -27,14 +27,15 @@
                             <div class="departments-list">
                                 <div class="department-row mb-2">
                                     <div class="input-group">
-                                        <select name="DepartmentIds" class="form-select department-select" required>
+                                        <select name="Departments[0].Id" class="form-select department-select" required>
                                             <option value="">Select Department</option>
                                             @foreach (var department in Model.DepartmentsList)
                                             {
                                                 <option value="@department.Value">@department.Text</option>
                                             }
                                         </select>
-                                        <input type="number" name="EmployeeCounts" class="form-control employee-count" style="max-width: 100px;" min="1" value="1" required>
+                                        <input type="hidden" name="Departments[0].Name" class="department-name">
+                                        <input type="number" name="Departments[0].NeededEmployees" class="form-control employee-count" style="max-width: 100px;" min="1" value="1" required>
                                         <button class="btn btn-outline-danger remove-row" type="button">✕</button>
                                     </div>
                                 </div>
@@ -67,7 +68,7 @@
                             <div class="parameters-list">
                                 <div class="parameter-row mb-2">
                                     <div class="input-group">
-                                        <select name="ParameterIds" class="form-select parameter-select" required>
+                                        <select name="ParameterIds[0]" class="form-select parameter-select" required>
                                             <option value="">Select Parameter</option>
                                             @foreach (var parameter in Model.ParametersList)
                                             {

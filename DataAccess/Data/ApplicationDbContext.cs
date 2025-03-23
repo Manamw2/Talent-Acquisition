@@ -34,9 +34,6 @@ namespace DataAccess.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<HiringTemplateStage>()
-                .HasKey(hts => new { hts.TemplateId, hts.StageId });
-
             modelBuilder.Entity<HiringStageParameter>()
                 .HasKey(hsp => new { hsp.StageId, hsp.ParameterId });
 

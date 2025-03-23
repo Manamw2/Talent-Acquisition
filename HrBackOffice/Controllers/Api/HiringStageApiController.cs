@@ -23,7 +23,7 @@ namespace HrBackOffice.Controllers.Api
         public async Task<IActionResult> GetAllAsync()
         {
             var stages = await _hiringStageRepo.GetAllAsync();
-            return Ok(stages.Select(u => u.ToHiringStageDto()).ToList());
+            return Ok(stages.Select(u => u.ToSimplifiedHiringStageDto()).ToList());
         }
 
         [HttpGet("{id:int}")]

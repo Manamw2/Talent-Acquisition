@@ -11,10 +11,11 @@ namespace Models
     {
         public int Id { get; set; }
         public string Name { get; set; }
+        public string Description { get; set; }
         public DateTime CreatedOn { get; set; }
-        public string AppUserId { get; set; }
+        public string? AppUserId { get; set; }
         [ForeignKey(nameof(AppUserId))]
-        public AppUser CreatedBy { get; set; }
+        public AppUser? CreatedBy { get; set; }
         public List<HiringTemplateStage> HiringTemplateStages { get; set; } = new List<HiringTemplateStage>();
         public List<Department> Departments { get; set; } = new List<Department>();
         public List<Job> Jobs { get; set; } = new List<Job>();

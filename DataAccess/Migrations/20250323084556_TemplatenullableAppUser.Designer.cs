@@ -4,6 +4,7 @@ using DataAccess.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250323084556_TemplatenullableAppUser")]
+    partial class TemplatenullableAppUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -661,26 +664,18 @@ namespace DataAccess.Migrations
 
             modelBuilder.Entity("Models.HiringTemplateStage", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("Occurrence")
+                    b.Property<int>("TemplateId")
                         .HasColumnType("int");
 
                     b.Property<int>("StageId")
                         .HasColumnType("int");
 
-                    b.Property<int>("TemplateId")
+                    b.Property<int>("Occurrence")
                         .HasColumnType("int");
 
-                    b.HasKey("Id");
+                    b.HasKey("TemplateId", "StageId");
 
                     b.HasIndex("StageId");
-
-                    b.HasIndex("TemplateId");
 
                     b.ToTable("HiringTemplateStages");
                 });

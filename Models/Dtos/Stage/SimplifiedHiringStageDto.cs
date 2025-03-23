@@ -1,25 +1,19 @@
-﻿using Models.Dtos.Parameter;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Models.Dtos.Stage
 {
-    public class HiringStageDto
+    public class SimplifiedHiringStageDto
     {
         public int Id { get; set; }
         public string StageName { get; set; } = string.Empty;
         public OutcomeType OutcomeType { get; set; }
-        public List<string> OutcomeSet { get; set; } = new List<string>();
-        public List<HiringParameterDto> Parameters { get; set; } = new List<HiringParameterDto>();
         public int? MinValue { get; set; }
         public int? MaxValue { get; set; }
         public DateTime CreatedOn { get; set; }
         public string CreatedBy { get; set; }
-        public int Occurance { get; set; }
-        public List<DepartmentNeedDto> departmentNeedDtos { get; set; } = new List<DepartmentNeedDto>();
     }
 }

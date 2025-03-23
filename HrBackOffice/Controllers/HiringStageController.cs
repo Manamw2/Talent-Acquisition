@@ -21,7 +21,7 @@ namespace HrBackOffice.Controllers
         public async Task<IActionResult> Index()
         {
             var stages = await _hiringStageRepo.GetAllAsync();
-            return View(stages.Select(u => u.ToHiringStageDto()).ToList());
+            return View(stages.Select(u => u.ToSimplifiedHiringStageDto()).ToList());
         }
 
         public async Task<IActionResult> Create()

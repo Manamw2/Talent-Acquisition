@@ -17,7 +17,7 @@ namespace Models.Mappers
                 Id = template.Id,
                 Name = template.Name,
                 CreatedOn = template.CreatedOn,
-                AddedByName = template.CreatedBy.DisplayName,
+                AddedByName = template?.CreatedBy?.DisplayName ?? "",
             };
         }
 

@@ -1,0 +1,140 @@
+﻿@model HiringTemplateVM
+@{
+    ViewData["Title"] = "Create Hiring Template";
+}
+
+<div class="container py-4">
+    <form asp-action="Create" method="post">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Create Hiring Template</h4>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <!-- Template Name -->
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label asp-for="HiringTemplate.Name" class="form-label">Template Name</label>
+                            <input asp-for="HiringTemplate.Name" class="form-control" placeholder="Enter template name" required>
+                            <span asp-validation-for="HiringTemplate.Name" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <!-- Template Description -->
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label asp-for="HiringTemplate.Description" class="form-label">Description</label>
+                            <textarea asp-for="HiringTemplate.Description" class="form-control" rows="3" placeholder="Enter template description"></textarea>
+                            <span asp-validation-for="HiringTemplate.Description" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <!-- Stages Section -->
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Hiring Stages</h5>
+                                <div>
+                                    <button type="button" class="btn btn-outline-primary btn-sm" id="openStageModalBtn">
+                                        Add Existing Stage
+                                    </button>
+                                    <a href="@Url.Action("Create", "HiringStage")" class="btn btn-primary btn-sm" target="_blank">
+                                        Create New Stage
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div id="stages-container">
+                                    <div class="alert alert-info mb-0" id="no-stages-message">
+                                        No stages added yet. Use the buttons above to add stages to this template.
+                                    </div>
+                                    <ul class="list-group stages-list" style="display: none;">
+                                        <!-- Stages will be added here dynamically -->
+                                    </ul>
+                                </div>
+
+                                <!-- Hidden inputs to store selected stages -->
+                                <div id="selected-stages-inputs">
+                                    <!-- Selected stages will be added here as hidden inputs -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row py-2">
+            <div class="col-6 col-lg-3">
+                <button class="btn btn-primary form-control" type="submit" id="submit-template">Create Template</button>
+            </div>
+            <div class="col-6 col-lg-3">
+                <a asp-controller="HiringTemplate" asp-action="index" class="btn btn-light form-control border">Back to Templates List</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Modal for selecting existing stages -->
+<div class="modal fade" id="addExistingStageModal" tabindex="-1" aria-labelledby="addExistingStageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addExistingStageModalLabel">Add Existing Stage</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="stageSelect" class="form-label">Select a Hiring Stage</label>
+                    <select id="stageSelect" class="form-select">
+                        <option value="">-- Select Stage --</option>
+                        @foreach (var stage in Model.AvailableStages)
+                        {
+                            <option value="@stage.Id">@stage.StageName</option>
+                        }
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="stageOccurrence" class="form-label">Stage Occurrence (Order)</label>
+                    <input type="number" id="stageOccurrence" class="form-control" min="1" value="1">
+                </div>
+                <div id="stage-preview" class="mt-4" style="display: none;">
+                    <h6>Stage Details</h6>
+                    <dl class="row">
+                        <dt class="col-sm-3">Name:</dt>
+                        <dd class="col-sm-9" id="preview-name"></dd>
+
+                        <dt class="col-sm-3">Outcome Type:</dt>
+                        <dd class="col-sm-9" id="preview-outcome-type"></dd>
+
+                        <dt class="col-sm-3">Parameters:</dt>
+                        <dd class="col-sm-9" id="preview-parameters"></dd>
+                    </dl>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="add-stage-btn">Add Stage</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Available stages from the server
+        var availableStages = @Html.Raw(Json.Serialize(Model.AvailableStages));
+
+        // The selected stages (will be submitted with the form)
+        var selectedStages = [];
+
+        // Enum mapping for OutcomeType
+        var outcomeTypeNames = {
+            0: "Pass/Fail",
+            1: "Set",
+            2: "Evaluation"
+        };
+    </script>
+    <script src="~/js/CreateHiringTemplate.js"></script>
+    <partial name="_ValidationScriptsPartial" />
+}

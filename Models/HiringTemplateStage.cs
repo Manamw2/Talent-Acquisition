@@ -9,6 +9,7 @@ namespace Models
 {
     public class HiringTemplateStage
     {
+        public int Id { get; set; }
         public int Occurrence { get; set; }
         public int TemplateId { get; set; }
         public int StageId { get; set; }

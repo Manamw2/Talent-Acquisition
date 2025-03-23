@@ -1,6 +1,7 @@
 ﻿using DataAccess.Repository.IRepository;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using Models;
 using Models.Mappers;
 using Models.ViewModels;
@@ -59,7 +60,7 @@ namespace HrBackOffice.Controllers
                 AppUserId = userId,
                 CreatedOn = DateTime.Now,
                 OutcomeType = hiringStageVM.HiringStage.OutcomeType,
-                StageDepartmentNeeds = hiringStageVM.DepartmentIds.Select(u => new StageDepartmentNeed { DepartmentId = u}).ToList(),
+                StageDepartmentNeeds = hiringStageVM.Departments.Select(u => new StageDepartmentNeed { DepartmentId = u.Id, EmployeesNeeded = u.NeededEmployees}).ToList(),
                 HiringStageParameters = hiringStageVM.ParameterIds.Select(u => new HiringStageParameter { ParameterId = u }).ToList(),
                 HiringStageOutcomes = new List<HiringStageOutcome> { 
                     new HiringStageOutcome
@@ -78,6 +79,30 @@ namespace HrBackOffice.Controllers
             };
             await _hiringStageRepo.CreateAsync(hiringStage);
             return RedirectToAction("Index");
+        }
+
+        public async Task<IActionResult> Details(int id)
+        {
+            var hiringStage = await _hiringStageRepo.GetByIdAsync(id);
+            if (hiringStage == null)
+            {
+                return NotFound();
+            }
+            var hiringstageVm = new HiringStageDetailsVM
+            {
+                HiringStage = hiringStage,
+                Outcomes = hiringStage.HiringStageOutcomes.Select(o => new OutcomeVm
+                {
+                    Name = o.Name,
+                    ApplicationStatus = o.ApplicationStatus,
+                    NotificationMessage = o.NotificationMessage,
+                }).ToList(),
+                Parameters = hiringStage.HiringStageParameters.Select(p => p.HiringParameter).Select(p => new ParameterVm
+                {
+                    Name = p.Name,
+                }).ToList(),
+            };
+            return View(hiringstageVm);
         }
     }
 }

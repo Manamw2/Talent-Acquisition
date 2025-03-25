@@ -1,0 +1,97 @@
+﻿@model AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="container-fluid mt-4">
+    <h2>Welcome, @Model.UserName</h2>
+    <p>This is the administration dashboard for hiring management.</p>
+
+    <div class="row mt-4">
+        <div class="col-md-3 mb-4">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Total Employees</h5>
+                    <h2 class="display-4">@Model.TotalEmployees</h2>
+                </div>
+                <div class="card-footer d-flex">
+
+                    <a asp-controller="Employees" asp-action="Index" class="text-white text-decoration-none">
+                        View Details
+                        <span class="ms-2"><i class="fas fa-arrow-circle-right"></i></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-4">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Open Jobs</h5>
+                    <h2 class="display-4">@Model.TotalJobs</h2>
+                </div>
+                <div class="card-footer d-flex">
+                    <a asp-controller="Job" asp-action="Index" class="text-white text-decoration-none">
+                        View Details
+                        <span class="ms-2"><i class="fas fa-arrow-circle-right"></i></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-4">
+            <div class="card bg-warning text-white h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Active Batches</h5>
+                    <h2 class="display-4">@Model.TotalBatches</h2>
+                </div>
+                <div class="card-footer d-flex">
+                    <a asp-controller="Batch" asp-action="Index" class="text-white text-decoration-none">
+                        View Details
+                        <span class="ms-2"><i class="fas fa-arrow-circle-right"></i></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-4">
+            <div class="card bg-danger text-white h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Total Tasks</h5>
+                    <h2 class="display-4">@Model.TotalTasks</h2>
+                </div>
+                <div class="card-footer d-flex">
+                    <a asp-controller="HiringTasks" asp-action="Index" class="text-white text-decoration-none">
+                        View Details
+                        <span class="ms-2"><i class="fas fa-arrow-circle-right"></i></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+@* 
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Recent Hiring Activity</h5>
+                </div>
+                <div class="card-body">
+                    <p>Placeholder for recent activity table or chart</p>
+                    <!-- You can add actual data here in the future -->
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Task Status Overview</h5>
+                </div>
+                <div class="card-body">
+                    <p>Placeholder for task status chart</p>
+                    <!-- You can add actual data here in the future -->
+                </div>
+            </div>
+        </div>
+    </div> *@
+</div>

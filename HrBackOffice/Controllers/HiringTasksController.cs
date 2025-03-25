@@ -24,18 +24,30 @@ namespace HrBackOffice.Controllers
         {
             // Get current user
             var user = await _userManager.GetUserAsync(User);
-            if (user == null) return RedirectToAction("Login", "Account");
+            if (user == null) return RedirectToAction("Login", "Admin");
 
             // Get the employee associated with the current user
             var employee = await _unitOfWork.EmpRepository.GetFirstOrDefaultAsync(e => e.Email == user.Email);
-            if (employee == null) return NotFound();
+
+            // Check if the user is not an employee
+            if (employee == null)
+            {
+                bool isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
+
+                if (isAdmin)
+                {
+                    // Redirect to the admin dashboard
+                    return RedirectToAction("Dashboard", "Admin");
+                }
+
+                // If the user doesn't have appropriate roles, show access denied
+                return RedirectToAction("AccessDenied", "Admin");
+            }
 
             // Get tasks assigned to the employee
             var tasksViewModel = await GetHiringTasksForEmployee(employee.EmpId, page, pageSize, searchTerm, status, department, batch);
-
             return View(tasksViewModel);
         }
-
         private async Task<HiringTasksViewModel> GetHiringTasksForEmployee(int employeeId, int page,
             int pageSize, string? searchTerm, string? status, string? department, string? batch)
         {
@@ -138,17 +150,59 @@ namespace HrBackOffice.Controllers
             var employeeTask = await _unitOfWork.TaskRepository.GetFirstOrDefaultAsync(e => e.Id == id);
             if (employeeTask == null) return NotFound();
 
-            // Validate status
-            if (status != "New" && status != "Active" && status != "Hold" && status != "Completed")
+            // Handle task assignment
+            if (employeeTask.Status == "UnAssigned" && status == "Assigned")
             {
-                ModelState.AddModelError("", "Invalid status value");
-                return RedirectToAction("Details", new { id = id });
+                try
+                {
+                    // Mark task as assigned for current employee
+                    employeeTask.isAssigned = true;
+                    employeeTask.Status = "New"; // Automatically move to New status
+                    employeeTask.AssignedDate = DateTime.Now;
+
+                    // Update this employee's task
+                    _unitOfWork.TaskRepository.Update(employeeTask);
+                    await _unitOfWork.SaveAsync();
+
+                    // Now remove task from other employees' lists
+                    var taskId = employeeTask.TaskId;
+                    var currentEmployeeId = employeeTask.EmployeeId;
+
+                    var otherEmployeeTasks = await _unitOfWork.TaskRepository.GetAllAsync(
+                        e => e.TaskId == taskId && e.EmployeeId != currentEmployeeId);
+
+                    foreach (var task in otherEmployeeTasks)
+                    {
+                        _unitOfWork.TaskRepository.Remove(task);
+                    }
+
+                    await _unitOfWork.SaveAsync();
+
+                    return RedirectToAction("Details", new { id = id });
+                }
+                catch (Exception ex)
+                {
+                    // Log exception
+                    ModelState.AddModelError("", "Error occurred while assigning task");
+                    return RedirectToAction("Details", new { id = id });
+                }
             }
 
-            // Update status
-            employeeTask.Status = status;
-            _unitOfWork.TaskRepository.Update(employeeTask);
-            await _unitOfWork.SaveAsync();
+            // Regular status updates
+            else if (employeeTask.isAssigned)
+            {
+                // Validate status
+                if (status != "New" && status != "Active" && status != "Hold" && status != "Completed")
+                {
+                    ModelState.AddModelError("", "Invalid status value");
+                    return RedirectToAction("Details", new { id = id });
+                }
+
+                // Update status
+                employeeTask.Status = status;
+                _unitOfWork.TaskRepository.Update(employeeTask);
+                await _unitOfWork.SaveAsync();
+            }
 
             return RedirectToAction("Details", new { id = id });
         }
@@ -157,16 +211,31 @@ namespace HrBackOffice.Controllers
         [HttpPost]
         public async Task<IActionResult> UpdateStatus(int applicantId, int taskId, string status, string comments)
         {
+            // First, retrieve the application
             var application = await _unitOfWork.JobApplicationRepository.GetFirstOrDefaultAsync(a => a.ApplicationId == applicantId);
-            if (application == null) return NotFound();
+            if (application == null)
+            {
+                TempData["Error"] = "Application not found";
+                return RedirectToAction("Details", new { id = taskId });
+            }
+
+            // Save the original status to check if it changed
+            var originalStatus = application.Status;
 
             // Update the status
             application.Status = status;
 
-            
+            // Add comments if provided
+            if (!string.IsNullOrEmpty(comments))
+            {
+               
+                application.SourceDetails = comments; 
+            }
+
+            // Update the application
             _unitOfWork.JobApplicationRepository.Update(application);
 
-            // Update task status to Active when processing applicants
+            // Update task status to Active if it was New
             var employeeTask = await _unitOfWork.TaskRepository.GetFirstOrDefaultAsync(e => e.Id == taskId);
             if (employeeTask != null && employeeTask.Status == "New")
             {
@@ -174,8 +243,13 @@ namespace HrBackOffice.Controllers
                 _unitOfWork.TaskRepository.Update(employeeTask);
             }
 
+            // Save changes
             await _unitOfWork.SaveAsync();
 
+            // Add a success message
+            TempData["Success"] = $"Status updated to {status} for applicant {application.AppUser?.DisplayName} ";
+
+            // Redirect back to the task details page
             return RedirectToAction("Details", new { id = taskId });
         }
     }

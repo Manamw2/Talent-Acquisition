@@ -17,7 +17,8 @@ namespace Models
         [ForeignKey(nameof(TaskId))]
         public HiringTask HiringTask { get; set; }
 
-        public string Status { get; set; } = "New";  // Default status
+        public string Status { get; set; } = "UnAssigned";  // Default status
+        public bool isAssigned { get; set; } = false; //by default false
         public DateTime AssignedDate { get; set; } = DateTime.Now;
     }
 }

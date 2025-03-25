@@ -1,4 +1,5 @@
-﻿using HrBackOffice.Models;
+﻿using DataAccess.Repository.IRepository;
+using HrBackOffice.Models;
 using HrBackOffice.Services.ProfileServices;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -12,14 +13,16 @@ namespace HrBackOffice.Controllers
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
         private readonly IProfileService _profileService;
-
+        private readonly IUnitOfWork _unitOfWork;
         public AdminController(UserManager<AppUser> userManager
                             , SignInManager<AppUser> signInManager
-                            , IProfileService profileService)
+                            , IProfileService profileService,
+IUnitOfWork unitOfWork)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _profileService = profileService;
+            _unitOfWork = unitOfWork;
         }
         public IActionResult Login()
         {
@@ -190,6 +193,30 @@ namespace HrBackOffice.Controllers
         public IActionResult ResetPasswordConfirmation()
         {
             return View();
+        }
+
+        public IActionResult AccessDenied()
+        {
+            return View();
+        }
+
+        public async Task<IActionResult> Dashboard()
+        {
+            // Get current user
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return RedirectToAction("Login", "Account");
+
+            // Create a dashboard view model with summary information
+            var dashboardViewModel = new AdminDashboardViewModel
+            {
+                UserName = user.DisplayName,
+                TotalBatches = await _unitOfWork.BatchRepository.CountAsync(),
+                TotalJobs = await _unitOfWork.JobRepository.CountAsync(),
+                TotalEmployees = await _unitOfWork.EmpRepository.CountAsync(),
+                TotalTasks = await _unitOfWork.TaskRepository.CountAsync()
+            };
+
+            return View(dashboardViewModel);
         }
 
     }

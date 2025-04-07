@@ -30,11 +30,10 @@ namespace TalentAcquisitionModule.Controllers
             const int pageSize = 5; // Number of jobs per page
 
             // Fetch all jobs
-            var jobs = await _unitOfWork.JobRepository.GetAllWithDetailsAsync() ?? new List<Job>();
-
-            // Filter for active batches (where batch end date is after today)
-            var today = DateTime.Today;
-            jobs = jobs.Where(job => job.Batch != null && job.Batch.EndDate > today).ToList();
+            var jobs = await _unitOfWork.JobRepository.GetAllAsync(
+                u => u.BatchId != null && u.Batch.EndDate > DateTime.Today
+                , includeProperties: "Batch,Department"
+            );
 
             foreach (var job in jobs)
             {
@@ -114,7 +113,7 @@ namespace TalentAcquisitionModule.Controllers
                 }
 
                 // Check if the user has already applied for this job
-                var application = await _unitOfWork.JobApplicationRepository.GetFirstOrDefaultAsync(x => x.UserId == applicantId && jobId == x.JobId);
+                var application = await _unitOfWork.JobApplicationRepository.GetFirstOrDefaultAsync(x => x.UserId == applicantId && job.BatchId == x.BatchId);
                 if (application != null)
                 {
                     return Json(new { success = false, message = "You have already applied to this job" });
@@ -124,7 +123,7 @@ namespace TalentAcquisitionModule.Controllers
                 var jobApplication = new JobApplication
                 {
                     UserId = applicantId,
-                    JobId = jobId,
+                    BatchId = job.BatchId ?? 0,
                     AppliedDate = DateTime.UtcNow,
                 };
 

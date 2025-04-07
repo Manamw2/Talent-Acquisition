@@ -93,6 +93,7 @@ namespace HrBackOffice.Controllers
                 HiringStage = hiringStage,
                 Outcomes = hiringStage.HiringStageOutcomes.Select(o => new OutcomeVm
                 {
+                    Id = o.Id,
                     Name = o.Name,
                     ApplicationStatus = o.ApplicationStatus,
                     NotificationMessage = o.NotificationMessage,

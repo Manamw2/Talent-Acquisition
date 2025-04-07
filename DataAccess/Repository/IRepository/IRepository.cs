@@ -23,7 +23,6 @@ namespace DataAccess.Repository.IRepository
         void Update(T entity);
         void Remove(T entity);
         void RemoveRange(IEnumerable<T> entities);
-        Task<IEnumerable<Job>> GetAllWithDetailsAsync();
 
     }
 }

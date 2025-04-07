@@ -4,6 +4,7 @@ using DataAccess.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250327070825_EnabledApplicantNotification")]
+    partial class EnabledApplicantNotification
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -500,9 +503,6 @@ namespace DataAccess.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("isAssigned")
-                        .HasColumnType("bit");
-
                     b.HasKey("TaskId", "EmployeeId");
 
                     b.HasIndex("EmployeeId");
@@ -748,6 +748,9 @@ namespace DataAccess.Migrations
                     b.Property<int>("BatchId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("JobId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Source")
                         .HasColumnType("nvarchar(max)");
 
@@ -766,6 +769,8 @@ namespace DataAccess.Migrations
                     b.HasKey("ApplicationId");
 
                     b.HasIndex("BatchId");
+
+                    b.HasIndex("JobId");
 
                     b.HasIndex("UserId");
 
@@ -1080,6 +1085,10 @@ namespace DataAccess.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Models.Job", "Job")
+                        .WithMany()
+                        .HasForeignKey("JobId");
+
                     b.HasOne("Models.AppUser", "AppUser")
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -1089,6 +1098,8 @@ namespace DataAccess.Migrations
                     b.Navigation("AppUser");
 
                     b.Navigation("Batch");
+
+                    b.Navigation("Job");
                 });
 
             modelBuilder.Entity("Models.JobRecommend", b =>

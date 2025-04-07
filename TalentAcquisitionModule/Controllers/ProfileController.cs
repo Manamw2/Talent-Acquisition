@@ -190,14 +190,14 @@ namespace TalentAcquisitionModule.Controllers
             var claimsIdentity = (ClaimsIdentity)User.Identity;
             var userId = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier).Value;
 
-            var jobApplicaions = await _context.JobApplications.Where(u => u.UserId == userId).Include(u => u.Job).ThenInclude(u => u.Department).ToListAsync();
+            var jobApplicaions = await _context.JobApplications.Where(u => u.UserId == userId).Include(u => u.Batch).ThenInclude(b => b.Job).ThenInclude(j => j.Department).ToListAsync();
             List<ApplicationVM> ApplicationVMs = jobApplicaions.Select(x => new ApplicationVM
             {
                 Id = x.ApplicationId,
-                JobTitle = x.Job.Title,
-                JobDescription = x.Job.Description,
-                DepartmentName = x.Job.Department.Name,
-                JobType = x.Job.JobType.ToString(),
+                JobTitle = x.Batch.Job.Title,
+                JobDescription = x.Batch.Job.Description,
+                DepartmentName = x.Batch.Job.Department.Name,
+                JobType = x.Batch.Job.JobType.ToString(),
                 Status = x.Status,
                 ApplicationDate = x.AppliedDate
             }).ToList();

@@ -16,7 +16,7 @@ namespace HrBackOffice.Controllers.Api
 
         [HttpGet]
         public async Task<IActionResult> GetAll() {
-            return Ok(await _unitOfWork.HiringParameterRepo.GetAllWithDetailsAsync());
+            return Ok(await _unitOfWork.HiringParameterRepo.GetAllAsync());
         }
 
     }

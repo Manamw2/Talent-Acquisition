@@ -14,6 +14,7 @@ namespace Models.ViewModels
     }
     public class OutcomeVm
     {
+        public int Id { get; set; }
         public string Name { get; set; }
         public string NotificationMessage { get; set; }
         public string ApplicationStatus { get; set; }

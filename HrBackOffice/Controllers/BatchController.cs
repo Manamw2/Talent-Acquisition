@@ -23,15 +23,17 @@ namespace HrBackOffice.Controllers
         private readonly IConfiguration _config;
         private readonly UserManager<AppUser> _userManager;
         private readonly IMapper _mapper;
-
+        private readonly IHiringTemplateRepo _hiringTemplateRepo;
         public BatchController(ILogger<ApplicantController> logger,IConfiguration configuration,
-            UserManager<AppUser> userManager,IUnitOfWork unitOfWork, IMapper mapper)
+            UserManager<AppUser> userManager,IUnitOfWork unitOfWork, IMapper mapper,
+            IHiringTemplateRepo hiringTemplateRepo)
         {
             _unitOfWork = unitOfWork;
             _config = configuration;
             _userManager = userManager;
             _logger = logger;
             _mapper = mapper;
+            _hiringTemplateRepo = hiringTemplateRepo;
         }
         public async Task<IActionResult> Index(int page = 1, string searchQuery = "")
         {
@@ -88,7 +90,7 @@ namespace HrBackOffice.Controllers
             };
 
             // Populate jobs dropdown
-            await PopulateJobsDropdownAsync();
+            await PopulateDropdownsAsync();
 
             return View(batch);
         }
@@ -102,13 +104,13 @@ namespace HrBackOffice.Controllers
             {
                 // Map ViewModel to domain model
                 var batch = _mapper.Map<Batch>(model);
-                _unitOfWork.BatchRepository.AddAsync(batch);
+                await _unitOfWork.BatchRepository.AddAsync(batch);
                 await _unitOfWork.SaveAsync();
                 return RedirectToAction(nameof(Index));
             }
 
             // Repopulate jobs dropdown on validation error
-            await PopulateJobsDropdownAsync();
+            await PopulateDropdownsAsync();
 
             return View(model);
         }
@@ -123,7 +125,7 @@ namespace HrBackOffice.Controllers
             var model = _mapper.Map<BatchViewModel>(batch);
             model.Id = batch.BatchId;
             // Populate jobs dropdown
-            await PopulateJobsDropdownAsync();
+            await PopulateDropdownsAsync();
 
             return View(model);
         }
@@ -150,19 +152,27 @@ namespace HrBackOffice.Controllers
             }
 
             // Repopulate jobs dropdown on validation error
-            await PopulateJobsDropdownAsync();
+            await PopulateDropdownsAsync();
 
             return View(model);
         }
 
         // Helper method to populate jobs dropdown
-        private async Task PopulateJobsDropdownAsync()
+        private async Task PopulateDropdownsAsync()
         {
             // Get all jobs from the database
             var jobs = await _unitOfWork.JobRepository.GetAllAsync();
 
+            var templates = await _hiringTemplateRepo.GetAllAsync();
+
+
             // Create SelectList for dropdown
             ViewBag.Jobs = new SelectList(jobs, "JobId", "Title");
+            ViewBag.Templates = templates.Select(t => new SelectListItem
+            {
+                Text = t.Name,
+                Value = t.Id.ToString()
+            });
         }
 
 

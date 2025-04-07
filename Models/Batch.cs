@@ -43,7 +43,6 @@ namespace Models
         [ForeignKey(nameof(TemplateId))]
         public HiringTemplate? HiringTemplate { get; set; }
         public List<HiringTask> Tasks { get; set; } = new List<HiringTask>();
-
     }
 
     // Add this enum for batch status

@@ -28,10 +28,10 @@ namespace Models
         public Batch Batch { get; set; }
 
         // Optional: Keep reference to Job for maintaining existing data relationships
-        public int? JobId { get; set; }
+        /*public int? JobId { get; set; }
 
         [ForeignKey("JobId")]
-        public Job? Job { get; set; }
+        public Job? Job { get; set; }*/
 
         [Required]
         public DateTime AppliedDate { get; set; } = DateTime.UtcNow;

@@ -220,7 +220,7 @@ namespace HrBackOffice.Controllers
         {
             var job = await _unitOfWork.JobRepository.GetFirstOrDefaultAsync(
                 filter: j => j.JobId == id,
-                includeProperties: "Batch,Department,JobApplications.AppUser"
+                includeProperties: "Batch,Department"
             );
 
             if (job == null)

@@ -41,7 +41,8 @@ namespace DataAccess.Repository
         public async Task<HiringTemplate?> GetByIdAsync(int id)
         {
             return await _context.hiringTemplates
-                .Include(u => u.HiringTemplateStages).ThenInclude(x => x.HiringStage)
+                .Include(u => u.HiringTemplateStages).ThenInclude(x => x.HiringStage).ThenInclude(s => s.HiringStageOutcomes)
+                .Include(u => u.HiringTemplateStages).ThenInclude(x => x.HiringStage).ThenInclude(s => s.StageDepartmentNeeds).ThenInclude(n => n.Department)
                 .FirstOrDefaultAsync(u =>  u.Id == id);
         }
 

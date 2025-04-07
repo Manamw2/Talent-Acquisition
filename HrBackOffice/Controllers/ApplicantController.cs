@@ -17,7 +17,7 @@ namespace HrBackOffice.Controllers
 {
     public class ApplicantController : Controller
     {
-        private readonly IUnitOfWork _unitOfWork;
+        /*private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly UserManager<AppUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
@@ -530,6 +530,6 @@ namespace HrBackOffice.Controllers
                 })
                 .ToListAsync();
             return Json(applications);
-        }
+        }*/
     }
 }

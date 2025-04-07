@@ -14,8 +14,8 @@ namespace Models
         public int TemplateId { get; set; }
         public int StageId { get; set; }
         [ForeignKey(nameof(TemplateId))]
-        public HiringTemplate HiringTemplate { get; set; }
+        public HiringTemplate? HiringTemplate { get; set; }
         [ForeignKey(nameof(StageId))]
-        public HiringStage HiringStage { get; set; }
+        public HiringStage? HiringStage { get; set; }
     }
 }

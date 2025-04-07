@@ -81,39 +81,6 @@ namespace DataAccess.Repository
             dbSet.RemoveRange(entities);
         }
 
-        public async Task<IEnumerable<Job>> GetAllWithDetailsAsync()
-        {
-            var jobs = await _context.Jobs
-                .Include(j => j.Department)
-                .Include(j => j.Batch)  // Include Batch
-                .Select(j => new Job
-                {
-                    JobId = j.JobId,
-                    Title = j.Title,
-                    Description = j.Description,
-                    JobType = j.JobType,
-                    BatchId = j.BatchId,
-                    Batch = new Batch
-                    {
-                        BatchId = j.Batch.BatchId,
-                        BatchName = j.Batch.BatchName,
-                        StartDate = j.Batch.StartDate,
-                        EndDate = j.Batch.EndDate
-                    },
-                    Department = j.Department,
-                    //JobApplications = j.JobApplications
-                })
-                .ToListAsync();
-
-            // Add debug logging
-            foreach (var job in jobs)
-            {
-                Console.WriteLine($"Repository - Job: {job.JobId}, Batch EndDate: {job.Batch?.EndDate}");
-            }
-
-            return jobs;
-        }
-
         public async Task<int> CountAsync(Expression<Func<T, bool>> filter = null)
         {
             IQueryable<T> query = dbSet;

@@ -8,3 +8,9 @@
 <form asp-action="Create">
     @await Html.PartialAsync("CreateEditFormPartialView", Model)
 </form>
+
+@section Scripts {
+
+    <script src="~/js/CreateBatch.js"></script>
+    <partial name="_ValidationScriptsPartial" />
+}

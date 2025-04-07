@@ -32,7 +32,7 @@ namespace HrBackOffice.Controllers.Api
             if(!ModelState.IsValid) return BadRequest(ModelState);
             var hiringTemplate = await _hiringTemplateRepo.GetByIdAsync(id);
             if (hiringTemplate == null) return NotFound();
-            return Ok(hiringTemplate);
+            return Ok(hiringTemplate.ToHiringTemplateDto());
         }
 
         [HttpPost]

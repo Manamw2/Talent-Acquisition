@@ -1,5 +1,7 @@
 ﻿using HrBackOffice.Helper;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Models;
+using Models.ViewModels;
 using System;
 using System.ComponentModel.DataAnnotations;
 
@@ -41,7 +43,6 @@ namespace HrBackOffice.Models
         public string StatusName => Status.ToString();
 
         public List<JobApplicationVM> JobApplications { get; set; } = new List<JobApplicationVM>();
+        public int TemplateId { get; set; }
     }
-
-   
 }

@@ -13,6 +13,7 @@ using Hangfire;
 using HrBackOffice.Helper.FileProcessingService;
 using HrBackOffice.Services.ProfileServices;
 using HrBackOffice.Extentions;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,7 +36,11 @@ builder.Services.AddHangfireServer();
 builder.Services.AddSignalR();
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews()/*.AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    options.JsonSerializerOptions.MaxDepth = 32;
+})*/;
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {

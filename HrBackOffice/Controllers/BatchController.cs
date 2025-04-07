@@ -124,8 +124,12 @@ namespace HrBackOffice.Controllers
             }
             var model = _mapper.Map<BatchViewModel>(batch);
             model.Id = batch.BatchId;
+            var job = await _unitOfWork.JobRepository.GetFirstOrDefaultAsync(j => j.JobId == batch.JobId);
+            ViewBag.JobTitle = job?.Title; // Or whatever property holds the job name
+
+
             // Populate jobs dropdown
-            await PopulateDropdownsAsync();
+            await PopulateDropdownsAsync(id);
 
             return View(model);
         }
@@ -158,16 +162,42 @@ namespace HrBackOffice.Controllers
         }
 
         // Helper method to populate jobs dropdown
-        private async Task PopulateDropdownsAsync()
+        private async Task PopulateDropdownsAsync(int? currentBatchId = null)
         {
-            // Get all jobs from the database
-            var jobs = await _unitOfWork.JobRepository.GetAllAsync();
+            // Get all jobs
+            var allJobs = await _unitOfWork.JobRepository.GetAllAsync();
 
+            // Get jobs that are already assigned to batches
+            var assignedJobs = await _unitOfWork.BatchRepository.GetAllAsync(
+                filter: b => b.BatchId != currentBatchId, // Exclude current batch being edited
+                includeProperties: "Job"
+            );
+
+            // Extract the JobIds that are already assigned
+            var assignedJobIds = assignedJobs.Select(b => b.JobId).ToList();
+
+            // Filter out jobs that are already assigned to other batches
+            var availableJobs = allJobs.Where(j => !assignedJobIds.Contains(j.JobId)).ToList();
+
+            // If editing an existing batch, include its job in the dropdown
+            if (currentBatchId.HasValue && currentBatchId.Value > 0)
+            {
+                var currentBatch = await _unitOfWork.BatchRepository.GetFirstOrDefaultAsync(b => b.BatchId == currentBatchId);
+                if (currentBatch != null)
+                {
+                    var currentJob = await _unitOfWork.JobRepository.GetFirstOrDefaultAsync(j => j.JobId == currentBatch.JobId);
+                    if (currentJob != null && !availableJobs.Any(j => j.JobId == currentJob.JobId))
+                    {
+                        availableJobs.Add(currentJob);
+                    }
+                }
+            }
+
+            // Get templates
             var templates = await _hiringTemplateRepo.GetAllAsync();
 
-
-            // Create SelectList for dropdown
-            ViewBag.Jobs = new SelectList(jobs, "JobId", "Title");
+            // Create SelectLists for dropdowns
+            ViewBag.Jobs = new SelectList(availableJobs, "JobId", "Title");
             ViewBag.Templates = templates.Select(t => new SelectListItem
             {
                 Text = t.Name,

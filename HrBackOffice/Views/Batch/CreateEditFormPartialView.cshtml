@@ -26,9 +26,17 @@
                             </div>
                             <div class="col-md-6">
                                 <label asp-for="JobId" class="small mb-1 fw-bold">Select Job</label>
-                                <select asp-for="JobId" asp-items="ViewBag.Jobs" class="form-select">
-                                    <option value="">-- Select a Job --</option>
-                                </select>
+                                @if (Model.Id > 0) // Edit mode
+                                {
+                                    <input type="text" class="form-control" value="@ViewBag.JobTitle" readonly />
+                                    <input type="hidden" asp-for="JobId" />
+                                }
+                                else // Create mode
+                                {
+                                    <select asp-for="JobId" asp-items="ViewBag.Jobs" class="form-select">
+                                        <option value="">-- Select a Job --</option>
+                                    </select>
+                                }
                                 <span asp-validation-for="JobId" class="text-danger small"></span>
                             </div>
                         </div>

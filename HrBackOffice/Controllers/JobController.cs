@@ -132,6 +132,7 @@ namespace HrBackOffice.Controllers
 
             var model = _mapper.Map<JobViewM>(job);
             model.BatchId = job.BatchId;
+
             await PopulateDropdowns(model);
             
             return View(model);
@@ -156,16 +157,30 @@ namespace HrBackOffice.Controllers
             await PopulateDropdowns(model);
             return View(model);
         }
-
         public async Task<IActionResult> Delete(int id)
         {
-            var job = await _unitOfWork.JobRepository.GetFirstOrDefaultAsync(filter: J => J.JobId == id);
-            if (job == null) return NotFound();
+            var job = await _unitOfWork.JobRepository.GetFirstOrDefaultAsync(j => j.JobId == id);
+            if (job == null)
+                return NotFound();
+
+            // Check if any batch is using this job
+            var batchesUsingJob = await _unitOfWork.BatchRepository.GetAllAsync(b => b.JobId == id);
+            if (batchesUsingJob.Any())
+            {
+                TempData["ErrorMessage"] = "Cannot delete this job because it is assigned to a batch.";
+                return RedirectToAction(nameof(Index));
+            }
 
             _unitOfWork.JobRepository.Remove(job);
             await _unitOfWork.SaveAsync();
+
+            TempData["SuccessMessage"] = "Job deleted successfully.";
             return RedirectToAction(nameof(Index));
         }
+
+
+
+
         #region Details
         //public async Task<IActionResult> Details(int id)
         //{

@@ -235,6 +235,7 @@
     }
 }
 @section Scripts {
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             var form = document.getElementById('pageJumpForm');
@@ -258,6 +259,17 @@
                 }
             }
         });
+        
+        function confirmDelete(batchId) {
+            // Set the correct URL in the delete link
+            var deleteLink = document.getElementById('deleteLink');
+            deleteLink.href = '@Url.Action("Delete")/' + batchId;
+            
+            // Show the modal
+            var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            deleteModal.show();
+        }
     </script>
+
 
 }

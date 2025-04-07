@@ -17,7 +17,7 @@ namespace HrBackOffice.Controllers
 {
     public class ApplicantController : Controller
     {
-        /*private readonly IUnitOfWork _unitOfWork;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly UserManager<AppUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
@@ -389,23 +389,52 @@ namespace HrBackOffice.Controllers
 
             return Ok(new { success = true, message = "Applicant deleted successfully!" });
         }
-
+        #region GetAvailableJobs
+//[HttpGet]
+//        public async Task<IActionResult> GetAvailableJobs(string userId)
+//        {
+//            if (string.IsNullOrEmpty(userId))
+//                return BadRequest("User ID is required");
+//            // First, get all job applications for this user
+//            var applications = await _unitOfWork.JobApplicationRepository
+//                .GetAllAsync(ja => ja.UserId == userId);
+//            // Then extract the JobIds
+//            var appliedJobIds = applications.Select(ja => ja.JobId);
+//            // Now get jobs that are not in the applied list
+//            var availableJobs = await _unitOfWork.JobRepository
+//                .GetAllAsync(filter: 
+//                job => job.Batch != null && job.Batch.EndDate > DateTime.UtcNow &&!appliedJobIds.Contains(job.JobId));
+//            return Json(availableJobs.Select(j => new { id = j.JobId, title = j.Title }));
+//        }
+        #endregion
         [HttpGet]
         public async Task<IActionResult> GetAvailableJobs(string userId)
         {
             if (string.IsNullOrEmpty(userId))
                 return BadRequest("User ID is required");
-            // First, get all job applications for this user
+
+            // Get all job applications for the user
             var applications = await _unitOfWork.JobApplicationRepository
-                .GetAllAsync(ja => ja.UserId == userId);
-            // Then extract the JobIds
-            var appliedJobIds = applications.Select(ja => ja.JobId);
-            // Now get jobs that are not in the applied list
-            var availableJobs = await _unitOfWork.JobRepository
-                .GetAllAsync(filter: 
-                job => job.Batch != null && job.Batch.EndDate > DateTime.UtcNow &&!appliedJobIds.Contains(job.JobId));
+                .GetAllAsync(ja => ja.UserId == userId, includeProperties: "Batch");
+
+            // Extract job IDs from the related batches
+            var appliedJobIds = applications
+                .Where(ja => ja.Batch?.JobId != null)
+                .Select(ja => ja.Batch.JobId.Value)
+                .Distinct()
+                .ToList();
+
+            // Get jobs with valid batches that the user has not applied to
+            var availableJobs = await _unitOfWork.JobRepository.GetAllAsync(
+                filter: job => job.Batch != null &&
+                               job.Batch.EndDate > DateTime.UtcNow &&
+                               !appliedJobIds.Contains(job.JobId),
+                includeProperties: "Batch"
+            );
+
             return Json(availableJobs.Select(j => new { id = j.JobId, title = j.Title }));
         }
+
         // POST: Assign job to applicant
         [HttpPost]
         public async Task<IActionResult> AssignJob([FromBody] AssignJobViewModel model)
@@ -416,97 +445,117 @@ namespace HrBackOffice.Controllers
             var applicant = await _userManager.FindByIdAsync(model.UserId);
             if (applicant == null)
                 return NotFound("Applicant not found");
-            var job = await _unitOfWork.JobRepository.GetFirstOrDefaultAsync(j => j.JobId == model.JobId);
+
+            var job = await _unitOfWork.JobRepository
+                .GetFirstOrDefaultAsync(j => j.JobId == model.JobId, includeProperties: "Batch");
             if (job == null)
                 return NotFound("Job not found");
-            // Check for duplicate application
+
+            // Get the latest or active batch for this job
+            var batch = await _unitOfWork.BatchRepository
+                .GetFirstOrDefaultAsync(b => b.JobId == model.JobId && b.EndDate > DateTime.UtcNow);
+
+            if (batch == null)
+                return BadRequest("No available batch for this job");
+
+            // Check for duplicate application based on BatchId
             var existingApplication = await _unitOfWork.JobApplicationRepository.GetFirstOrDefaultAsync(
-                a => a.UserId == model.UserId && a.JobId == model.JobId);
+                a => a.UserId == model.UserId && a.BatchId == batch.BatchId);
             if (existingApplication != null)
-                return BadRequest("This applicant has already applied for this job");
-            // Create new job application
+                return BadRequest("This applicant has already applied to this job's batch");
+
+            // Create new job application (linked to batch)
             var jobApplication = new JobApplication
             {
                 UserId = model.UserId,
-                JobId = model.JobId,
+                BatchId = batch.BatchId,
                 AppliedDate = DateTime.UtcNow,
                 Status = "HR Added",
                 Source = model.Reason,
                 SourceDetails = model.Reason == "Internal referral" ? $"Referred by: {model.ReferralName}" : null,
-                AddedBy = User.Identity.Name
+                AddedBy = User.Identity?.Name
             };
+
             await _unitOfWork.JobApplicationRepository.AddAsync(jobApplication);
             await _unitOfWork.SaveAsync();
+
             return Ok(new { message = "Job application successfully added" });
         }
+
 
         [HttpPost]
         public async Task<IActionResult> RecommendJobToApplicant([FromBody] AssignJobViewModel model)
         {
-            if (string.IsNullOrEmpty(model.UserId) || model.JobId == null)
+            if (string.IsNullOrEmpty(model.UserId) || model.JobId == 0)
                 return BadRequest("Invalid data");
 
-            var job = await _unitOfWork.JobRepository.GetFirstOrDefaultAsync(j => j.JobId == model.JobId);
+            var job = await _unitOfWork.JobRepository
+                .GetFirstOrDefaultAsync(j => j.JobId == model.JobId, includeProperties: "Batch");
+
             if (job == null)
                 return NotFound("Job not found");
 
+            // Optional: Check for an active batch for this job
+            var hasActiveBatch = job.Batch != null && job.Batch.EndDate > DateTime.UtcNow;
+            if (!hasActiveBatch)
+                return BadRequest("This job has no active batch currently available");
+
             var applicant = await _userManager.FindByIdAsync(model.UserId);
             if (applicant == null)
-                return NotFound("applicant not found");
+                return NotFound("Applicant not found");
 
             var existingRecommendation = await _unitOfWork.JobRecommendRepository.GetFirstOrDefaultAsync(
-                a => a.UserId == model.UserId && a.JobId == model.JobId);
+                r => r.UserId == model.UserId && r.JobId == model.JobId);
             if (existingRecommendation != null)
-                return BadRequest("This applicant has already Recommended for this job");
-            var JobRecommendation = new JobRecommend
+                return BadRequest("This applicant has already been recommended for this job");
+
+            var jobRecommendation = new JobRecommend
             {
                 UserId = model.UserId,
                 JobId = model.JobId,
-                Date = DateTime.UtcNow,
-                
+                Date = DateTime.UtcNow
             };
-            await _unitOfWork.JobRecommendRepository.AddAsync(JobRecommendation);
-            await _unitOfWork.SaveAsync();
-            // Construct job application link
-            string applyLink = _configuration["JobsLink"];
 
-            // Send Email
-            // Simple HTML email message
+            await _unitOfWork.JobRecommendRepository.AddAsync(jobRecommendation);
+            await _unitOfWork.SaveAsync();
+
+            // Send email
+            string applyLink = _configuration["JobsLink"]; // You may customize this with query params if needed
+
             await _emailSender.SendEmailAsync(
                 applicant.Email,
                 "Job Recommendation",
                 $@"<div style='font-family: Arial, sans-serif; line-height: 1.6; padding: 20px;'>
-        <p>Dear {applicant.DisplayName},</p>
+    <p>Dear {applicant.DisplayName},</p>
 
-        <p>Here is the most suitable job based on your profile.</p>
+    <p>Here is the most suitable job based on your profile.</p>
 
-        <p>If you feel that is not relevant, please update your preferences to send you better jobs in my next email.</p>
+    <div style='margin: 20px 0;'>
+        <h2 style='color: #2c5282; margin: 0;'>{job.Title}</h2>
+        <div style='color: #666; margin: 5px 0;'>{job.JobType}</div>
+    </div>
 
-        <div style='margin: 20px 0;'>
-            <h2 style='color: #2c5282; margin: 0;'>{job.Title}</h2>
-            <div style='color: #666; margin: 5px 0;'>{job.JobType}</div>
-        </div>
+    <div style='margin: 20px 0; white-space: pre-line;'>
+        {job.Description}
+    </div>
 
-        <div style='margin: 20px 0; white-space: pre-line;'>
-            {job.Description}
-        </div>
+    <p>If you're interested, click below to apply:</p>
 
-        <p>If you're interested, click below to apply:</p>
+    <p style='margin: 20px 0;'>
+        <a href='{applyLink}' style='background-color: #4299e1; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;'>
+            Apply Now
+        </a>
+    </p>
 
-        <p style='margin: 20px 0;'>
-            <a href='{applyLink}' style='background-color: #4299e1; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;'>
-                Apply Now
-            </a>
-        </p>
-
-        <p style='margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;'>
-            Best of luck with your job hunt,<br>
-            Soft-trend HR Team
-        </p>
-    </div>");
+    <p style='margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;'>
+        Best of luck with your job hunt,<br>
+        Soft-trend HR Team
+    </p>
+</div>");
 
             return Ok("Job recommendation sent successfully.");
         }
+
         [HttpGet]
         public async Task<IActionResult> GetApplicationCount(string id)
         {
@@ -521,15 +570,15 @@ namespace HrBackOffice.Controllers
         {
             var applications = await _context.JobApplications
                 .Where(ja => ja.UserId == id)
-                .Include(ja => ja.Job)
+                .Include(ja => ja.Batch)
                 .Select(ja => new
                 {
-                    jobTitle = ja.Job.Title,
+                    jobTitle = ja.Batch.Job.Title,
                     applicationDate = ja.AppliedDate,
                     status = ja.Status
                 })
                 .ToListAsync();
             return Json(applications);
-        }*/
+        }
     }
 }
